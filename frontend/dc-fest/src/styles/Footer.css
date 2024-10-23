@@ -1,0 +1,37 @@
+/* Footer.css */
+
+.footer {
+    padding: 1rem 0;
+    /* Padding for the footer */
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    /* Center the icons horizontally */
+    gap: 1rem;
+    /* Space between icons */
+}
+
+.social-icon {
+    color: white;
+    /* Icon color */
+    font-size: 1.5rem;
+    /* Size of icons */
+    text-decoration: none;
+    /* Remove underline */
+}
+
+.social-icon:hover {
+    color: #ccc;
+    /* Change color on hover */
+}
+
+@media (max-width: 576px) {
+    .social-icons {
+        flex-direction: row;
+        /* Align icons in a row on smaller screens */
+        justify-content: center;
+        /* Center the icons */
+    }
+}

@@ -1,0 +1,43 @@
+/* UserList.css */
+.user-list-card {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .table th,
+  .table td {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .user-badge {
+    font-size: 0.9rem;
+    padding: 0.4em 1em;
+  }
+  
+  /* UserRow.css */
+  .table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* UserForm.css */
+  .user-action-btn {
+    border-radius: 20px;
+    padding: 0.5rem 1.2rem;
+  }
+  
+  .modal-content {
+    border-radius: 15px;
+  }
+  
+  .modal-header {
+    background-color: #007bff;
+    color: white;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  
+  .modal-footer button {
+    border-radius: 20px;
+  }
+  
+  

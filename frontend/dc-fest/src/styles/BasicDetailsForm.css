@@ -1,0 +1,57 @@
+.college-desk-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+}
+
+.form-card {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+}
+
+.form-title {
+    color: #007bff;
+    /* Bootstrap primary color */
+}
+
+.section-title {
+    color: #343a40;
+    /* Dark color for section titles */
+    border-bottom: 2px solid #007bff;
+    /* Underline for emphasis */
+    padding-bottom: 5px;
+}
+
+button {
+    width: 100%;
+    /* Make buttons full-width */
+}
+
+@media (max-width: 576px) {
+    button {
+        width: 100%;
+    }
+}
+
+.overflow-auto {
+    max-height: 600px;
+    /* Set a maximum height for overflow */
+    overflow-y: auto;
+    /* Enable vertical scrollbar if content overflows */
+}
+
+/* Add custom styles for form controls */
+input {
+    border-radius: 5px;
+    /* Rounded corners */
+}
+
+input:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, .5);
+    /* Add a glow effect on focus */
+}
+
+.mb-3 {
+    margin-bottom: 1.5rem !important;
+    /* Adjust spacing for form groups */
+}

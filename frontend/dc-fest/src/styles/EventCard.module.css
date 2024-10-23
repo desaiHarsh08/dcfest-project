@@ -1,0 +1,61 @@
+.eventCard {
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.eventCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.imageContainer {
+    width: 100%;
+    height: 200px;
+    /* Fixed height for consistency across all cards */
+    overflow: hidden;
+    /* Ensures the image stays within bounds */
+}
+
+.cardImage {
+    width: 100%;
+    height: 100%;
+    /* Image will fill the container */
+    object-fit: cover;
+    /* Ensures the image maintains aspect ratio and crops to fit */
+}
+
+.cardTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.cardOneLiner {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.cardDescription {
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.ruleItem {
+    color: #007bff;
+    font-size: 0.9rem;
+}
+
+.registerButton {
+    background-color: #007bff;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    /* cursor: not-allowed; */
+    opacity: 0.8;
+}
+
+.registerButton:hover {
+    opacity: 1;
+}

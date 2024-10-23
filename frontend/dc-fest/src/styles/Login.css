@@ -1,0 +1,32 @@
+.login-page {
+    background-color: #f7f9fc;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+h3 {
+    font-weight: bold;
+}
+
+button {
+    background-color: #007bff;
+    border: none;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

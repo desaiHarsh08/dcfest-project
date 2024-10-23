@@ -1,0 +1,16 @@
+/* App.css */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* Ensures the footer stays at the bottom */
+}
+
+/* Main content styling */
+main {
+  flex: 1;
+  /* Allows the main content to expand and fill space */
+}
+
+/* Additional global styles can be added here */

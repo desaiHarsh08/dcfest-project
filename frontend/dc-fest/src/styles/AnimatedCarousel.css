@@ -1,0 +1,70 @@
+.carousel-item {
+    height: 400px;
+    /* Set the desired height for the carousel */
+    position: relative;
+    /* Make position relative to contain absolutely positioned elements */
+}
+
+.carousel-image {
+    height: 100%;
+    /* Make the div take the full height */
+    background-size: cover;
+    /* Ensure the image covers the entire div */
+    background-position: center;
+    /* Center the image */
+    background-repeat: no-repeat;
+    /* Prevent repeating of the image */
+    width: 100%;
+    /* Full width of the carousel item */
+    position: relative;
+    /* Position relative to allow overlay positioning */
+}
+
+.carousel-overlay {
+    position: absolute;
+    /* Position overlay absolutely within the item */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Faded black background */
+}
+
+.carousel-caption {
+    position: absolute;
+    /* Position the caption absolutely */
+    bottom: 20px;
+    /* Distance from the bottom */
+    left: 50%;
+    /* Center the caption horizontally */
+    transform: translateX(-50%);
+    /* Adjust for exact centering */
+    color: white;
+    /* Caption text color */
+    padding: 10px;
+    /* Padding for the caption */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    /* Optional: Text shadow for better readability */
+}
+
+.carousel-welcome {
+    position: absolute;
+    /* Position the welcome text absolutely */
+    top: 50%;
+    /* Center vertically */
+    left: 50%;
+    /* Center horizontally */
+    transform: translate(-50%, -50%);
+    /* Adjust for exact centering */
+    color: white;
+    /* Text color */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    /* Optional: Text shadow for better readability */
+    font-size: 3rem;
+    /* Adjust font size as needed */
+    text-align: center;
+    /* Center text */
+    z-index: 10;
+    /* Ensure text is on top of the overlay */
+}

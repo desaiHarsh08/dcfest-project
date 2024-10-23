@@ -1,0 +1,38 @@
+/* Navbar styles */
+.navbar {
+    transition: background-color 0.3s ease;
+}
+
+/* Navbar hover effect */
+.navbar:hover {
+    background-color: #f8f9fa; /* Lighten on hover */
+}
+
+/* Navbar links */
+.nav-link-custom {
+    font-size: 1rem; /* Adjust font size */
+    font-weight: 500; /* Semi-bold */
+    color: #333; /* Text color */
+    padding: 10px 15px; /* Padding for better clickability */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s, color 0.3s; /* Transition for hover effects */
+    text-decoration: none; /* Remove text decoration */
+}
+
+/* Navbar link hover effects */
+.nav-link-custom:hover {
+    background-color: #007bff; /* Change background on hover */
+    color: #fff; /* Change text color on hover */
+}
+
+/* Brand styles */
+.navbar-brand {
+    font-weight: bold; /* Make brand bold */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .nav-link-custom {
+        font-size: 0.9rem; /* Smaller font size for mobile */
+    }
+}

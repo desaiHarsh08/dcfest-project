@@ -1,0 +1,53 @@
+.container {
+    max-width: 1200px;
+}
+
+.custom-card {
+    border-radius: 12px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    border: none;
+}
+
+.custom-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #6c757d;
+}
+
+.statValue {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #343a40;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-bottom: 0.75rem;
+}
+
+.successCard {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.warningCard {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+@media (max-width: 768px) {
+    .custom-card {
+        margin-bottom: 2rem;
+    }
+
+    .statValue {
+        font-size: 2.5rem;
+    }
+}

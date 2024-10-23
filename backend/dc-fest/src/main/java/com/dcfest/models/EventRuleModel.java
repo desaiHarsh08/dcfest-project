@@ -1,0 +1,44 @@
+package com.dcfest.models;
+
+import com.dcfest.constants.RuleType;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Entity
+@Table(name = "event_rules")
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+public class EventRuleModel {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String type = RuleType.MIN_PARTICIPANTS.name();
+
+    @Column(nullable = false)
+    private String description;
+
+    private String value;
+
+    @ManyToOne(targetEntity = AvailableEventModel.class)
+    @JoinColumn(name = "available_event_id_fk", nullable = false)
+    private AvailableEventModel availableEvent;
+
+}

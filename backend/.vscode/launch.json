@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-DcFestApplication<dc-fest>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.dcfest.DcFestApplication",
+            "projectName": "dc-fest",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

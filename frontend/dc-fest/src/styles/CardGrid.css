@@ -1,0 +1,62 @@
+/* CardGrid.css */
+
+.custom-card {
+    width: 100%;
+    /* Make sure the card takes the full width of its column */
+    min-height: 150px;
+    /* Ensures a minimum height for visual appeal */
+    border-radius: 15px;
+    /* Rounded corners for a modern look */
+    transition: transform 0.2s, box-shadow 0.2s;
+    /* Add transition for hover effects */
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+    /* Lift effect on hover */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    /* Enhance shadow on hover */
+}
+
+.card-title {
+    font-size: 1.5rem;
+    /* Title font size for better visibility */
+    font-weight: 600;
+    /* Slightly lighter font weight for elegance */
+    color: #333;
+    /* Darker text color for better contrast */
+}
+
+/* New styles for icons */
+.icon-container {
+    color: #007bff;
+    /* Change icon color to a primary color */
+    margin-bottom: 10px;
+    /* Space below the icon */
+    font-size: 2rem;
+    /* Larger icon size for better visibility */
+}
+
+.icon-container svg {
+    vertical-align: middle;
+    /* Align the icon vertically */
+}
+
+/* Add media query for responsiveness */
+@media (max-width: 768px) {
+    .custom-card {
+        min-height: 180px;
+        /* Adjust card height for smaller screens */
+    }
+}
+
+/* CardGrid.css */
+
+.card-image {
+    height: 200px;
+    /* Set a fixed height for all images */
+    object-fit: cover;
+    /* Ensures images cover the assigned height while maintaining aspect ratio */
+    width: 100%;
+    /* Makes sure images take the full width of the card */
+}

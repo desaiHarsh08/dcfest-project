@@ -1,0 +1,32 @@
+/* CategoryCard.module.css */
+
+.custom-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid #dee2e6;
+    /* Custom border around the card */
+    border-radius: 10px;
+    /* Rounding the card’s corners */
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.custom-img {
+    border-bottom: 2px solid #dee2e6;
+    /* Border at the bottom of the image */
+    border-radius: 10px 10px 0 0;
+    /* Same border-radius for image */
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.card-text {
+    color: #6c757d;
+    font-size: 0.95rem;
+}

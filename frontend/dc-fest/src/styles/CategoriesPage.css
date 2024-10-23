@@ -1,0 +1,24 @@
+/* src/pages/TotalEventsPage.css */
+
+.custom-card {
+    transition: transform 0.2s;
+}
+
+.custom-card:hover {
+    transform: scale(1.05);
+}
+
+.icon-container {
+    color: #007bff;
+    /* Bootstrap primary color */
+}
+
+.card-title {
+    font-size: 1.25rem;
+    /* Adjust title size */
+}
+
+.card-text {
+    font-size: 0.9rem;
+    /* Adjust text size */
+}

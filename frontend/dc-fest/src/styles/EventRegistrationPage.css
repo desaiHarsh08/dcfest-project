@@ -1,0 +1,45 @@
+/* src/pages/EventRegistrationPage.css */
+
+.form-scroll-container {
+    overflow-y: auto;
+    padding-right: 15px;
+    /* To prevent content hiding behind the scrollbar */
+    margin-bottom: 20px;
+    /* Space for the sticky button */
+}
+
+.form-scroll-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.form-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb {
+    background: #0d6efd;
+    border-radius: 4px;
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #0b5ed7;
+}
+
+/* Ensure the submit button remains fixed at the bottom */
+.submit-button-container {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    z-index: 1;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Optional: Adjust Card height for better layout */
+@media (max-height: 700px) {
+    .form-scroll-container {
+        max-height: 300px;
+    }
+}

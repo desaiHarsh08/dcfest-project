@@ -1,0 +1,121 @@
+/* CollegeDesk.css */
+
+.college-desk-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.form-card {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
+
+.btn-custom {
+    background-color: #007bff;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.btn-custom:hover {
+    background-color: #0056b3;
+    border: none;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.form-control {
+    box-shadow: none;
+    border-radius: 5px;
+    padding: 12px;
+}
+
+@media (max-width: 768px) {
+    .college-desk-container {
+        padding: 20px;
+    }
+
+    .form-card {
+        padding: 20px;
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+    }
+
+    .btn-custom {
+        font-size: 1rem;
+    }
+}
+
+/* src/styles/CollegeDesk.css */
+.events-table-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.table {
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    text-align: center;
+    /* Center text for better appearance */
+}
+
+.btn {
+    margin-right: 5px;
+    /* Spacing between buttons */
+}
+
+/* src/styles/CollegeDesk.css */
+.events-table-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.table {
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    text-align: center;
+    /* Center text for better appearance */
+}
+
+.btn {
+    margin-right: 5px;
+    /* Spacing between buttons */
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+h3 {
+    font-weight: bold;
+}

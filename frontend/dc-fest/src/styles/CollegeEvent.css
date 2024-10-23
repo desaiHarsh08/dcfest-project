@@ -1,0 +1,54 @@
+/* src/styles/CollegeEvent.css */
+
+.event-details {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.event-image {
+    width: 100%;
+    /* Adjusted for responsiveness */
+    max-width: 200px;
+    /* Smaller image */
+    height: auto;
+    border-radius: 8px;
+    /* Rounded corners for the image */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Subtle shadow effect */
+}
+
+.event-info {
+    padding-left: 20px;
+}
+
+.event-name {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #343a40;
+    /* Darker color for better contrast */
+}
+
+.table th {
+    background-color: #f8f9fa;
+    /* Light background for table header */
+    color: #495057;
+    /* Darker text color for readability */
+}
+
+.table td {
+    vertical-align: middle;
+    /* Center-aligning table content */
+}
+
+.table .btn-danger {
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.table .btn-danger:hover {
+    background-color: #c82333;
+    /* Darker red on hover */
+    border-color: #bd2130;
+    /* Darker border color on hover */
+}

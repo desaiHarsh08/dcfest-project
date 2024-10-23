@@ -1,0 +1,28 @@
+/* src/styles/EventDeskPage.module.css */
+
+.event-card {
+    transition: transform 0.3s ease;
+}
+
+.event-card:hover {
+    transform: scale(1.05); /* Slight zoom effect on hover */
+}
+
+.card-title {
+    font-size: 1.25rem; /* Adjust title size for better readability */
+}
+
+.card-text {
+    font-size: 0.9rem; /* Adjust text size for better readability */
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 576px) {
+    .section-heading {
+        font-size: 1.8rem; /* Larger heading on mobile for better visibility */
+    }
+
+    .card-title {
+        font-size: 1.1rem; /* Adjust card title size on mobile */
+    }
+}
