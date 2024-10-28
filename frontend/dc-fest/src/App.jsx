@@ -17,7 +17,7 @@ import Root from "./pages/Root";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import HomeDesk from "./components/home/HomeDesk";
-import EventPage from "./pages/EventPage";
+
 import "./index.css";
 import EventDeskPage from "./pages/EventDeskPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
@@ -32,6 +32,7 @@ import Settings from "./pages/Settings";
 import CollegeDeskLayout from "./components/layout/CollegeDeskLayout";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CollegeGreetings from "./pages/CollegeGreetings";
+import EventPage from "./pages/Eventpage";
 
 const router = createBrowserRouter([
   {
