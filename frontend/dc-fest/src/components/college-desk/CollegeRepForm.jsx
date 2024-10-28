@@ -6,90 +6,101 @@ const CollegeRepForm = ({
   user,
   index,
   onChange,
-  verifyOtpStatus,
-  setVerifyOtpStatus,
+  setUsers,
+  users
 }) => {
   return (
     <>
-      <Row>
-        <Col md={6} xs={12}>
+      <Col>
+        <Col md={6} xs={12} className="w-100">
           <Form.Group controlId="rep1Name" className="mb-3">
-            <Form.Label>Representative Name</Form.Label>
+            <Form.Label>Name</Form.Label>
             <Form.Control
               type="text"
               name="name"
               value={user?.name}
               onChange={(e) => onChange(e, index)}
-              placeholder="Enter representative's name"
+              placeholder="Enter name"
               required
             />
           </Form.Group>
         </Col>
 
-        <Col md={6} xs={12}>
+        <Col md={6} xs={12} className="w-100">
           <Form.Group controlId="rep1Email" className="mb-3">
-            <Form.Label>Representative Email</Form.Label>
-            <Row>
+            <Form.Label>Email</Form.Label>
+            <Col>
               <Col md={9} xs={8}>
                 <Form.Control
                   type="email"
                   name="email"
                   value={user?.email}
                   onChange={(e) => onChange(e, index)}
-                  placeholder="Enter representative's email"
+                  placeholder="Enter email"
                   required
                 />
               </Col>
-              <Col md={3} xs={4}>
+              <Col md={6} xs={12}>
                 <EmailModal
                   index={index}
                   email={user?.email}
-                  verifyOtpStatus={verifyOtpStatus}
-                  setVerifyOtpStatus={setVerifyOtpStatus}
+                  setUsers={setUsers}
+                  users={users}
                 />
               </Col>
-            </Row>
+            </Col>
           </Form.Group>
         </Col>
-      </Row>
+      </Col>
       <Row>
-        <Col md={6} xs={12}>
+        <Col md={6} xs={12} className="w-100">
           <Form.Group controlId="rep1Phone" className="mb-3">
-            <Form.Label>Representative Phone</Form.Label>
-            <Row>
+            <Form.Label>Phone</Form.Label>
+            <Col>
               <Col md={9} xs={8}>
                 <Form.Control
                   type="tel"
                   name="phone"
                   value={user?.phone}
                   onChange={(e) => onChange(e, index)}
-                  placeholder="Enter representative's phone number"
+                  placeholder="Enter number"
                   required
                 />
               </Col>
-              <Col md={3} xs={4}>
+              <Col md={6} xs={12}>
                 <PhoneModal
                   index={index}
                   phone={user?.phone}
-                  verifyOtpStatus={verifyOtpStatus}
-                  setVerifyOtpStatus={setVerifyOtpStatus}
+                  users={users}
+                  setUsers={setUsers}
                 />
               </Col>
-            </Row>
+            </Col>
           </Form.Group>
         </Col>
-
-        <Col md={6} xs={12}>
-          <Form.Group controlId="rep1Password" className="mb-3">
-            <Form.Label>Representative Password</Form.Label>
-            <Form.Control
-              type="password"
-              name="password"
-              value={user?.password}
-              onChange={(e) => onChange(e, index)}
-              placeholder="Enter representative's password"
-              required
-            />
+        <Col md={6} xs={12} className="w-100">
+          <Form.Group controlId="rep1Phone" className="mb-3">
+            <Form.Label>WhatsApp Number:</Form.Label>
+            <Col>
+              <Col md={9} xs={8}>
+                <Form.Control
+                  type="tel"
+                  name="whatsappNumber"
+                  value={user?.whatsappNumber}
+                  onChange={(e) => onChange(e, index)}
+                  placeholder="Enter number"
+                  required
+                />
+              </Col>
+              {/* <Col md={6} xs={12}>
+                <PhoneModal
+                  index={index}
+                  phone={user?.whatsappNumber}
+                  users={users}
+                  setUsers={setUsers}
+                />
+              </Col> */}
+            </Col>
           </Form.Group>
         </Col>
       </Row>

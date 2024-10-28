@@ -181,6 +181,7 @@ public class UserServicesImpl implements UserServices {
         foundUserModel.setEmail(userDto.getEmail());
         foundUserModel.setPhone(userDto.getPhone());
         foundUserModel.setType(userDto.getType());
+        foundUserModel.setWhatsappNumber(userDto.getWhatsappNumber());
         // Save the changes
         foundUserModel = this.userRepository.save(foundUserModel);
 

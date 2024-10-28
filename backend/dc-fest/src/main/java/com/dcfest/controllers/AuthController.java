@@ -98,10 +98,17 @@ public class AuthController {
         if (userModel == null) {
             collegeModel = this.collegeRepository.findByEmail(authRequest.getUsername()).orElse(null);
             if (collegeModel == null) {
-                collegeModel = this.collegeRepository.findByIcCode(authRequest.getUsername()).orElseThrow(
-                        () -> new ResourceNotFoundException("No user exsit for username:" + authRequest.getUsername()));
+                collegeModel = this.collegeRepository.findByIcCode(authRequest.getUsername()).orElse(null);
+                if (collegeModel == null) {
+                    throw new ResourceNotFoundException("No user exsit for username:" + authRequest.getUsername());
+                }
+                if (collegeModel.getEmail() != null) {
+                    userModel = this.userRepository.findByEmail(collegeModel.getEmail()).orElse(null);
+                }
             }
         }
+
+
 
         String accessToken = this.jwtTokenHelper.generateToken(userDetails);
         String refreshToken = this.refreshTokenServices.createRefreshToken(authRequest.getUsername()).getRefreshToken();
@@ -123,11 +130,6 @@ public class AuthController {
 
         response.addCookie(emailCookie);
         response.addCookie(refreshTokenCookie);
-
-        // Log the cookies manually since HttpServletResponse does not provide a method
-        // to retrieve them
-        System.out.println("Cookie added: email = " + emailCookie.getValue());
-        System.out.println("Cookie added: refreshToken = " + refreshTokenCookie.getValue());
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setAccessToken(accessToken);

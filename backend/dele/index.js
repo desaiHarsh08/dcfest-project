@@ -1,136 +1,41 @@
 import fetch from "node-fetch";
-import { categories } from './data.js'
+import { categories } from './data.js';
 
 (async () => {
-    // const category = {
-    //     "name": "Star Events",
-    //     "availableEvents": [
-    //         {
-    //             "title": "BEAT BOXING (HUM MEI HAI DUM)",
-    //             "oneLiner": "Your heart is just a beatbox for the song of your life.",
-    //             "description": "Beatboxing isn't merely copying drums, but you can also integrate melodies and harmonies by using sounds like the siren, trumpet, whistlesand different kinds of bass.",
-    //             "type": "INDIVIDUAL",
-    //             "image": "",
-    //             "venues": [
-    //                 {
-    //                     "name": "Main Stage",
-    //                     "start": "2024-10-10T16:30:00",
-    //                     "end": "2024-10-10T18:00:00"
-    //                 }
-    //             ],
-    //             "eventRules": [
-    //                 {
-    //                     "type": "MIN_PARTICIPANTS",
-    //                     "value": 1,
-    //                     "description": "Number of Participants"
-    //                 },
-    //                 {
-    //                     "type": "TIME_LIMIT",
-    //                     "value": 3,
-    //                     "description": "Time limit"
-    //                 },
-    //                 {
-    //                     "type": "OTSE",
-    //                     "value": true,
-    //                     "description": "OTSE is"
-    //                 },
-    //                 {
-    //                     "type": "MAX_PARTICIPANTS",
-    //                     "value": 20,
-    //                     "description": "Maximum number of participants"
-    //                 }
-    //             ],
-    //             "rounds": [
-    //                 {
-    //                     "name": "Round 1",
-    //                     "roundType": "PRELIMNARY",
-    //                     "qualifyNumber": 0,
-    //                     "status": "NOT_STARTED"
-    //                 }
-    //             ]
-    //         },
-    //         {
-    //             "title": "FASHION SHOW (FASHION KA JALWA)",
-    //             "oneLiner": "Fashion is the armor that allows you to survive the realities of everyday life.",
-    //             "description": "There is no road map to style, so walk down the ramp and exhibit your creativity and style. It’s time to conquer the ramp with your confidence.",
-    //             "type": "TEAM",
-    //             "image": "",
-    //             "venues": [
-    //                 {
-    //                     "name": "Main Stage",
-    //                     "start": "2024-10-10T16:30:00",
-    //                     "end": "2024-10-10T18:00:00"
-    //                 }
-    //             ],
-    //             "eventRules": [
-    //                 {
-    //                     "type": "MIN_PARTICIPANTS",
-    //                     "value": 12,
-    //                     "description": "Number of Participants"
-    //                 },
-    //                 {
-    //                     "type": "MAX_PARTICIPANTS",
-    //                     "value": 12,
-    //                     "description": "Number of Participants"
-    //                 },
-    //                 {
-    //                     "type": "MIN_TEAMS",
-    //                     "value": 1,
-    //                     "description": "Minimum no. of teams"
-    //                 },
-    //                 {
-    //                     "type": "MAX_TEAMS",
-    //                     "value": 18,
-    //                     "description": "Minimum no. of teams"
-    //                 },
-    //                 {
-    //                     "type": "TIME_LIMIT",
-    //                     "value": 8,
-    //                     "description": "Time limit"
-    //                 },
-    //                 {
-    //                     "type": "THEME",
-    //                     "value": "",
-    //                     "description": "The theme will be disclosed in the first representative meeting."
-    //                 },
-    //                 {
-    //                     "type": "NOTE",
-    //                     "value": null,
-    //                     "description": "Any kind of obscenity and vulgarity is not allowed."
-    //                 },
-    //                 {
-    //                     "type": "NOTE",
-    //                     "value": null,
-    //                     "description": "Prop list should be submitted in the last representative meeting."
-    //                 },
-    //                 {
-    //                     "type": "OTSE",
-    //                     "value": true,
-    //                     "description": "OTSE is"
-    //                 }
-    //             ],
-    //             "rounds": [
-    //                 {
-    //                     "name": "Round 1",
-    //                     "roundType": "PRELIMNARY",
-    //                     "qualifyNumber": 0,
-    //                     "status": "NOT_STARTED"
-    //                 }
-    //             ]
-    //         }
-    //     ]
-    // }
+    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZXNhaWhhcnNoaXQ3MjJAZ21haWwuY29tIiwiaWF0IjoxNzMwMDQzNzQxLCJleHAiOjE3MzAxMzAxNDF9.3B5o2URTWtYsTkZq4N07Y3hu1rAQuHUU_wlZQw5ld3dtRv99dU019O0x-osm5TiL0e_AcGyu2MxeJKr5CLatyg";
 
-    console.log("Making reques!\n");
+    console.log("Making request!\n");
+
     for (let i = 0; i < categories.length; i++) {
-        const response = await fetch(`http://localhost:5003/api/categories`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(categories[i])
-        });
-        const data = await response.json();
-        console.log(data);
+        console.log(`Sending category: ${categories[i].name}`);
+
+        try {
+            const response = await fetch(`http://localhost:5003/api/categories`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(categories[i])
+            });
+
+            if (!response.ok) {
+                // If the response status is not 200, log the status and status text
+                console.log(`Error: ${response.status} ${response.statusText}`);
+            }
+
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                // Parse JSON response if content type is application/json
+                const data = await response.json();
+                console.log(data);
+            } else {
+                // If the content type is not JSON, log the text response
+                const text = await response.text();
+                console.log("Received non-JSON response:", text);
+            }
+        } catch (error) {
+            console.error("Request failed:", error);
+        }
     }
 })();

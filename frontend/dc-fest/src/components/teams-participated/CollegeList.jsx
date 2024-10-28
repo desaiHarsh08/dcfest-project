@@ -17,6 +17,7 @@ const CollegeList = ({ colleges, setColleges }) => {
             <tr>
               <th>Sr. No.</th>
               <th>College Name</th>
+              <th>Iccode</th>
               <th>Address</th>
               <th>Phone</th>
               <th>Email</th>

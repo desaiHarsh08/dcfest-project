@@ -1,16 +1,18 @@
 import { useContext, useEffect, useState } from "react";
 import { fetchParticipationEvents } from "../../services/college-participation-apis";
 import BasicDetailsForm from "./BasicDetailsForm";
-import { Navbar } from "react-bootstrap";
 import CollegeParticipation from "./CollegeParticipation";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import EventsTable from "./EventsTable";
 import { AuthContext } from "../../providers/AuthProvider";
 import { fetchCollegeByIcCode } from "../../services/college-apis";
+import ResetPasswordPage from "../../pages/ResetPasswordPage";
+import Navbar from "../Navbar/Navbar";
 // import "../../styles/CollegeDesk.css";
 
 const DeskLayout = () => {
   const { iccode } = useParams();
+  const { pathname } = useLocation();
   console.log(iccode);
 
   const { user } = useContext(AuthContext);
@@ -24,16 +26,23 @@ const DeskLayout = () => {
 
   // Modal state
   const [modalShow, setModalShow] = useState(false);
+  const [showResetPasswordForm, setShowResetPasswordForm] = useState(false)
 
   useEffect(() => {
-    fetchCollegeByIcCode(iccode)
-      .then((data) => {
-        console.log("data: ", data);
-        setCollege(data);
-        setEvents(data.participations);
-      })
-      .catch((err) => console.log(err));
-  }, [iccode]);
+    getCollege();
+    console.log("showResetPasswordForm:", showResetPasswordForm);
+  }, [iccode, showResetPasswordForm]);
+
+  const getCollege = async () => {
+    try {
+      const response = await fetchCollegeByIcCode(iccode);
+      setCollege(response);
+      setEvents(response.participations);
+    } catch (error) {
+      console.log(error);
+      // alert('Unable to get the college data... please try again later.');
+    }
+  }
 
   // Handle view event (implement as needed)
   const handleView = (event) => {
@@ -50,13 +59,26 @@ const DeskLayout = () => {
     <>
       {!user.type ? (
         !college?.detailsUploaded ? (
-          <BasicDetailsForm college={college} setCollege={setCollege} />
+          <BasicDetailsForm
+            college={college}
+            setCollege={setCollege}
+            setShowResetPasswordForm={setShowResetPasswordForm}
+            getCollege={getCollege}
+          />
         ) : (
-          <p>College Details are already saved!</p>
+          showResetPasswordForm ? <ResetPasswordPage college={college} /> :
+            <div className="p-2 vh-100 d-flex justify-content-center flex-column align-items-center">
+              <p>College Details are already saved!</p>
+              <Link to={'/login'}>Back</Link>
+            </div>
         )
       ) : (
         <>
           <Navbar />
+          {console.log(iccode)}
+          {(iccode && !(pathname.endsWith(`/${iccode}`) || pathname.endsWith(`/${iccode}/`))) && <div className="container">
+            <Link to={`/${iccode}`}>Home</Link>
+          </div>}
           <CollegeParticipation college={college} />
 
           <div className="events-table-container mt-4">

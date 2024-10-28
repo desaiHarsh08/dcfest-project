@@ -1,0 +1,43 @@
+/* PhoneModal.css */
+
+.generate-otp-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    /* Full width by default for better responsiveness */
+}
+
+.generate-otp-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.generate-otp-btn:active {
+    background-color: #004085;
+    transform: translateY(0);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.generate-otp-btn:disabled {
+    background-color: #6c757d;
+    color: #ddd;
+    cursor: not-allowed;
+}
+
+/* Media Query for Larger Screens */
+@media (min-width: 576px) {
+    .generate-otp-btn {
+        width: auto;
+        /* Adjust to content size on larger screens */
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}

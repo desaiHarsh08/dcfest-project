@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../styles/EditModal.module.css';
 
 const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
-    const [eventDetails, setEventDetails] = useState(event);
+    // Set initial state with a fallback
+    const [eventDetails, setEventDetails] = useState(event || {});
     const [eventRounds, setEventRounds] = useState(event?.rounds || []);
+
+    // Update state if the event prop changes
+    useEffect(() => {
+        setEventDetails(event || {});
+        setEventRounds(event?.rounds || []);
+    }, [event]);
 
     if (!isOpen) return null;
 
@@ -50,7 +57,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="text"
                             name="type"
-                            value={eventDetails.type}
+                            value={eventDetails.type || ''}
                             onChange={handleChange}
                             required
                         />
@@ -60,7 +67,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="text"
                             name="venue"
-                            value={eventDetails.venue}
+                            value={eventDetails.venue || ''}
                             onChange={handleChange}
                             required
                         />
@@ -70,7 +77,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="datetime-local"
                             name="start"
-                            value={eventDetails.start}
+                            value={eventDetails.start || ''}
                             onChange={handleChange}
                             required
                         />
@@ -80,7 +87,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="datetime-local"
                             name="end"
-                            value={eventDetails.end}
+                            value={eventDetails.end || ''}
                             onChange={handleChange}
                             required
                         />
@@ -90,7 +97,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="number"
                             name="maxParticipants"
-                            value={eventDetails.maxParticipants}
+                            value={eventDetails.maxParticipants || ''}
                             onChange={handleChange}
                             required
                         />
@@ -100,7 +107,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="number"
                             name="minParticipants"
-                            value={eventDetails.minParticipants}
+                            value={eventDetails.minParticipants || ''}
                             onChange={handleChange}
                             required
                         />
@@ -110,7 +117,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="number"
                             name="timeLimit"
-                            value={eventDetails.timeLimit}
+                            value={eventDetails.timeLimit || ''}
                             onChange={handleChange}
                             required
                         />
@@ -120,7 +127,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <input
                             type="text"
                             name="otse"
-                            value={eventDetails.otse}
+                            value={eventDetails.otse || ''}
                             onChange={handleChange}
                             required
                         />
@@ -132,7 +139,7 @@ const EditModal = ({ isOpen, onClose, event, onUpdate }) => {
                         <div key={index} className={styles.formGroup}>
                             <input
                                 type="text"
-                                value={round}
+                                value={round || ''}
                                 onChange={(e) => handleRoundsChange(index, e.target.value)}
                                 placeholder={`Round ${index + 1}`}
                                 required

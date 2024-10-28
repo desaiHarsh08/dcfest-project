@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "../styles/EventPage.module.css";
 import EditModal from "./EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
@@ -7,8 +7,8 @@ import { AuthContext } from "../providers/AuthProvider";
 
 const EventPage = () => {
   const { user } = useContext(AuthContext);
-
   const { eventSlug } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -20,7 +20,7 @@ const EventPage = () => {
         console.log(err);
         setError(err);
       });
-  }, []);
+  }, [eventSlug]);
 
   const handleUpdate = (updatedEvent) => {
     setEvent((prevEvent) => ({
@@ -38,6 +38,11 @@ const EventPage = () => {
 
   return (
     <div className={styles.eventPage}>
+      {/* Breadcrumb Button */}
+      {/* <button className={styles.breadcrumbButton} onClick={() => navigate(-1)}>
+        ← Back
+      </button> */}
+
       {event && (
         <div className={styles.container}>
           {/* Event Image */}
@@ -147,12 +152,14 @@ const EventPage = () => {
               </ul>
             </div>
           </div>
+
           {/* Edit Button */}
           <button className={styles.editButton} onClick={openModal}>
             Edit Event
           </button>
         </div>
       )}
+
       {/* Edit Modal */}
       <EditModal
         isOpen={isModalOpen}

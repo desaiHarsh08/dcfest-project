@@ -1,13 +1,27 @@
 // src/components/EventCards.jsx
 import React from 'react';
 import { Card, Row, Col, Button } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import '../styles/EventDeskPage.module.css'; // Custom CSS for animations and styles
-import { Link } from 'react-router-dom';
 
 const EventDeskPage = () => {
+    const navigate = useNavigate(); // Initialize useNavigate
+
+    // Function to handle back navigation
+    const handleGoBack = () => {
+        navigate(-1); // Go back to the previous page
+    };
+
     return (
         <div className="container mt-5">
-            <h1 className="text-center mb-4 section-heading">Event Management</h1>
+            <Row className="align-items-center mb-4">
+                <Col xs={12} md={3} className="d-flex justify-content-start">
+                    <Button variant="secondary" className='w-50' onClick={handleGoBack}>Go Back</Button> {/* Go Back Button */}
+                </Col>
+                <Col xs={12} md={6} className="text-center">
+                    <h1 className="section-heading">Event Management</h1>
+                </Col>
+            </Row>
             <Row className="justify-content-center">
                 {/* Card for Event Registration */}
                 <Col xs={12} sm={6} md={4} lg={3} className="mb-4 d-flex justify-content-center">
@@ -83,6 +97,6 @@ const EventDeskPage = () => {
             </Row>
         </div>
     );
-}
+};
 
 export default EventDeskPage;

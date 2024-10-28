@@ -55,9 +55,6 @@ const TeamsParticipatedPage = () => {
     try {
       const collegeList = await readExcel();
       console.log(collegeList);
-      // TODO: Loop over the `collegeList` and create the college
-      //   try {
-      //   } catch (error) {}
 
       for(let i=0; i<collegeList.length;i++){
         const collegeObj= {
@@ -73,6 +70,14 @@ const TeamsParticipatedPage = () => {
         }
       }
 
+      fetchColleges()
+        .then((data) => {
+          setColleges(data);
+        })
+        .catch((err) => {
+          console.log(err);
+          setError(err);
+        });
 
     } catch (error) {
       console.log(error);
@@ -104,7 +109,7 @@ const TeamsParticipatedPage = () => {
               </Form.Group>
               <div className="mb-3">
                 <Button variant="primary" onClick={handleUpload}>
-                  Upload Colleges
+                  Upload
                 </Button>
               </div>
             </div>

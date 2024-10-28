@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Row, Form } from "react-bootstrap";
-import "../../styles/BasicDetailsForm.css"; // Import your custom CSS file for additional styling
+// import "../../styles/BasicDetailsForm.css"; // Import your custom CSS file for additional styling
 import CollegeRepForm from "./CollegeRepForm";
 import EmailModal from "./EmailModal";
 import PhoneModal from "./PhoneModal";
 import { createUser } from "../../services/auth-apis";
 import { updateCollege } from "../../services/college-apis";
 
-const BasicDetailsForm = ({ college, setCollege }) => {
+const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswordForm }) => {
   useEffect(() => {
     console.log(college);
   }, [college]);
@@ -15,29 +15,29 @@ const BasicDetailsForm = ({ college, setCollege }) => {
   const [users, setUsers] = useState([
     {
       name: "",
-      email: "",
+      email: "desaiharsh183@gmail.com",
       password: "",
       phone: "",
       type: "COLLEGE_REPRESENTATIVE",
       collegeId: 0,
+      whatsappNumber: "",
+      emailVerified: false,
+      phoneVerified: false,
+      whatsappNoVerfied: false,
     },
     {
       name: "",
-      email: "",
+      email: "harshndesai.it@kdkce.edu.in",
       password: "",
       phone: "",
       type: "COLLEGE_REPRESENTATIVE",
       collegeId: 0,
+      whatsappNumber: "",
+      emailVerified: false,
+      phoneVerified: false,
+      whatsappNoVerfied: false,
     },
   ]);
-  const [verifyOtpStatus, setVerifyOtpStatus] = useState({
-    emailCollege: false,
-    phoneCollege: false,
-    email1: false,
-    phone1: false,
-    email2: false,
-    phone2: false,
-  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -59,11 +59,6 @@ const BasicDetailsForm = ({ college, setCollege }) => {
 
     setUsers(newUser);
   };
-
-  const isValidData =
-    verifyOtpStatus.email1 &&
-    verifyOtpStatus.email2 &&
-    verifyOtpStatus.emailCollege;
 
   const updateCollegeDetails = async () => {
     console.log(college);
@@ -88,17 +83,26 @@ const BasicDetailsForm = ({ college, setCollege }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("in submit, college:", college);
-    if (!isValidData || !college) {
+    console.log("in submit, college:", users);
+    if (users.some(user => (user.emailVerified === false)) || !college) {
       return;
     }
     try {
       await updateCollegeDetails();
       for (let i = 0; i < users.length; i++) {
-        const tmpUser = { ...users[i] };
-        tmpUser.collegeId = college?.id;
+        const tmpUser = {
+          name: users[i]?.name,
+          email: users[i]?.email,
+          password: college?.rp,
+          phone: users[i]?.phone,
+          type: "COLLEGE_REPRESENTATIVE",
+          collegeId: college?.id,
+          whatsappNumber: users[i]?.whatsappNumber,
+        };
         await createCollegeRepresentative(tmpUser);
       }
       alert("Details saved successfully...!");
+      setShowResetPasswordForm(true);
     } catch (error) {
       console.log(error);
       alert("Unable to save the college");
@@ -106,10 +110,10 @@ const BasicDetailsForm = ({ college, setCollege }) => {
   };
 
   return (
-    <div className="college-desk-container">
+    <div className="container">
       <Card className="shadow-lg p-4 mt-5 form-card overflow-auto">
         <h2 className="text-center mb-4 form-title">
-          College Desk Registration
+          College Registration
         </h2>
         <Form onSubmit={handleSubmit}>
           <h4 className="mb-3 section-title">College Details</h4>
@@ -119,6 +123,7 @@ const BasicDetailsForm = ({ college, setCollege }) => {
               type="text"
               name="name"
               value={college?.name}
+              style={{ background: "aliceblue" }}
               placeholder="Enter college name"
               required
             />
@@ -149,14 +154,6 @@ const BasicDetailsForm = ({ college, setCollege }) => {
                   required
                 />
               </Col>
-              <Col md={3} xs={4}>
-                <EmailModal
-                  isCollege={true}
-                  email={college?.email}
-                  verifyOtpStatus={verifyOtpStatus}
-                  setVerifyOtpStatus={setVerifyOtpStatus}
-                />
-              </Col>
             </Row>
           </Form.Group>
 
@@ -166,6 +163,7 @@ const BasicDetailsForm = ({ college, setCollege }) => {
               type="text"
               name="icCode"
               value={college?.icCode}
+              style={{ background: "aliceblue" }}
               placeholder="Enter IC Code"
               required
             />
@@ -181,37 +179,34 @@ const BasicDetailsForm = ({ college, setCollege }) => {
                   isCollege={true}
                   value={college?.phone}
                   onChange={handleInputChange}
-                  placeholder="Enter phone number"
+                  placeholder="Enter number"
                   required
                 />
               </Col>
-              <Col md={3} xs={4}>
-                <PhoneModal
-                  phone={college?.phone}
-                  verifyOtpStatus={verifyOtpStatus}
-                  setVerifyOtpStatus={setVerifyOtpStatus}
-                />
-              </Col>
+
             </Row>
           </Form.Group>
 
           {/* College Representative Details 1 */}
           <h4 className="mt-4 mb-3 section-title">
-            College Representative Details 1
+            College Representative 1
           </h4>
           {users.map((user, index) => (
+            <>
+              {index === 1 && <h4 className="mt-4 mb-3 section-title">College Representative 2</h4> }
             <CollegeRepForm
               key={`user-${index}`}
               onChange={(e) => handleUserChange(e, index)}
               index={index}
               user={user}
-              verifyOtpStatus={verifyOtpStatus}
-              setVerifyOtpStatus={setVerifyOtpStatus}
+              users={users}
+              setUsers={setUsers}
             />
+            </>
           ))}
 
           <Button
-            disabled={!isValidData}
+            disabled={users.some(user => (user.emailVerified === false))}
             variant="primary"
             type="submit"
             className="mt-4"

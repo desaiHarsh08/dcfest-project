@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useEffect, createContext } from "react";
 import { API } from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import "../styles/LoadingDots.css"; // Make sure to import the CSS file
 
 export const AuthContext = createContext(undefined);
 
@@ -33,12 +34,10 @@ export const AuthProvider = ({ children }) => {
       const response = await API.post(
         "/auth/refresh-token",
         {},
-        { withCredentials: true } // Include cookies in the request
+        { withCredentials: true }
       );
       setAccessToken(response.data.accessToken);
       setUser(response.data.user);
-      console.log(response.data.accessToken, response.data.user);
-
       return response.data.accessToken;
     } catch (error) {
       console.error("Failed to generate new token:", error);
@@ -50,7 +49,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (accessToken === null) {
-      console.log("generating accessToken...!");
       generateNewToken();
     }
 
@@ -70,9 +68,7 @@ export const AuthProvider = ({ children }) => {
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          console.log("retrying...");
           const newAccessToken = await generateNewToken();
-          console.log("new-accesstoken: ", newAccessToken);
           if (newAccessToken) {
             originalRequest.headers[
               "Authorization"
@@ -100,7 +96,15 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={contextValue}>
       {user != null && accessToken != null && displayFlag && children}
-      {(!user || !accessToken || !displayFlag) && <p>Loading...!</p>}
+      {(!user || !accessToken || !displayFlag) && (
+        <section className="dots-container">
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
+        </section>
+      )}
     </AuthContext.Provider>
   );
 };

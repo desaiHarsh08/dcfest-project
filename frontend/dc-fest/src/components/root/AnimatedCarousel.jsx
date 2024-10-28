@@ -65,7 +65,7 @@ const AnimatedCarousel = () => {
                             <h3 className='py-2'>{item.category}</h3>
                         </Carousel.Caption>
                         <div className="carousel-welcome">
-                            <h1>WELCOME TO "UMANG 2024"</h1>
+                            <h1 className='text-white'>WELCOME TO "UMANG 2024"</h1>
                         </div>
                     </div>
                 </Carousel.Item>

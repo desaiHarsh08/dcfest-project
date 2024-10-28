@@ -5,7 +5,7 @@
 
 /* Navbar hover effect */
 .navbar:hover {
-    background-color: #f8f9fa; /* Lighten on hover */
+    background-color: #f8f9fa !important;  /* Lighten on hover */
 }
 
 /* Navbar links */

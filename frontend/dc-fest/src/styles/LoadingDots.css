@@ -1,36 +1,11 @@
-/* src/pages/TotalEventsPage.css */
-
-.custom-card {
-    transition: transform 0.2s;
-}
-
-.custom-card:hover {
-    transform: scale(1.05);
-}
-
-.icon-container {
-    color: #007bff;
-    /* Bootstrap primary color */
-}
-
-.card-title {
-    font-size: 1.25rem;
-    /* Adjust title size */
-}
-
-.card-text {
-    font-size: 0.9rem;
-    /* Adjust text size */
-}
-
 /* LoadingDots.css */
 .dots-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100vh !important;
     /* Full height to center vertically */
-    width: 100%;
+    width: 100% !important;
 }
 
 .dot {
@@ -77,4 +52,3 @@
         box-shadow: 0 0 0 0 rgba(178, 212, 252, 0.7);
     }
 }
-

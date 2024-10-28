@@ -23,6 +23,8 @@ public class UserDto {
 
     private String phone;
 
+    private String whatsappNumber;
+
     private String type = UserType.PARTICIPANT.name();
 
     private boolean isDisabled;

@@ -10,7 +10,7 @@ import Root from './pages/Root';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import HomeDesk from './components/home/HomeDesk';
-import EventPage from './pages/EventPage';
+import EventPage from './pages/Eventpage';
 import "./index.css"
 import EventDeskPage from './pages/EventDeskPage';
 import EventRegistrationPage from './pages/EventRegistrationPage';
@@ -23,14 +23,22 @@ import CategoryList from './components/categories/CategoryList';
 import CollegeEvent from './pages/CollegeEvent';
 import Settings from './pages/Settings';
 import CollegeDeskLayout from './components/layout/CollegeDeskLayout';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import CollegeGreetings from './pages/CollegeGreetings';
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <Root />
     },
-   
-
+    {
+        path: "/reset-password",
+        element: <ResetPasswordPage />
+    },
+    {
+        path: "/college-greeting",
+        element: <CollegeGreetings />
+    },
     {
         path: ":iccode",
         element: <CollegeDeskLayout />,

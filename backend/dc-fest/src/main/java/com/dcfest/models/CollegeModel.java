@@ -25,11 +25,13 @@ public class CollegeModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = true, unique = true)
+    @Column(nullable = true, unique = false)
     private String email;
+
+    private String rp;
  
     private String address;
 

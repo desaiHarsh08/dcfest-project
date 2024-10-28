@@ -3,6 +3,7 @@ const CollegeRow = ({ college, index, onChange }) => {
     <tr key={college.id}>
       <td>{index + 1}</td>
       <td>{college.name}</td>
+      <td>{college.icCode}</td>
       <td>{college.address}</td>
       <td>{college.phone}</td>
       <td>{college.email}</td>

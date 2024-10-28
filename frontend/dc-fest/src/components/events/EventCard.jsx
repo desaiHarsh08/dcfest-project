@@ -1,12 +1,13 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Button, Card, Col } from "react-bootstrap";
 import styles from "../../styles/EventCard.module.css"; // Import your custom styles
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import { doParticipate } from "../../services/college-participation-apis";
 
-const EventCard = ({ event }) => {
+const EventCard = ({ event, college }) => {
   const { user } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Function to truncate the description to 7 words
   const truncateDescription = (text, wordLimit) => {
@@ -17,6 +18,7 @@ const EventCard = ({ event }) => {
   };
 
   const handleCollegeRegister = async () => {
+    setIsLoading(true);
     try {
       const response = await doParticipate({
         collegeId: user?.collegeId,
@@ -26,6 +28,8 @@ const EventCard = ({ event }) => {
       alert("Registered for the event...!");
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);;
     }
   };
 
@@ -60,8 +64,18 @@ const EventCard = ({ event }) => {
                 View
               </Link>
             ) : (
-              <Button onClick={handleCollegeRegister}>Register</Button>
-            )}
+              (college && college?.participations.some(ele => ele.availableEventId === event.id)) ?
+                (
+                  <Button disabled variant="success">
+                    {console.log(event, college)}
+                    Enrolled
+
+                  </Button>
+                ) : (
+                  <Button onClick={handleCollegeRegister}>
+                    {isLoading ? "Registering..." : "Register"}
+                  </Button>
+                ))}
           </div>
         </Card.Body>
       </Card>

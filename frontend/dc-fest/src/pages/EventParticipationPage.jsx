@@ -122,9 +122,17 @@ const EventParticipationPage = () => {
   if (loading) {
     return (
       <Container className="mt-4 text-center">
-        <Spinner animation="border" role="status">
+        {/* <Spinner animation="border" role="status">
           <span className="sr-only">Loading...</span>
-        </Spinner>
+        </Spinner> */}
+        <section class="dots-container">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </section>
+
       </Container>
     );
   }
@@ -195,7 +203,7 @@ const EventParticipationPage = () => {
                   <td>{participant.event}</td>
                   <td>{participant.eventCategory}</td>
                   <td>{participant.status}</td>
-                  <td>
+                  <td className='d-flex'>
                     <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant)}>
                       Edit
                     </Button>

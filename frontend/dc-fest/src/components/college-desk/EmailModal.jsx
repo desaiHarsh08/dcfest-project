@@ -4,10 +4,9 @@ import { generateOTP, verifyOTP } from "../../services/auth-apis";
 
 const EmailModal = ({
   email,
-  verifyOtpStatus,
-  setVerifyOtpStatus,
-  isCollege,
   index,
+  users,
+  setUsers,
 }) => {
   useEffect(() => {
     console.log(email);
@@ -15,13 +14,19 @@ const EmailModal = ({
 
   const [otp, setOtp] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerateOtp = async () => {
+    setIsLoading(true);
     try {
       const response = await generateOTP({ email });
       console.log(response);
+      setShowModal(true);
     } catch (error) {
       console.log("Unable to generate the OTP", error);
+      alert("Unable to generate otp.. please try again!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -29,22 +34,13 @@ const EmailModal = ({
     try {
       const response = await verifyOTP({ email, otp });
       console.log(response);
-      if (isCollege) {
-        setVerifyOtpStatus((prev) => ({
-          ...prev,
-          emailCollege: true,
-        }));
-      } else if (index == 0) {
-        setVerifyOtpStatus((prev) => ({
-          ...prev,
-          email1: true,
-        }));
-      } else {
-        setVerifyOtpStatus((prev) => ({
-          ...prev,
-          email2: true,
-        }));
-      }
+      const newUsers = users.map((user, idx) => {
+        if (idx === index) {
+          return { ...user, emailVerified: true }
+        }
+        return user;
+      })
+      setUsers(newUsers);
       setShowModal(false)
     } catch (error) {
       console.log("Unable to generate the OTP", error);
@@ -54,14 +50,13 @@ const EmailModal = ({
   return (
     <>
       <Button
-      disabled={(verifyOtpStatus?.emailCollege|| verifyOtpStatus?.email1 || verifyOtpStatus.email2)}
+        disabled={users[index]?.emailVerified}
         variant="outline-secondary"
         onClick={() => {
-          setShowModal(true);
           handleGenerateOtp();
         }}
       >
-        {(verifyOtpStatus?.emailCollege|| verifyOtpStatus?.email1 || verifyOtpStatus.email2)?"Verified! ":  "Generate OTP"}
+        {users[index]?.emailVerified ? "Verified! " : (isLoading ? "Sending..." : "Get OTP")}
       </Button>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>

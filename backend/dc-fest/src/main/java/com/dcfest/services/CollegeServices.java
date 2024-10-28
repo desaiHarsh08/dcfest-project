@@ -22,6 +22,8 @@ public interface CollegeServices {
 
     CollegeDto updateCollege(CollegeDto collegeDto);
 
+    CollegeDto resetCollegePassword(CollegeDto collegeDto);
+
     boolean deleteCollege(Long id);
 
 }

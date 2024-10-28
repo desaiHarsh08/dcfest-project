@@ -41,6 +41,9 @@ public class UserModel {
     @Column(nullable = false)
     private String phone;
 
+    @Column(nullable = false)
+    private String whatsappNumber;
+
     private String type = UserType.PARTICIPANT.name();
 
     @ManyToOne(targetEntity = CollegeModel.class)

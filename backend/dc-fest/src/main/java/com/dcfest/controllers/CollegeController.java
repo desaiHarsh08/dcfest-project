@@ -65,6 +65,11 @@ public class CollegeController {
         return new ResponseEntity<>(updatedCollege, HttpStatus.OK);
     }
 
+    @PutMapping("/reset-password/{id}")
+    public ResponseEntity<CollegeDto> resetCollegePassword(@RequestBody CollegeDto collegeDto, @PathVariable Long id) {
+        return new ResponseEntity<>(collegeServices.resetCollegePassword(collegeDto), HttpStatus.OK);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCollege(@PathVariable Long id) {
         boolean isDeleted = collegeServices.deleteCollege(id);

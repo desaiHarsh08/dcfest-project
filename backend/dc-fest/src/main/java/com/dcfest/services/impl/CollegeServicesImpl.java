@@ -24,7 +24,10 @@ import com.dcfest.repositories.UserRepository;
 import com.dcfest.services.CollegeParticipationService;
 import com.dcfest.services.CollegeServices;
 import com.dcfest.services.ParticipantServices;
+import com.dcfest.services.UserServices;
 import com.dcfest.utils.PageResponse;
+import com.dcfest.dtos.UserDto;
+import com.dcfest.models.UserModel;
 
 @Service
 public class CollegeServicesImpl implements CollegeServices {
@@ -45,6 +48,9 @@ public class CollegeServicesImpl implements CollegeServices {
     private UserRepository userRepository;
 
     @Autowired
+    private UserServices userServices;
+
+    @Autowired
     private EmailServices emailServices;
 
     @Autowired
@@ -59,9 +65,10 @@ public class CollegeServicesImpl implements CollegeServices {
         CollegeModel collegeModel = this.modelMapper.map(collegeDto, CollegeModel.class);
         // Encrypt the raw password
         collegeModel.setPassword(this.bCryptPasswordEncoder.encode(collegeDto.getPassword()));
+        collegeModel.setRp(collegeDto.getPassword());
         // Save the college
         collegeModel = this.collegeRepository.save(collegeModel);
-        // TODO: Notify the college
+        // Notify the college
         String subject = "Confirmation of Participation for Umang DCFest 2024";
         String body = getMailBody(collegeDto); // Generate the mail body
 
@@ -152,6 +159,34 @@ public class CollegeServicesImpl implements CollegeServices {
         foundCollege = this.collegeRepository.save(foundCollege);
 
         return this.collegeModelToDto(foundCollege);
+    }
+
+    @Override
+    public CollegeDto resetCollegePassword(CollegeDto collegeDto) {
+        CollegeModel foundCollegeModel = this.collegeRepository.findById(collegeDto.getId()).orElseThrow(
+            () -> new ResourceNotFoundException("No `COLLEGE` exist for id: " + collegeDto.getId())
+        );
+        // Encrypt the raw password
+        String encryptedPassword = this.bCryptPasswordEncoder.encode(collegeDto.getPassword());
+        // Update the password
+        foundCollegeModel.setPassword(encryptedPassword);
+        foundCollegeModel.setRp(collegeDto.getPassword());
+        // Save the changes
+        foundCollegeModel = this.collegeRepository.save(foundCollegeModel);
+        // Updated the password for the college_representative
+        PageResponse<UserDto> collegeRepresentatives = this.userServices.getUsersByCollegeId(1, foundCollegeModel.getId());
+        if (!collegeRepresentatives.getContent().isEmpty()) {
+            for (UserDto collegeRepresentative: collegeRepresentatives.getContent()) {
+                // Update the raw password
+                UserModel userModel = this.modelMapper.map(collegeRepresentative, UserModel.class);
+                userModel.setCollege(foundCollegeModel);
+                userModel.setPassword(encryptedPassword);
+                this.userRepository.save(userModel);
+            }
+
+        }
+
+        return this.collegeModelToDto(foundCollegeModel);
     }
 
     @Override

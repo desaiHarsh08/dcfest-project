@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Table, Button, Badge, Modal, Form } from 'react-bootstrap';
 import Navbar from '../components/Navbar/Navbar';
 import '../styles/CollegeEvent.css'; // Import custom CSS for additional styling
+import { Link, useLocation, useParams } from 'react-router-dom';
 
 const CollegeEvent = () => {
+  const { iccode, eventId } = useParams();
   // Sample data for participants
   const [participants, setParticipants] = useState([
     { id: 1, name: 'Alice Smith', email: 'alice@example.com', phone: '123-456-7890', type: 'NORMAL', ranking: 1 },
@@ -41,6 +43,10 @@ const CollegeEvent = () => {
   return (
     <div>
       <Navbar />
+      {console.log(iccode)}
+      {iccode && <div className="container">
+        <Link to={`/${iccode}`}>Home</Link>
+      </div>}
       <Container className="mt-4">
         <Row className="align-items-center">
           <Col md={4} className="event-details">

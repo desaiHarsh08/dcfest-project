@@ -1,5 +1,5 @@
 .carousel-item {
-    height: 400px;
+    height: 80vh;
     /* Set the desired height for the carousel */
     position: relative;
     /* Make position relative to contain absolutely positioned elements */
@@ -27,7 +27,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    /* background-color: rgba(0, 0, 0, 0.5); */
     /* Faded black background */
 }
 

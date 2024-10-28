@@ -18,28 +18,28 @@ const Navbar = () => {
       className="border-bottom shadow-sm"
     >
       <Container>
-        <Link to="/" className="navbar-brand ms-2 fs-5 font-bold">
+        <div className="navbar-brand ms-2 fs-5 font-bold">
           DC_FEST
-        </Link>
-        <RBNavbar.Toggle aria-controls="navbar-default" />
+        </div>
+        <RBNavbar.Toggle aria-controls="navbar-default" style={{background:"none"}}/>
         <RBNavbar.Collapse id="navbar-default">
-          <Nav className="ms-auto">
+          <Nav className="ms-auto text-text-decoration-none">
             {authContext?.user && authContext?.user?.type !== "COLLEGE_REPRESENTATIVE" && (
               <>
-                <Link to="/home" className="nav-link-custom">
+                <Link to="/home" className="nav-link-custom text-decoration-none">
                   Home
                 </Link>
-                <Link to="settings" className="nav-link-custom">
+                <Link to="settings" className="nav-link-custom text-decoration-none">
                   Settings
                 </Link>
               </>
             )}
             {!authContext?.user ? (
-              <Link to="/login" className="nav-link-custom">
+              <Link to="/login" className="nav-link-custom text-decoration-none">
                 Login
               </Link>
             ) : (
-              <Link to="/" className="nav-link-custom">
+              <Link to="/" className="nav-link-custom text-decoration-none">
                 Logout
               </Link>
             )}

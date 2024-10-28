@@ -28,6 +28,8 @@ public class CollegeDto {
 
     private String password;
 
+    private String rp;
+
     private String address;
 
     private boolean isDetailsUploaded = false;

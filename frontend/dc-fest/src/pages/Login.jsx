@@ -41,6 +41,7 @@ const Login = () => {
         navigate(`/home`, { replace: true });
       }
     } catch (error) {
+      alert("Please provide the valid credentials!");
       console.log(error);
     }
   };

@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { generateOTP, verifyOTP } from "../../services/auth-apis";
-import { Prev } from "react-bootstrap/esm/PageItem";
+import "../../styles/PhoneModal.css";
 
 const PhoneModal = ({
   phone,
-  verifyOtpStatus,
-  setVerifyOtpStatus,
-  isCollege,
   index,
+  users,
+  setUsers,
 }) => {
   const [otp, setOtp] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -30,40 +29,32 @@ const PhoneModal = ({
     try {
       const response = await verifyOTP({ phone, otp });
       console.log(response);
-      if (isCollege) {
-        setVerifyOtpStatus((prev) => ({
-          ...prev,
-          phoneCollege: true,
-        }));
-      } else if (index == 0) {
-        setVerifyOtpStatus((prev) => ({
-          ...prev,
-          phone1: true,
-        }));
-      } else {
-        setVerifyOtpStatus((prev) => ({
-          ...prev,
-          phone2: true,
-        }));
-      }
+      const newUsers = users.map((user, idx) => {
+        if (idx === index) {
+          return { ...user, phoneVerified: true }
+        }
+        return user;
+      })
+      setUsers(newUsers);
+      setShowModal(false);
     } catch (error) {
-      console.log("Unable to generate the OTP", error);
+      console.log("Unable to verify the OTP", error);
     }
   };
 
   return (
     <>
       <Button
-       disabled={(verifyOtpStatus?.phoneCollege|| verifyOtpStatus?.phone1 || verifyOtpStatus.phone2)}
+        disabled={users[index]?.phoneVerified}
         variant="outline-secondary"
         onClick={() => {
           setShowModal(true);
           handleGenerateOtp();
         }}
       >
-        {(verifyOtpStatus?.phoneCollege|| verifyOtpStatus?.phone1 || verifyOtpStatus.phone2)?"Verified! ":  "Generate OTP"}
+        {users[index]?.phoneVerified ? "Verified!" : "Get OTP"}
       </Button>
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Phone Verification</Modal.Title>
         </Modal.Header>
@@ -75,6 +66,7 @@ const PhoneModal = ({
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="Enter OTP"
+              className="otp-input"
             />
           </Form.Group>
         </Modal.Body>

@@ -233,41 +233,53 @@ const CollegeRepresentativePage = () => {
                                     <Card.Body>
                                         <Row className="mb-3">
                                             <Col xs={12} md={6}>
-                                                <Form.Group controlId="rep2Name">
+                                                <Form.Group controlId="rep1Name">
                                                     <Form.Label>Representative 2 Name</Form.Label>
                                                     <Form.Control
                                                         type="text"
-                                                        placeholder="Enter Representative 2 Name"
-                                                        name="rep2Name"
-                                                        value={formData.rep2Name}
+                                                        placeholder="Enter Representative 1 Name"
+                                                        name="rep1Name"
+                                                        value={formData.rep1Name}
                                                         onChange={handleChange}
+                                                        required
                                                     />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Please provide the representative's name.
+                                                    </Form.Control.Feedback>
                                                 </Form.Group>
                                             </Col>
                                             <Col xs={12} md={6}>
-                                                <Form.Group controlId="rep2Mobile">
-                                                    <Form.Label>Representative 2 Mobile No</Form.Label>
+                                                <Form.Group controlId="rep1Mobile">
+                                                    <Form.Label>Representative 1 Mobile No</Form.Label>
                                                     <Form.Control
                                                         type="tel"
-                                                        placeholder="Enter Representative 2 Mobile"
-                                                        name="rep2Mobile"
-                                                        value={formData.rep2Mobile}
+                                                        placeholder="Enter Representative 1 Mobile"
+                                                        name="rep1Mobile"
+                                                        value={formData.rep1Mobile}
                                                         onChange={handleChange}
+                                                        required
                                                     />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Please provide a valid mobile number.
+                                                    </Form.Control.Feedback>
                                                 </Form.Group>
                                             </Col>
                                         </Row>
                                         <Row className="mb-3">
                                             <Col xs={12}>
-                                                <Form.Group controlId="rep2Email">
-                                                    <Form.Label>Representative 2 Email</Form.Label>
+                                                <Form.Group controlId="rep1Email">
+                                                    <Form.Label>Representative 1 Email</Form.Label>
                                                     <Form.Control
                                                         type="email"
-                                                        placeholder="Enter Representative 2 Email"
-                                                        name="rep2Email"
-                                                        value={formData.rep2Email}
+                                                        placeholder="Enter Representative 1 Email"
+                                                        name="rep1Email"
+                                                        value={formData.rep1Email}
                                                         onChange={handleChange}
+                                                        required
                                                     />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Please provide a valid email address.
+                                                    </Form.Control.Feedback>
                                                 </Form.Group>
                                             </Col>
                                         </Row>
