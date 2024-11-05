@@ -1,0 +1,162 @@
+.main-header {
+    position: relative;
+    background: linear-gradient(135deg, #120E43 0%, #5E5E5E 100%);
+    color: #ffffff;
+    padding: 80px 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-top: 20px;
+    animation: fadeIn 1.5s ease-in-out;
+    overflow: hidden;
+}
+
+.main-header::before,
+.main-header::after {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+    animation: rotateBackground 20s linear infinite;
+}
+
+.main-header::after {
+    animation-direction: reverse;
+}
+
+.welcome-title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #FFDD00, #FF0076);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    animation: fadeInTitle 1.8s ease-in-out;
+}
+
+.welcome-description {
+    font-size: 1.3rem;
+    max-width: 800px;
+    margin: 0 auto 20px auto;
+    line-height: 1.6;
+    color: #DDDDDD;
+    animation: fadeInDescription 2.2s ease-in-out;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 12px 30px;
+    font-size: 1rem;
+    color: #ffffff;
+    background: linear-gradient(135deg, #FF0076, #FFDD00);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: fadeInButton 2.5s ease-in-out;
+}
+
+.cta-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 8px 20px rgba(255, 0, 118, 0.4);
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes rotateBackground {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeInTitle {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDescription {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInButton {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.about-section,
+.events-section,
+.experience-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: #DDDDDD;
+    animation: fadeInSection 2s ease-in-out;
+}
+
+.about-section h2,
+.events-section h2,
+.experience-section h2 {
+    font-size: 2rem;
+    color: #FFDD00;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.about-section p,
+.events-section p,
+.experience-section p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+@keyframes fadeInSection {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

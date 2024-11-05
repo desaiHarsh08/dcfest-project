@@ -1,29 +1,33 @@
-import React from 'react';
-import "../../styles/EventLists.css"; // Import custom CSS
-import StarEvents from './StarEvents';
-import PerformingArts from './PerformingArts';
-import ManagementEvents from './ManagementEvents';
-import VoicesInAction from './VoicesInAction';
-import FineArts from './FineArts';
-import LiteraryArts from './LiteraryArts';
-import GamingConsole from './GamingConsole';
-import IndoorSports from './IndoorSports';
-import OutdoorSports from './OutdoorSports';
+import React, { useEffect, useState } from 'react';
+import "../../styles/EventLists.css";
+import { fetchCategories } from '../../services/categories-api';
+import { useNavigate } from 'react-router-dom';
+import CategoryItem from './CategoryItem';
 
 const EventLists = () => {
-    
+    const [categories, setCategories] = useState([]);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchCategories()
+            .then((data) => {
+                setCategories(data)
+                console.log(data)
+            })
+
+            .catch((err) => {
+                console.log(err);
+                setError(err);
+            });
+    }, []);
     return (
-        <>
-            <StarEvents/>
-            {/* <PerformingArts/>
-            <ManagementEvents/>
-            <VoicesInAction/>
-            <FineArts/>
-            <LiteraryArts/>
-            <GamingConsole/>
-            <IndoorSports/>
-            <OutdoorSports/> */}
-        </>
+        <div className='mt-5'>
+            {categories?.map((category) => (
+                <CategoryItem key={category.name} categoryItem={category} />
+
+            ))}
+        </div>
     );
 };
 

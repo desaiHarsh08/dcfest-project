@@ -1,0 +1,70 @@
+/* EventLists.css */
+
+.event-heading {
+    font-size: 1.8rem;
+    /* Larger font for the category heading */
+    font-weight: bold;
+    /* Bold text */
+    color: #333;
+    /* Dark color for contrast */
+    border-bottom: 2px solid #ddd;
+    /* Underline effect */
+    margin-bottom: 1rem;
+    /* Spacing below the heading */
+    /* margin-top: 20%; */
+}
+
+.event-list-container-horizontal {
+    display: flex;
+    /* Use flexbox for horizontal layout */
+    overflow-x: auto;
+    /* Allow horizontal scrolling for smaller screens */
+    padding: 0 1rem;
+    /* Padding on the sides */
+    gap: 1rem;
+    /* Space between cards */
+}
+
+.event-card {
+    flex: 0 0 auto;
+    /* Prevent card from shrinking */
+    width: 200px;
+    /* Fixed width for cards */
+    border: 1px solid #ccc;
+    /* Light border around cards */
+    border-radius: 0.5rem;
+    /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+    transition: transform 0.2s;
+    /* Smooth scale on hover */
+}
+
+.event-card:hover {
+    transform: scale(1.05);
+    /* Scale up on hover */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    /* Deeper shadow on hover */
+}
+
+.event-img {
+    height: 150px;
+    /* Fixed height for images */
+    object-fit: cover;
+    /* Cover to maintain aspect ratio */
+    border-top-left-radius: 0.5rem;
+    /* Round top corners */
+    border-top-right-radius: 0.5rem;
+    /* Round top corners */
+}
+
+.event-title {
+    font-size: 1.2rem;
+    /* Font size for event title */
+    color: #333;
+    /* Dark color for title */
+    text-align: center;
+    /* Center align the title */
+    margin: 0.5rem 0;
+    /* Margin above and below */
+}

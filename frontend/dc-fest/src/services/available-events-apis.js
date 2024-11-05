@@ -15,3 +15,10 @@ export const fetchAvailableEvents = async () => {
     console.log(response)
     return response.data;
 };
+export const fetchAvailableEventsBySlug = async (slug) => {
+    const response = await API.get(`/api/available-events/slug/${slug}`, {
+        withCredentials: true
+    });
+    console.log(response)
+    return response.data;
+};

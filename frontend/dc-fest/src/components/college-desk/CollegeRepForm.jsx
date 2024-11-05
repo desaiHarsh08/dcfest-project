@@ -67,14 +67,6 @@ const CollegeRepForm = ({
                   required
                 />
               </Col>
-              <Col md={6} xs={12}>
-                <PhoneModal
-                  index={index}
-                  phone={user?.phone}
-                  users={users}
-                  setUsers={setUsers}
-                />
-              </Col>
             </Col>
           </Form.Group>
         </Col>
@@ -92,14 +84,14 @@ const CollegeRepForm = ({
                   required
                 />
               </Col>
-              {/* <Col md={6} xs={12}>
+              <Col md={6} xs={12}>
                 <PhoneModal
                   index={index}
                   phone={user?.whatsappNumber}
                   users={users}
                   setUsers={setUsers}
                 />
-              </Col> */}
+              </Col>
             </Col>
           </Form.Group>
         </Col>

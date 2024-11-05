@@ -35,7 +35,7 @@ const Navbar = () => {
               </>
             )}
             {!authContext?.user ? (
-              <Link to="/login" className="nav-link-custom text-decoration-none">
+              <Link to="/login" className="fs-4 nav-link-custom text-decoration-none">
                 Login
               </Link>
             ) : (

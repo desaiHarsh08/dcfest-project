@@ -66,7 +66,7 @@ const HomeDesk = () => {
         {
             title: "Scoring Department",
             icon: <FaClipboardCheck />,
-            bgColor: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
+            bgColor: 'orange',
             imgSrc: scoringDepartmentImage,
             description: "Information on scoring and results.",
             link: "scoring-department"
@@ -89,7 +89,7 @@ const HomeDesk = () => {
                                         {card.icon}
                                     </div>
                                     <Card.Title className="card-title">{card.title}</Card.Title>
-                                    <Card.Text className="card-text text-white">{card.description}</Card.Text>
+                                    <Card.Text className="card-text text-dark">{card.description}</Card.Text>
                                 </Card.Body>
                             </Card>
                         </Link>

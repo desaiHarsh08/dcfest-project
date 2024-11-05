@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import { categories } from './data.js';
 
 (async () => {
-    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZXNhaWhhcnNoaXQ3MjJAZ21haWwuY29tIiwiaWF0IjoxNzMwMDQzNzQxLCJleHAiOjE3MzAxMzAxNDF9.3B5o2URTWtYsTkZq4N07Y3hu1rAQuHUU_wlZQw5ld3dtRv99dU019O0x-osm5TiL0e_AcGyu2MxeJKr5CLatyg";
+    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZXNhaWhhcnNoaXQ3MjJAZ21haWwuY29tIiwiaWF0IjoxNzMwODExNzU5LCJleHAiOjE3MzA4OTgxNTl9.imCvSq1yMsxBzF7Pi5FwGtNjru6i6Jl00a8hbSKFKRbtU_Q67e8YLfnJ68R14hYswcBgzdB1tgQYWKWHmXmELw";
 
     console.log("Making request!\n");
 

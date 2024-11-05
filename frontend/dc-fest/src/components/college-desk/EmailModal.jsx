@@ -2,15 +2,10 @@ import { useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { generateOTP, verifyOTP } from "../../services/auth-apis";
 
-const EmailModal = ({
-  email,
-  index,
-  users,
-  setUsers,
-}) => {
+const EmailModal = ({ email, index, users, setUsers }) => {
   useEffect(() => {
-    console.log(email);
-  }, [email]);
+    setOtp("");
+  }, []);
 
   const [otp, setOtp] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -36,12 +31,12 @@ const EmailModal = ({
       console.log(response);
       const newUsers = users.map((user, idx) => {
         if (idx === index) {
-          return { ...user, emailVerified: true }
+          return { ...user, emailVerified: true };
         }
         return user;
-      })
+      });
       setUsers(newUsers);
-      setShowModal(false)
+      setShowModal(false);
     } catch (error) {
       console.log("Unable to generate the OTP", error);
     }
@@ -56,7 +51,11 @@ const EmailModal = ({
           handleGenerateOtp();
         }}
       >
-        {users[index]?.emailVerified ? "Verified! " : (isLoading ? "Sending..." : "Get OTP")}
+        {users[index]?.emailVerified
+          ? "Verified! "
+          : isLoading
+          ? "Sending..."
+          : "Get OTP"}
       </Button>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -70,6 +69,7 @@ const EmailModal = ({
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="Enter OTP"
+              autoFocus
             />
           </Form.Group>
         </Modal.Body>

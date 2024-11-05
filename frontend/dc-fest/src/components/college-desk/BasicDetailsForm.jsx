@@ -6,8 +6,14 @@ import EmailModal from "./EmailModal";
 import PhoneModal from "./PhoneModal";
 import { createUser } from "../../services/auth-apis";
 import { updateCollege } from "../../services/college-apis";
+import { fetchUserByEmail } from "../../services/user-api";
 
-const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswordForm }) => {
+const BasicDetailsForm = ({
+  college,
+  setCollege,
+  getCollege,
+  setShowResetPasswordForm,
+}) => {
   useEffect(() => {
     console.log(college);
   }, [college]);
@@ -84,9 +90,49 @@ const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswor
     e.preventDefault();
     console.log("in submit, college:", college);
     console.log("in submit, college:", users);
-    if (users.some(user => (user.emailVerified === false)) || !college) {
+    if (users.some((user) => user.emailVerified === false) || !college) {
       return;
     }
+
+    let uniqueUserEmails = false;
+    // Both the users should have unique emails
+    if (
+      users[0].email.trim().toLowerCase() == users[1].email.trim().toLowerCase()
+    ) {
+      uniqueUserEmails = true;
+      alert("College representative should have similar email addresses");
+
+      return;
+    }
+    // Check from db
+    for (let i = 0; i < users.length; i++) {
+      let email = users[i].email;
+      try {
+        const response = await fetchUserByEmail(email);
+        console.log(response);
+        uniqueUserEmails = false;
+        setUsers(
+          users.map((user) => {
+            if (user.email === email) {
+              return { ...user, emailVerified: false };
+            }
+            return user;
+          })
+        );
+        alert(`Email already exist: ${email}`);
+        break;
+      } catch (error) {
+        console.log(error);
+        if (error.response.status === 404) {
+          uniqueUserEmails = true;
+          console.log(email);
+        }
+      }
+    }
+    if (!uniqueUserEmails) {
+      return;
+    }
+
     try {
       await updateCollegeDetails();
       for (let i = 0; i < users.length; i++) {
@@ -112,9 +158,7 @@ const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswor
   return (
     <div className="container">
       <Card className="shadow-lg p-4 mt-5 form-card overflow-auto">
-        <h2 className="text-center mb-4 form-title">
-          College Registration
-        </h2>
+        <h2 className="text-center mb-4 form-title">College Registration</h2>
         <Form onSubmit={handleSubmit}>
           <h4 className="mb-3 section-title">College Details</h4>
           <Form.Group controlId="collegeName" className="mb-3">
@@ -183,30 +227,31 @@ const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswor
                   required
                 />
               </Col>
-
             </Row>
           </Form.Group>
 
           {/* College Representative Details 1 */}
-          <h4 className="mt-4 mb-3 section-title">
-            College Representative 1
-          </h4>
+          <h4 className="mt-4 mb-3 section-title">College Representative 1</h4>
           {users.map((user, index) => (
             <>
-              {index === 1 && <h4 className="mt-4 mb-3 section-title">College Representative 2</h4> }
-            <CollegeRepForm
-              key={`user-${index}`}
-              onChange={(e) => handleUserChange(e, index)}
-              index={index}
-              user={user}
-              users={users}
-              setUsers={setUsers}
-            />
+              {index === 1 && (
+                <h4 className="mt-4 mb-3 section-title">
+                  College Representative 2
+                </h4>
+              )}
+              <CollegeRepForm
+                key={`user-${index}`}
+                onChange={(e) => handleUserChange(e, index)}
+                index={index}
+                user={user}
+                users={users}
+                setUsers={setUsers}
+              />
             </>
           ))}
 
           <Button
-            disabled={users.some(user => (user.emailVerified === false))}
+            disabled={users.some((user) => user.emailVerified === false)}
             variant="primary"
             type="submit"
             className="mt-4"

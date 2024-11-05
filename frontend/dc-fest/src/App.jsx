@@ -33,11 +33,17 @@ import CollegeDeskLayout from "./components/layout/CollegeDeskLayout";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CollegeGreetings from "./pages/CollegeGreetings";
 import EventPage from "./pages/Eventpage";
+import RootEvent from "./pages/RootEvent";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Root />,
+    element: <Outlet />,
+    children: [
+      { path: "", element: <Root /> },
+
+      { path: "event/:eventSlug", element: <RootEvent /> },
+    ],
   },
   {
     path: "/reset-password",

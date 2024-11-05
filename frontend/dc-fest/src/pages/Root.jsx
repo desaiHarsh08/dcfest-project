@@ -7,7 +7,7 @@ const Root = () => {
   return (
     <div className='vh-100'>
       <Navbar />
-      <div style={{ maxHeight: "70vh" }}>
+      <div style={{ }}>
         <AnimatedCarousel />
       </div>
       <EventLists/>

@@ -42,7 +42,12 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequest -> authorizeRequest
-                        .requestMatchers("/auth/**", "/api/colleges/**").permitAll()
+                        .requestMatchers(
+                                "/auth/**",
+                                "/api/categories/**",
+                                "/api/colleges/**",
+                                "/api/available-events/**"
+                        ).permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(this.jwtAuthenticationEntryPoint))

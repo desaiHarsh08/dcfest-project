@@ -1,7 +1,10 @@
 package com.dcfest.controllers;
 
+import com.dcfest.notifications.whatsapp.WhatsAppService;
 import jakarta.servlet.http.Cookie;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.modelmapper.ModelMapper;
@@ -41,6 +44,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    @Autowired
+    private WhatsAppService whatsAppService;
 
     @Autowired
     private OtpRepository otpRepository;
@@ -234,7 +240,7 @@ public class AuthController {
             Long otp = generateRandomOtp();
 
             // Create a new OtpModel instance and save it in the repository
-            OtpModel otpModel = new OtpModel(null, otp, otpRequest.getEmail(), null);
+            OtpModel otpModel = new OtpModel(null, otp, null, otpRequest.getPhone());
 
             otpRepository.save(otpModel);
 
@@ -279,9 +285,16 @@ public class AuthController {
         if (otpRequest.getEmail() != null) { // Send email
             emailServices.sendSimpleMessage(otpRequest.getEmail(), subject, body);
         } else if (otpRequest.getPhone() != null) { // Send phone
-            // Implement SMS sending logic here if needed
-            // For example: sendSms(otpRequest.getPhone(), otp);
+            List<String> messageArr = new ArrayList<>();
+            messageArr.add(otp.toString());
+            this.whatsAppService.sendWhatsAppMessage(
+                    otpRequest.getPhone(),
+                    messageArr,
+                    "logincode"
+            );
         }
     }
+
+
 
 }
