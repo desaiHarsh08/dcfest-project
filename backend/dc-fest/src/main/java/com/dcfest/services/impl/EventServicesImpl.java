@@ -96,15 +96,15 @@ public class EventServicesImpl implements EventServices {
     public boolean deleteEvent(Long id) {
         EventDto eventDto = this.getEventById(id);
         // Delete the judges
-        for (JudgeDto judgeDto : eventDto.getJudges()) {
-            this.judgeServices.deleteJudge(judgeDto.getId());
-        }
-        // Delete the participants
-        this.participantServices.deleteParticipantsByEventId(id);
-        // Delete the event
-        this.eventRepository.deleteById(id);
+//        for (JudgeDto judgeDto : eventDto.getJudges()) {
+//            this.judgeServices.deleteJudge(judgeDto.getId());
+//        }
+//        // Delete the participants
+//        this.participantServices.deleteParticipantsByEventId(id);
+//        // Delete the event
+//        this.eventRepository.deleteById(id);
 
-        return true;
+        return false;
     }
 
     @Override
@@ -120,8 +120,6 @@ public class EventServicesImpl implements EventServices {
 
         EventDto eventDto = this.modelMapper.map(eventModel, EventDto.class);
         eventDto.setAvailableEventId(eventModel.getAvailableEvent().getId());
-        eventDto.setJudges(this.judgeServices.getJudgesByEventId(eventModel.getId()));
-        eventDto.setParticipants(this.participantServices.getParticipantByEventId(1, eventModel.getId()));
 
         return eventDto;
     }

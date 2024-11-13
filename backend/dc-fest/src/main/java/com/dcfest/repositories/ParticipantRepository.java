@@ -18,8 +18,6 @@ import com.dcfest.models.UserModel;
 @Repository
 public interface ParticipantRepository extends JpaRepository<ParticipantModel, Long> {
 
-    Optional<ParticipantModel> findByUser(UserModel user);
-
     Page<ParticipantModel> findByCollege(Pageable pageable, CollegeModel college);
 
     Page<ParticipantModel> findByIsPresent(Pageable pageable, boolean isPresent);

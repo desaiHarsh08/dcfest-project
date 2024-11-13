@@ -30,12 +30,11 @@ public class EventRuleModel {
     private Long id;
 
     @Column(nullable = false)
-    private String type = RuleType.MIN_PARTICIPANTS.name();
-
-    @Column(nullable = false)
-    private String description;
-
     private String value;
+
+    @ManyToOne(targetEntity = EventRuleTemplateModel.class)
+    @JoinColumn(name = "event_rule_template_id_fk", nullable = false)
+    private EventRuleTemplateModel eventRuleTemplate;
 
     @ManyToOne(targetEntity = AvailableEventModel.class)
     @JoinColumn(name = "available_event_id_fk", nullable = false)

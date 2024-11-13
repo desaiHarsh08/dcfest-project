@@ -10,14 +10,10 @@ public interface VenueServices {
 
     List<VenueDto> getAllVenues();
 
-    List<VenueDto> getVenuesByAvailableEventId(Long availableEventId);
-
     VenueDto getVenueById(Long id);
 
     VenueDto updateVenue(VenueDto venueDto);
 
     boolean deleteVenue(Long id);
-
-    void deleteVenuesByAvailableEventId(Long availableEventId);
 
 }

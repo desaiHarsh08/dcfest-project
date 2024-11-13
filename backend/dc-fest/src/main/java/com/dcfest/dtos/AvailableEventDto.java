@@ -24,17 +24,13 @@ public class AvailableEventDto {
 
     private String description;
 
-    private String type = EventType.INDIVIDUAL.name();
-    
-    private String image;
+    private String slug;
+
+    private EventType type = EventType.INDIVIDUAL;
 
     private Long eventCategoryId;
 
     private List<EventRuleDto> eventRules = new ArrayList<>();
-
-    private String slug;
-
-    private List<VenueDto> venues = new ArrayList<>();
 
     private List<RoundDto> rounds = new ArrayList<>();
 

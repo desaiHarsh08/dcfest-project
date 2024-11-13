@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import { categories } from './data.js';
 
 (async () => {
-    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZXNhaWhhcnNoaXQ3MjJAZ21haWwuY29tIiwiaWF0IjoxNzMwODExNzU5LCJleHAiOjE3MzA4OTgxNTl9.imCvSq1yMsxBzF7Pi5FwGtNjru6i6Jl00a8hbSKFKRbtU_Q67e8YLfnJ68R14hYswcBgzdB1tgQYWKWHmXmELw";
+    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZXNhaWhhcnNoaXQ3MjJAZ21haWwuY29tIiwiaWF0IjoxNzMwODE4MjgxLCJleHAiOjE3MzA5MDQ2ODF9.4UR1rONjxFcYuIvtQbLA0lCkJtE_cfHWjxqfGQtaVwEhh9-znYcmV6AYqbxEStNElj550Bup7i4sXo3j4s4t_w";
 
     console.log("Making request!\n");
 
@@ -10,7 +10,7 @@ import { categories } from './data.js';
         console.log(`Sending category: ${categories[i].name}`);
 
         try {
-            const response = await fetch(`http://localhost:5003/api/categories`, {
+            const response = await fetch(`http://13.235.168.107:5006/api/categories`, {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",

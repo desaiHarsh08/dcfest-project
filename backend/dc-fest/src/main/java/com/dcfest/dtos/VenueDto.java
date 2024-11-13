@@ -17,7 +17,7 @@ public class VenueDto {
 
     private String name;
 
-    private Long availableEventId;
+    private Long roundId;
 
     private LocalDateTime start;
 

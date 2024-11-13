@@ -60,27 +60,20 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         // Save the available_event
         availableEventModel = this.availableEventRepository.save(availableEventModel);
 
-        // Save the event_rules
+        // Create the event_rules
         for (EventRuleDto eventRuleDto : availableEventDto.getEventRules()) {
             eventRuleDto.setAvailableEventId(availableEventModel.getId());
             this.eventRuleServices.createEventRule(eventRuleDto);
         }
 
-        // Save the venue
-        for (VenueDto venueDto : availableEventDto.getVenues()) {
-            venueDto.setAvailableEventId(availableEventModel.getId());
-            this.venueServices.createVenue(venueDto);
-        }
-
-        // Create the event
-        EventDto eventDto = new EventDto();
-        eventDto.setAvailableEventId(availableEventModel.getId());
-        this.eventServices.createEvent(eventDto);
-
+        // Create the rounds
         for (RoundDto roundDto : availableEventDto.getRounds()) {
             roundDto.setAvailableEventId(availableEventModel.getId());
             this.roundServices.createRound(roundDto);
         }
+
+        // Create the event
+        this.eventServices.createEvent(new EventDto(null, availableEventModel.getId()));
 
         return this.availableEventModelToDto(availableEventModel);
     }
@@ -143,10 +136,6 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         for (EventRuleDto eventRuleDto : availableEventDto.getEventRules()) {
             this.eventRuleServices.updateEventRule(eventRuleDto);
         }
-        // Update the venue
-        for (VenueDto venueDto : availableEventDto.getVenues()) {
-            this.venueServices.updateVenue(venueDto);
-        }
         // Update the round
         for (RoundDto roundDto : availableEventDto.getRounds()) {
             this.roundServices.updateRound(roundDto);
@@ -171,8 +160,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         for (RoundDto roundDto : availableEventDto.getRounds()) {
             this.roundServices.deleteRound(roundDto.getId());
         }
-        // Delete the venues
-        this.venueServices.deleteVenuesByAvailableEventId(id);
+
         // Delete the available_event
         this.availableEventRepository.deleteById(id);
 
@@ -196,9 +184,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         }
         AvailableEventDto availableEventDto = this.modelMapper.map(availableEventModel, AvailableEventDto.class);
         availableEventDto.setEventCategoryId(availableEventModel.getEventCategory().getId());
-        availableEventDto
-                .setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
-        availableEventDto.setVenues(this.venueServices.getVenuesByAvailableEventId(availableEventModel.getId()));
+        availableEventDto.setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setRounds(this.roundServices.getRoundsByAvailableEventId(availableEventModel.getId()));
 
         return availableEventDto;

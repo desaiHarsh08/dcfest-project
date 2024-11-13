@@ -1,5 +1,6 @@
 package com.dcfest.dtos;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,20 +21,20 @@ public class CollegeDto {
 
     private String email;
 
+    private String address;
+
+    @Column(nullable = false, unique = true)
     private String icCode;
+
+    @Column(nullable = false)
+    private String password;
+
+    private boolean isDetailsUploaded = false;
 
     private String phone;
 
     private Long points;
 
-    private String password;
-
-    private String rp;
-
-    private String address;
-
-    private boolean isDetailsUploaded = false;
-
-    private List<CollegeParticipationDto> participations = new ArrayList<>();
+    private List<CollegeRepresentativeDto> representatives = new ArrayList<>();
 
 }

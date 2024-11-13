@@ -32,15 +32,21 @@ public class ParticipantModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String type;
-
     private boolean isPresent;
 
     private Long points;
 
-    @OneToOne(targetEntity = UserModel.class)
-    @JoinColumn(name = "user_id_fk", nullable = false)
-    private UserModel user;
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String whatsappNumber;
+
+    @Column(name = "group_type")
+    private String group;
 
     @Column(nullable = false, unique = true)
     private String qrcode;

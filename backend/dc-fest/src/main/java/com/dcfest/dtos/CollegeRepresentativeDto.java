@@ -1,10 +1,5 @@
 package com.dcfest.dtos;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.dcfest.utils.PageResponse;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,10 +9,18 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventDto {
+public class CollegeRepresentativeDto {
 
     private Long id;
 
-    private Long availableEventId;
+    private Long collegeId;
+
+    private String name;
+
+    private String email;
+
+    private String phone;
+
+    private String whatsappNumber;
 
 }

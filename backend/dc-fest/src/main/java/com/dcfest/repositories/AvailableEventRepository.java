@@ -3,6 +3,7 @@ package com.dcfest.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import com.dcfest.constants.EventType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +17,7 @@ public interface AvailableEventRepository extends JpaRepository<AvailableEventMo
 
     Optional<AvailableEventModel> findByTitle(String title);
 
-    List<AvailableEventModel> findByType(String type);
+    List<AvailableEventModel> findByType(EventType type);
 
     Optional<AvailableEventModel> findBySlug(String slug);
 

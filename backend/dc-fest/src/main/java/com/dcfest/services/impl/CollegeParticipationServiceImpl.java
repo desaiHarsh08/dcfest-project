@@ -27,13 +27,11 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
     @Override
     public CollegeParticipationDto createParticipation(CollegeParticipationDto participationDto) {
-        CollegeModel collegeModel = new CollegeModel();
-        collegeModel.setId(participationDto.getCollegeId());
-        AvailableEventModel availableEventModel = new AvailableEventModel();
-        availableEventModel.setId(participationDto.getAvailableEventId());
+        // Create the college's participation
         CollegeParticipationModel collegeParticipationModel = new CollegeParticipationModel();
-        collegeParticipationModel.setAvailableEvent(availableEventModel);
-        collegeParticipationModel.setCollege(collegeModel);
+        collegeParticipationModel.setAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
+        collegeParticipationModel.setCollege(new CollegeModel(participationDto.getCollegeId()));
+
         return this.collegeParticipationModelToDto(this.participationRepository.save(collegeParticipationModel));
     }
 

@@ -41,14 +41,9 @@ public class UserServicesImpl implements UserServices {
     @Override
     public UserDto creatUser(UserDto userDto) {
         CollegeModel collegeModel = new CollegeModel();
-        if (userDto.getCollegeId() != null) {
-            collegeModel.setId(userDto.getCollegeId());
-        } else {
-            collegeModel = null;
-        }
+
         // Create the user
         UserModel userModel = this.modelMapper.map(userDto, UserModel.class);
-        userModel.setCollege(collegeModel);
         // Encrypt the raw password
         userModel.setPassword(this.bCryptPasswordEncoder.encode(userDto.getPassword()));
         // Save the user
@@ -132,31 +127,6 @@ public class UserServicesImpl implements UserServices {
     }
 
     @Override
-    public PageResponse<UserDto> getUsersByCollegeId(int pageNumber, Long collegeId) {
-        if (pageNumber < 1) {
-            throw new IllegalArgumentException("Page no. should always be greater than 0.");
-        }
-
-        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE);
-
-        CollegeModel collegeModel = new CollegeModel();
-        collegeModel.setId(collegeId);
-
-        Page<UserModel> pageUser = this.userRepository.findByCollege(pageable, collegeModel);
-
-        List<UserModel> userModels = pageUser.getContent();
-
-        List<UserDto> userDtos = userModels.stream().map(this::userModelToDto).collect(Collectors.toList());
-
-        return new PageResponse<>(
-                pageNumber,
-                PAGE_SIZE,
-                pageUser.getTotalPages(),
-                pageUser.getTotalElements(),
-                userDtos);
-    }
-
-    @Override
     public UserDto getUserByEmail(String email) {
         UserModel foundUserModel = this.userRepository.findByEmail(email).orElseThrow(
                 () -> new ResourceNotFoundException("No `USER` exist for email: " + email));
@@ -214,9 +184,7 @@ public class UserServicesImpl implements UserServices {
             return null;
         }
         UserDto userDto = this.modelMapper.map(userModel, UserDto.class);
-        if (userModel.getCollege() != null) {
-            userDto.setCollegeId(userModel.getCollege().getId());
-        }
+
 
         return userDto;
     }

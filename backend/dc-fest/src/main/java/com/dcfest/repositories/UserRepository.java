@@ -22,8 +22,6 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     Page<UserModel> findByType(Pageable pageable, String type);
 
-    Page<UserModel> findByCollege(Pageable pageable, CollegeModel college);
-
     @Modifying
     @Transactional
     @Query("DELETE FROM UserModel u WHERE u.college.id = :collegeId")

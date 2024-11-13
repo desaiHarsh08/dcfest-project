@@ -12,10 +12,6 @@ public interface CollegeServices {
 
     CollegeDto getCollegeById(Long id);
 
-    CollegeDto getCollegeByEmail(String email);
-
-    CollegeDto getCollegeByName(String name);
-
     CollegeDto getCollegeByIcCode(String icCode);
 
     List<CollegeDto> getCollegeRankings();

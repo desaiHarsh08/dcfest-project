@@ -46,10 +46,6 @@ public class UserModel {
 
     private String type = UserType.PARTICIPANT.name();
 
-    @ManyToOne(targetEntity = CollegeModel.class)
-    @JoinColumn(name = "college_id_fk", nullable = true)
-    private CollegeModel college;
-
     private boolean isDisabled;
 
 }

@@ -11,8 +11,6 @@ public interface ParticipantServices {
 
     ParticipantDto getParticipantById(Long id);
 
-    ParticipantDto getParticipantByUserId(Long userId);
-
     PageResponse<ParticipantDto> getParticipantByCollegeId(int pageNumber, Long collegeId);
 
     PageResponse<ParticipantDto> getParticipantByIsPresent(int pageNumber, boolean isPresent);

@@ -5,14 +5,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import com.dcfest.dtos.*;
+import com.dcfest.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.dcfest.dtos.CollegeDto;
-import com.dcfest.dtos.CollegeParticipationDto;
-import com.dcfest.dtos.ParticipantDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.CollegeModel;
 import com.dcfest.models.CollegeParticipationModel;
@@ -21,12 +20,7 @@ import com.dcfest.notifications.email.EmailServices;
 import com.dcfest.repositories.CollegeRepository;
 import com.dcfest.repositories.ParticipantRepository;
 import com.dcfest.repositories.UserRepository;
-import com.dcfest.services.CollegeParticipationService;
-import com.dcfest.services.CollegeServices;
-import com.dcfest.services.ParticipantServices;
-import com.dcfest.services.UserServices;
 import com.dcfest.utils.PageResponse;
-import com.dcfest.dtos.UserDto;
 import com.dcfest.models.UserModel;
 
 @Service
@@ -59,35 +53,29 @@ public class CollegeServicesImpl implements CollegeServices {
     @Autowired
     private CollegeParticipationService collegeParticipationService;
 
+    @Autowired
+    private CollegeRepresentativeService collegeRepresentativeService;
+
     @Override
     public CollegeDto createCollege(CollegeDto collegeDto) {
         // Create the college
         CollegeModel collegeModel = this.modelMapper.map(collegeDto, CollegeModel.class);
         // Encrypt the raw password
         collegeModel.setPassword(this.bCryptPasswordEncoder.encode(collegeDto.getPassword()));
-        collegeModel.setRp(collegeDto.getPassword());
         // Save the college
         collegeModel = this.collegeRepository.save(collegeModel);
-        // Notify the college
-        String subject = "Confirmation of Participation for Umang DCFest 2024";
-        String body = getMailBody(collegeDto); // Generate the mail body
+        // Create the college representative
+        for (CollegeRepresentativeDto collegeRepresentativeDto: collegeDto.getRepresentatives()) {
+            collegeRepresentativeDto.setCollegeId(collegeModel.getId());
+            this.collegeRepresentativeService.createRepresentative(collegeRepresentativeDto);
+        }
 
         // Send email to the college
         if (collegeDto.getEmail() != null) {
-            this.emailServices.sendSimpleMessage(collegeDto.getEmail(), subject, body);
+            this.emailServices.sendCollegeRegistrationEmail(collegeDto.getEmail(), collegeDto.getName());
         }
 
         return this.collegeModelToDto(collegeModel);
-    }
-
-    private String getMailBody(CollegeDto collegeDto) {
-        // Generate a customized email body
-        return "Dear " + collegeDto.getName() + ",\n\n" +
-                "We are pleased to inform you that your participation in the Umang DCFest 2024 has been successfully registered. "
-                +
-                "We look forward to seeing you at the event.\n\n" +
-                "If you have any questions, feel free to reach out to us.\n\n" +
-                "Best regards,\nThe Umang DCFest Team";
     }
 
     @Override
@@ -105,22 +93,6 @@ public class CollegeServicesImpl implements CollegeServices {
     public CollegeDto getCollegeById(Long id) {
         CollegeModel foundCollege = this.collegeRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No `COLLEGE` exist for id: " + id));
-
-        return this.collegeModelToDto(foundCollege);
-    }
-
-    @Override
-    public CollegeDto getCollegeByEmail(String email) {
-        CollegeModel foundCollege = this.collegeRepository.findByEmail(email).orElseThrow(
-                () -> new ResourceNotFoundException("No `COLLEGE` exist for email: " + email));
-
-        return this.collegeModelToDto(foundCollege);
-    }
-
-    @Override
-    public CollegeDto getCollegeByName(String name) {
-        CollegeModel foundCollege = this.collegeRepository.findByName(name).orElseThrow(
-                () -> new ResourceNotFoundException("No `COLLEGE` exist for name: " + name));
 
         return this.collegeModelToDto(foundCollege);
     }
@@ -170,21 +142,8 @@ public class CollegeServicesImpl implements CollegeServices {
         String encryptedPassword = this.bCryptPasswordEncoder.encode(collegeDto.getPassword());
         // Update the password
         foundCollegeModel.setPassword(encryptedPassword);
-        foundCollegeModel.setRp(collegeDto.getPassword());
         // Save the changes
         foundCollegeModel = this.collegeRepository.save(foundCollegeModel);
-        // Updated the password for the college_representative
-        PageResponse<UserDto> collegeRepresentatives = this.userServices.getUsersByCollegeId(1, foundCollegeModel.getId());
-        if (!collegeRepresentatives.getContent().isEmpty()) {
-            for (UserDto collegeRepresentative: collegeRepresentatives.getContent()) {
-                // Update the raw password
-                UserModel userModel = this.modelMapper.map(collegeRepresentative, UserModel.class);
-                userModel.setCollege(foundCollegeModel);
-                userModel.setPassword(encryptedPassword);
-                this.userRepository.save(userModel);
-            }
-
-        }
 
         return this.collegeModelToDto(foundCollegeModel);
     }
@@ -224,7 +183,7 @@ public class CollegeServicesImpl implements CollegeServices {
             return null;
         }
         CollegeDto collegeDto = this.modelMapper.map(collegeModel, CollegeDto.class);
-        collegeDto.setParticipations(this.collegeParticipationService.getByCollege(collegeModel.getId()));
+        collegeDto.setRepresentatives(this.collegeRepresentativeService.getRepresentativesByCollege(collegeModel.getId()));
 
         return collegeDto;
     }

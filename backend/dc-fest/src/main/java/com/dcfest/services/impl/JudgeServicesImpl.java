@@ -72,41 +72,41 @@ public class JudgeServicesImpl implements JudgeServices {
 
         // Notify the user
         String subject = "todo";
-        String body = this.generateJudgeEmailBody(userModel, eventModel);
+//        String body = this.generateJudgeEmailBody(userModel, eventModel);
 
-        this.emailServices.sendSimpleMessage(userModel.getEmail(), subject, body);
+//        this.emailServices.sendSimpleMessage(userModel.getEmail(), subject, body);
 
         return this.judgeModelToDto(judgeModel);
     }
 
     private String generateJudgeEmailBody(UserModel userModel, EventModel eventModel) {
         // Fetch venue details for the event
-        List<VenueModel> venueModels = this.venueRepository.findByAvailableEvent(eventModel.getAvailableEvent());
+//        List<VenueModel> venueModels = this.venueRepository.findByAvailableEvent(eventModel.getAvailableEvent());
+//
+//        // Start constructing the email body
+//        StringBuilder emailBody = new StringBuilder();
+//        emailBody.append("<p>Dear ").append(userModel.getName()).append(",</p>")
+//                .append("<p>We are pleased to inform you that you have been appointed as a judge for the event <strong>")
+//                .append(eventModel.getAvailableEvent().getTitle()).append("</strong> as part of Umang DCFest 2024.</p>")
+//                .append("<p><strong>Event Details:</strong></p>")
+//                .append("<ul>")
+//                .append("<li><strong>Event Name:</strong> ").append(eventModel.getAvailableEvent().getTitle())
+//                .append("</li>");
+//
+//        // Add venue details for each venue
+//        for (VenueModel venueModel : venueModels) {
+//            emailBody.append("<li><strong>Venue:</strong> ").append(venueModel.getName()).append("</li>")
+//                    .append("<li><strong>Date & Time:</strong> ")
+//                    .append(venueModel.getStart().toLocalDate()).append(" at ")
+//                    .append(venueModel.getStart().toLocalTime()).append(" to ")
+//                    .append(venueModel.getEnd().toLocalTime()).append("</li>");
+//        }
+//
+//        emailBody.append("</ul>")
+//                .append("<p>We look forward to your valuable participation. Please feel free to contact us if you have any questions.</p>")
+//                .append("<p>Best regards,<br>The Umang DCFest Team</p>");
 
-        // Start constructing the email body
-        StringBuilder emailBody = new StringBuilder();
-        emailBody.append("<p>Dear ").append(userModel.getName()).append(",</p>")
-                .append("<p>We are pleased to inform you that you have been appointed as a judge for the event <strong>")
-                .append(eventModel.getAvailableEvent().getTitle()).append("</strong> as part of Umang DCFest 2024.</p>")
-                .append("<p><strong>Event Details:</strong></p>")
-                .append("<ul>")
-                .append("<li><strong>Event Name:</strong> ").append(eventModel.getAvailableEvent().getTitle())
-                .append("</li>");
-
-        // Add venue details for each venue
-        for (VenueModel venueModel : venueModels) {
-            emailBody.append("<li><strong>Venue:</strong> ").append(venueModel.getName()).append("</li>")
-                    .append("<li><strong>Date & Time:</strong> ")
-                    .append(venueModel.getStart().toLocalDate()).append(" at ")
-                    .append(venueModel.getStart().toLocalTime()).append(" to ")
-                    .append(venueModel.getEnd().toLocalTime()).append("</li>");
-        }
-
-        emailBody.append("</ul>")
-                .append("<p>We look forward to your valuable participation. Please feel free to contact us if you have any questions.</p>")
-                .append("<p>Best regards,<br>The Umang DCFest Team</p>");
-
-        return emailBody.toString();
+        return null;
     }
 
     private UserModel getUserModel(UserDto userDto) {
@@ -114,15 +114,9 @@ public class JudgeServicesImpl implements JudgeServices {
         if (userModel != null) {
             return userModel;
         }
-        CollegeModel collegeModel = new CollegeModel();
-        if (userDto.getCollegeId() != null) {
-            collegeModel.setId(userDto.getCollegeId());
-        } else {
-            collegeModel = null;
-        }
         // Create the user
         userModel = this.modelMapper.map(userDto, UserModel.class);
-        userModel.setCollege(collegeModel);
+
         // Save the user
         return this.userRepository.save(userModel);
     }
@@ -196,9 +190,6 @@ public class JudgeServicesImpl implements JudgeServices {
             return null;
         }
         UserDto userDto = this.modelMapper.map(userModel, UserDto.class);
-        if (userModel.getCollege() != null) {
-            userDto.setCollegeId(userModel.getCollege().getId());
-        }
 
         return userDto;
     }

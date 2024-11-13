@@ -1,5 +1,6 @@
 package com.dcfest.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.awt.image.BufferedImage;
@@ -9,6 +10,10 @@ import java.util.Map;
 import java.security.SecureRandom;
 import javax.imageio.ImageIO;
 
+import com.dcfest.constants.RoundStatus;
+import com.dcfest.constants.RoundType;
+import com.dcfest.models.*;
+import com.dcfest.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,18 +29,7 @@ import com.google.zxing.common.BitMatrix;
 import com.dcfest.dtos.ParticipantDto;
 import com.dcfest.dtos.UserDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
-import com.dcfest.models.AvailableEventModel;
-import com.dcfest.models.CollegeModel;
-import com.dcfest.models.EventModel;
-import com.dcfest.models.ParticipantModel;
-import com.dcfest.models.UserModel;
-import com.dcfest.models.VenueModel;
 import com.dcfest.notifications.email.EmailServices;
-import com.dcfest.repositories.AvailableEventRepository;
-import com.dcfest.repositories.EventRepository;
-import com.dcfest.repositories.ParticipantRepository;
-import com.dcfest.repositories.UserRepository;
-import com.dcfest.repositories.VenueRepository;
 import com.dcfest.services.ParticipantServices;
 import com.dcfest.utils.PageResponse;
 
@@ -63,6 +57,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
     private AvailableEventRepository availableEventRepository;
 
     @Autowired
+    private RoundRepository roundRepository;
+
+    @Autowired
     private VenueRepository venueRepository;
 
     @Autowired
@@ -72,7 +69,6 @@ public class ParticipantServicesImpl implements ParticipantServices {
     public ParticipantDto createParticipant(ParticipantDto participantDto) {
         CollegeModel collegeModel = new CollegeModel();
         collegeModel.setId(participantDto.getCollegeId());
-        UserModel userModel = this.getUserModel(participantDto.getUser());
         EventModel eventModel = this.eventRepository.findById(participantDto.getEventIds().get(0)).orElseThrow(
                 () -> new IllegalArgumentException("Please provide the valid event_id"));
         eventModel.setId(participantDto.getEventIds().get(0));
@@ -85,7 +81,6 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
-        participantModel.setUser(userModel);
         participantModel.setCollege(collegeModel);
         participantModel.getEvents().add(eventModel);
 
@@ -112,13 +107,14 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // Notify the participant
         String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle()
                 + " - Umang DCFest 2024";
-        String body = this.generateMailBody(userModel, eventModel);
-
-        this.emailServices.sendSimpleMessageWithAttachment(userModel.getEmail(),
-                subject,
-                body,
-                qrCodeImage,
-                "QRCode_Participant_" + participantModel.getId() + ".png");
+        String body = this.generateMailBody(participantModel, eventModel);
+        if (body != null) {
+            this.emailServices.sendSimpleMessageWithAttachment(participantModel.getEmail(),
+                    subject,
+                    body,
+                    qrCodeImage,
+                    "QRCode_Participant_" + participantModel.getId() + ".png");
+        }
 
         return this.participantModelToDto(participantModel);
     }
@@ -153,27 +149,38 @@ public class ParticipantServicesImpl implements ParticipantServices {
         if (userModel != null) {
             return userModel;
         }
-        CollegeModel collegeModel = new CollegeModel();
-        if (userDto.getCollegeId() != null) {
-            collegeModel.setId(userDto.getCollegeId());
-        } else {
-            collegeModel = null;
-        }
+
         // Create the user
         userModel = this.modelMapper.map(userDto, UserModel.class);
-        userModel.setCollege(collegeModel);
+
         // Save the user
         return this.userRepository.save(userModel);
     }
 
 
-    private String generateMailBody(UserModel userModel, EventModel eventModel) {
-        // Fetch venue details (assuming a list of venues)
-        List<VenueModel> venueModels = this.venueRepository.findByAvailableEvent(eventModel.getAvailableEvent());
+    private String generateMailBody(ParticipantModel participantModel, EventModel eventModel) {
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(eventModel.getAvailableEvent().getId()).orElseThrow(
+                () -> new IllegalArgumentException("Unable to get the available_event for id: " + eventModel.getAvailableEvent().getId())
+        );
+        List<RoundModel> roundModels = this.roundRepository.findByAvailableEvent(availableEventModel);
+
+        List<VenueModel> venueModels = new ArrayList<>();
+        for (RoundModel roundModel: roundModels) {
+            if (roundModel.getRoundType().equals(RoundType.PRELIMINARY) && roundModel.getStatus().equals(RoundStatus.NOT_STARTED)) {
+                venueModels = this.venueRepository.findByRound(roundModel);
+                break;
+            }
+        }
+
+        if (venueModels.isEmpty()) {
+            return null;
+        }
+
+//        this.emailServices.sendParticipantRegistrationEmail(ve);
 
         // Start constructing the email body
         StringBuilder emailBody = new StringBuilder();
-        emailBody.append("<p>Dear ").append(userModel.getName()).append(",</p>")
+        emailBody.append("<p>Dear ").append(participantModel.getName()).append(",</p>")
                 .append("<p>We are pleased to confirm your participation in the event <strong>")
                 .append(eventModel.getAvailableEvent().getTitle()).append("</strong> as part of Umang DCFest 2024.</p>")
                 .append("<p><strong>Event Details:</strong></p>")
@@ -242,17 +249,6 @@ public class ParticipantServicesImpl implements ParticipantServices {
     public ParticipantDto getParticipantById(Long id) {
         ParticipantModel foundParticipantModel = this.participantRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No `PARTICIPANT` exist for id: " + id));
-
-        return this.participantModelToDto(foundParticipantModel);
-    }
-
-    @Override
-    public ParticipantDto getParticipantByUserId(Long userId) {
-        UserModel userModel = new UserModel();
-        userModel.setId(userId);
-
-        ParticipantModel foundParticipantModel = this.participantRepository.findByUser(userModel).orElseThrow(
-                () -> new ResourceNotFoundException("No `PARTICIPANT` exist for userid: " + userId));
 
         return this.participantModelToDto(foundParticipantModel);
     }
@@ -342,8 +338,12 @@ public class ParticipantServicesImpl implements ParticipantServices {
                         () -> new ResourceNotFoundException(
                                 "No `PARTICIPANT` exist for id: " + participantDto.getId()));
         // Update the fields
-        foundParticipantModel.setType(participantDto.getType());
         foundParticipantModel.setPoints(participantDto.getPoints());
+
+
+
+
+
         // Save the changes
         foundParticipantModel = this.participantRepository.save(foundParticipantModel);
 
@@ -373,7 +373,6 @@ public class ParticipantServicesImpl implements ParticipantServices {
             return null;
         }
         ParticipantDto participantDto = this.modelMapper.map(participantModel, ParticipantDto.class);
-        participantDto.setUser(this.userModelToDto(participantModel.getUser()));
         participantDto.setCollegeId(participantModel.getCollege().getId());
 
         // Convert the list of EventModel to a list of event IDs
@@ -388,9 +387,6 @@ public class ParticipantServicesImpl implements ParticipantServices {
             return null;
         }
         UserDto userDto = this.modelMapper.map(userModel, UserDto.class);
-        if (userModel.getCollege() != null) {
-            userDto.setCollegeId(userModel.getCollege().getId());
-        }
 
         return userDto;
     }

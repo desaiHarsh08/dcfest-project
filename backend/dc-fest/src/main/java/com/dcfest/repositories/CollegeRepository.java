@@ -12,11 +12,6 @@ import com.dcfest.models.CollegeModel;
 @Repository
 public interface CollegeRepository extends JpaRepository<CollegeModel, Long> {
 
-    Optional<CollegeModel> findByEmail(String email);
-
-    Optional<CollegeModel> findByEmailAndIcCode(String email, String icCode);
-
-    Optional<CollegeModel> findByName(String name);
 
     Optional<CollegeModel> findByIcCode(String icCode);
 

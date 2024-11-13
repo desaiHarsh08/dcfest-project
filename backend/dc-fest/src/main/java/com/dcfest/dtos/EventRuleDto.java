@@ -2,6 +2,7 @@ package com.dcfest.dtos;
 
 import com.dcfest.constants.RuleType;
 
+import com.dcfest.models.EventRuleTemplateModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,11 +16,9 @@ public class EventRuleDto {
 
     private Long id;
 
-    private String type = RuleType.MIN_PARTICIPANTS.name();
-
     private String value;
 
-    private String description;
+    private EventRuleTemplateModel eventRuleTemplate;
 
     private Long availableEventId;
 

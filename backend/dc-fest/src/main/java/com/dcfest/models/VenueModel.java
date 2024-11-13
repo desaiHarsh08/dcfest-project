@@ -32,9 +32,9 @@ public class VenueModel {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne(targetEntity = AvailableEventModel.class)
-    @JoinColumn(name = "available_event_id_fk", nullable = false)
-    private AvailableEventModel availableEvent;
+    @ManyToOne(targetEntity = RoundModel.class)
+    @JoinColumn(name = "round_id_fk", nullable = false)
+    private RoundModel round;
 
     private LocalDateTime start;
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
+import com.dcfest.models.RoundModel;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,11 +32,9 @@ public class VenueServicesImpl implements VenueServices {
 
     @Override
     public VenueDto createVenue(VenueDto venueDto) {
-        AvailableEventModel availableEventModel = new AvailableEventModel();
-        availableEventModel.setId(venueDto.getAvailableEventId());
         // Create the venue
         VenueModel venueModel = this.modelMapper.map(venueDto, VenueModel.class);
-        venueModel.setAvailableEvent(availableEventModel);
+        venueModel.setRound(new RoundModel(venueDto.getRoundId()));
         // Save the venue
         venueModel = this.venueRepository.save(venueModel);
 
@@ -53,19 +52,6 @@ public class VenueServicesImpl implements VenueServices {
         return venueModels.stream().map(this::venueModelToDto).collect(Collectors.toList());
     }
 
-    @Override
-    public List<VenueDto> getVenuesByAvailableEventId(Long availableEventId) {
-        AvailableEventModel availableEventModel = new AvailableEventModel();
-        availableEventModel.setId(availableEventId);
-
-        List<VenueModel> venueModels = this.venueRepository.findByAvailableEvent(availableEventModel);
-
-        if (venueModels.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return venueModels.stream().map(this::venueModelToDto).collect(Collectors.toList());
-    }
 
     @Override
     public VenueDto getVenueById(Long id) {
@@ -85,12 +71,6 @@ public class VenueServicesImpl implements VenueServices {
         foundVenueModel.setEnd(venueDto.getEnd());
         // Save the changes
         foundVenueModel = this.venueRepository.save(foundVenueModel);
-        // Delete the old notification logs
-        List<NotificationLogModel> notificationLogModels = this.notificationLogRepository
-                .findByAvailableEventId(venueDto.getAvailableEventId());
-        for (NotificationLogModel notificationLogModel : notificationLogModels) {
-            this.notificationLogRepository.deleteById(notificationLogModel.getId());
-        }
 
         return this.venueModelToDto(foundVenueModel);
     }
@@ -104,10 +84,6 @@ public class VenueServicesImpl implements VenueServices {
         return true;
     }
 
-    @Override
-    public void deleteVenuesByAvailableEventId(Long availableEventId) {
-        this.venueRepository.deleteByAvailableEventId(availableEventId);
-    }
 
     private VenueDto venueModelToDto(VenueModel venueModel) {
         if (venueModel == null) {
@@ -115,7 +91,7 @@ public class VenueServicesImpl implements VenueServices {
         }
 
         VenueDto venueDto = this.modelMapper.map(venueModel, VenueDto.class);
-        venueDto.setAvailableEventId(venueModel.getAvailableEvent().getId());
+        venueDto.setRoundId(venueModel.getRound().getId());
 
         return venueDto;
     }

@@ -11,8 +11,6 @@ public interface UserServices {
 
     PageResponse<UserDto> getUsersByType(int pageNumber, String type);
 
-    PageResponse<UserDto> getUsersByCollegeId(int pageNumber, Long collegeId);
-
     UserDto getUserByEmail(String email);
 
     UserDto getUserById(Long id);

@@ -29,6 +29,4 @@ public class UserDto {
 
     private boolean isDisabled;
 
-    private Long collegeId;
-
 }

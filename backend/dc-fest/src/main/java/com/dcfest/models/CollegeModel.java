@@ -28,11 +28,8 @@ public class CollegeModel {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = true, unique = false)
     private String email;
 
-    private String rp;
- 
     private String address;
 
     @Column(nullable = false, unique = true)
@@ -43,9 +40,12 @@ public class CollegeModel {
 
     private boolean isDetailsUploaded = false;
 
-    @Column(nullable = true)
     private String phone;
 
     private Long points;
+
+    public CollegeModel(Long id) {
+        this.id = id;
+    }
 
 }

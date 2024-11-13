@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import com.dcfest.dtos.VenueDto;
+import com.dcfest.services.VenueServices;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ public class RoundServicesImpl implements RoundServices {
     @Autowired
     private RoundRepository roundRepository;
 
+    @Autowired
+    private VenueServices venueServices;
+
     @Override
     public RoundDto createRound(RoundDto roundDto) {
         AvailableEventModel availableEventModel = new AvailableEventModel();
@@ -33,6 +38,10 @@ public class RoundServicesImpl implements RoundServices {
         roundModel.setAvailableEvent(availableEventModel);
         // Save the round
         roundModel = this.roundRepository.save(roundModel);
+        for (VenueDto venueDto: roundDto.getVenues()) {
+            venueDto.setRoundId(roundModel.getId());
+            this.venueServices.createVenue(venueDto);
+        }
 
         return this.roundModelToDto(roundModel);
     }
@@ -75,7 +84,6 @@ public class RoundServicesImpl implements RoundServices {
                 () -> new ResourceNotFoundException("No `ROUND` exist for id: " + roundDto.getId()));
 
         // Update the fields
-        foundRoundModel.setName(roundDto.getName());
         foundRoundModel.setRoundType(roundDto.getRoundType());
         foundRoundModel.setQualifyNumber(roundDto.getQualifyNumber());
         foundRoundModel.setStatus(roundDto.getStatus());
