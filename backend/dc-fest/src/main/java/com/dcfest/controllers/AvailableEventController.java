@@ -70,9 +70,4 @@ public class AvailableEventController {
         }
     }
 
-    @DeleteMapping("/category/{categoryId}")
-    public ResponseEntity<Void> deleteAvailableEventsByCategoryId(@PathVariable Long categoryId) {
-        availableEventServices.deleteAvailableEventsByCategoryId(categoryId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
 }

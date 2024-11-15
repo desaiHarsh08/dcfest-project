@@ -28,12 +28,6 @@ public class VenueController {
         return new ResponseEntity<>(venues, HttpStatus.OK);
     }
 
-    @GetMapping("/available-event/{availableEventId}")
-    public ResponseEntity<List<VenueDto>> getVenuesByAvailableEventId(@PathVariable Long availableEventId) {
-        List<VenueDto> venues = venueServices.getVenuesByAvailableEventId(availableEventId);
-        return new ResponseEntity<>(venues, HttpStatus.OK);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<VenueDto> getVenueById(@PathVariable Long id) {
         VenueDto venue = venueServices.getVenueById(id);
@@ -56,9 +50,4 @@ public class VenueController {
         }
     }
 
-    @DeleteMapping("/available-event/{availableEventId}")
-    public ResponseEntity<Void> deleteVenuesByAvailableEventId(@PathVariable Long availableEventId) {
-        venueServices.deleteVenuesByAvailableEventId(availableEventId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
 }

@@ -1,5 +1,6 @@
+/* eslint-disable no-unused-vars */
 import { useContext, useEffect, useState } from "react";
-import { fetchParticipationEvents } from "../../services/college-participation-apis";
+import { fetchParticipationEvents, fetchParticipationEventsByCollegeId } from "../../services/college-participation-apis";
 import BasicDetailsForm from "./BasicDetailsForm";
 import CollegeParticipation from "./CollegeParticipation";
 import { Link, useLocation, useParams } from "react-router-dom";
@@ -26,23 +27,39 @@ const DeskLayout = () => {
 
   // Modal state
   const [modalShow, setModalShow] = useState(false);
-  const [showResetPasswordForm, setShowResetPasswordForm] = useState(false)
+  const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
 
   useEffect(() => {
     getCollege();
     console.log("showResetPasswordForm:", showResetPasswordForm);
   }, [iccode, showResetPasswordForm]);
 
+  const [participation, setParticipation] = useState([]);
+  const [flag, setFlag] = useState(false);
+
+  console.log(college);
+
+  useEffect(() => {
+    if (college?.id) {
+      fetchParticipationEventsByCollegeId(college.id)
+        .then((data) => {
+          console.log(data);
+          setEvents(data);
+          setParticipation(data);
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [college, flag]);
+
   const getCollege = async () => {
     try {
       const response = await fetchCollegeByIcCode(iccode);
       setCollege(response);
-      setEvents(response.participations);
     } catch (error) {
       console.log(error);
       // alert('Unable to get the college data... please try again later.');
     }
-  }
+  };
 
   // Handle view event (implement as needed)
   const handleView = (event) => {
@@ -57,40 +74,38 @@ const DeskLayout = () => {
   };
   return (
     <>
-      {!user.type ? (
-        !college?.detailsUploaded ? (
-          <BasicDetailsForm
-            college={college}
-            setCollege={setCollege}
-            setShowResetPasswordForm={setShowResetPasswordForm}
-            getCollege={getCollege}
-          />
-        ) : (
-          showResetPasswordForm ? <ResetPasswordPage college={college} /> :
-            <div className="p-2 vh-100 d-flex justify-content-center flex-column align-items-center">
-              <p>College Details are already saved!</p>
-              <Link to={'/login'}>Back</Link>
-            </div>
-        )
+      {college && !college?.detailsUploaded ? (
+        <BasicDetailsForm college={college} setCollege={setCollege} setShowResetPasswordForm={setShowResetPasswordForm} getCollege={getCollege} />
       ) : (
         <>
           <Navbar />
           {console.log(iccode)}
-          {(iccode && !(pathname.endsWith(`/${iccode}`) || pathname.endsWith(`/${iccode}/`))) && <div className="container">
-            <Link to={`/${iccode}`}>Home</Link>
-          </div>}
-          <CollegeParticipation college={college} />
+          {iccode && !(pathname.endsWith(`/${iccode}`) || pathname.endsWith(`/${iccode}/`)) && (
+            <div className="container">
+              <Link to={`/${iccode}`}>Home</Link>
+            </div>
+          )}
+
+          <div className="container border-bottom">
+            <h1>{college?.name}</h1>
+            <h5>Representatives: -</h5>
+            <ul className="p-0">
+              {college?.representatives.map((rep) => (
+                <li key={`rep-${rep.id}`} style={{ listStyle: "none" }}>
+                  <p className="m-0">{rep.name}</p>
+                  <p>{rep.email}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {college && <CollegeParticipation participations={participation} />}
 
           <div className="events-table-container mt-4">
             <div className="d-flex justify-content-between align-items-center border-bottom mb-3">
               <h3 className="text-center mb-4">Events List</h3>
               <Link to={"categories"}>Add Participation</Link>
             </div>
-            <EventsTable
-              events={events}
-              onView={handleView}
-              onRemove={handleRemove}
-            />
+            <EventsTable events={events} onView={handleView} onRemove={handleRemove} />
           </div>
         </>
       )}

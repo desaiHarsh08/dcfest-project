@@ -3,6 +3,9 @@ package com.dcfest.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -43,6 +46,7 @@ public class EventModel {
         inverseJoinColumns = @JoinColumn(name = "participant_id"),
         uniqueConstraints = @UniqueConstraint(columnNames = {"event_id", "participant_id"})
     )
+    @JsonManagedReference
     private List<ParticipantModel> participants = new ArrayList<>();
 
     @ManyToMany

@@ -22,3 +22,12 @@ export const fetchAvailableEventsBySlug = async (slug) => {
     console.log(response)
     return response.data;
 };
+
+
+export const fetchAvailableEventsByCategorySlug = async (slug) => {
+    const response = await API.get(`/api/available-events/category/${slug}`, {
+        withCredentials: true
+    });
+    console.log(response)
+    return response.data;
+};

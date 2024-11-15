@@ -1,0 +1,60 @@
+/* GuidelinesModal.css */
+
+/* Modal Header */
+.modal-header-custom {
+    background-color: #f8f9fa;
+    /* Light grey background */
+    border-bottom: 2px solid #dee2e6;
+    /* Soft border */
+    padding: 1rem;
+}
+
+.modal-title-custom {
+    color: #343a40;
+    /* Dark color for the title */
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+/* Modal Body */
+.modal-body-custom {
+    background-color: #ffffff;
+    /* White background for clean look */
+    color: #495057;
+    /* Text color for better readability */
+    padding: 1.5rem;
+    line-height: 1.8;
+}
+
+.guidelines-list {
+    padding-left: 1.5rem;
+    /* Indent list items */
+    list-style-type: disc;
+    /* Disc bullet style */
+}
+
+.guidelines-list li {
+    margin-bottom: 0.8rem;
+    font-size: 1rem;
+}
+
+/* Modal Footer */
+.modal-footer-custom {
+    border-top: 2px solid #dee2e6;
+    background-color: #f8f9fa;
+    padding: 1rem;
+}
+
+.modal-close-btn {
+    background-color: #343a40;
+    /* Dark button */
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.modal-close-btn:hover {
+    background-color: #495057;
+}

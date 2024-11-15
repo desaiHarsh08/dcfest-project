@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
+import com.dcfest.models.JudgeModel;
+import com.dcfest.models.ParticipantModel;
+import com.dcfest.repositories.JudgeRepository;
+import com.dcfest.repositories.ParticipantRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +35,13 @@ public class EventServicesImpl implements EventServices {
     private JudgeServices judgeServices;
 
     @Autowired
+    private JudgeRepository judgeRepository;
+
+    @Autowired
     private ParticipantServices participantServices;
+
+    @Autowired
+    private ParticipantRepository participantRepository;
 
     @Override
     public EventDto createEvent(EventDto eventDto) {
@@ -94,23 +104,41 @@ public class EventServicesImpl implements EventServices {
 
     @Override
     public boolean deleteEvent(Long id) {
-        EventDto eventDto = this.getEventById(id);
-        // Delete the judges
-//        for (JudgeDto judgeDto : eventDto.getJudges()) {
-//            this.judgeServices.deleteJudge(judgeDto.getId());
-//        }
-//        // Delete the participants
-//        this.participantServices.deleteParticipantsByEventId(id);
-//        // Delete the event
-//        this.eventRepository.deleteById(id);
+        // Fetch the event by ID
+        EventModel event = this.eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with ID: " + id));
+
+        // Remove the event from each participant's event list
+        for (ParticipantModel participant : event.getParticipants()) {
+            participant.getEvents().remove(event);
+            this.participantRepository.save(participant);
+        }
+
+        // Remove the event from each judge's event list
+        for (JudgeModel judge : event.getJudges()) {
+            judge.getEvents().remove(event);
+            this.judgeRepository.save(judge);
+        }
+
+        // Clear participants and judges lists in the event itself
+        event.getParticipants().clear();
+        event.getJudges().clear();
+
+        // Save the event after clearing relationships to update the join tables
+        this.eventRepository.save(event);
+
+        // Delete the event
+        this.eventRepository.deleteById(id);
 
         return false;
     }
 
     @Override
     public void deleteEventsByAvailableEventId(Long availableEventId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteEventsByAvailableEventId'");
+        EventModel eventModel = this.eventRepository.findByAvailableEvent(new AvailableEventModel(availableEventId)).orElse(null);
+        if (eventModel != null) {
+            this.eventRepository.deleteById(eventModel.getId());
+        }
     }
 
     private EventDto eventModelToDto(EventModel eventModel) {
@@ -119,6 +147,7 @@ public class EventServicesImpl implements EventServices {
         }
 
         EventDto eventDto = this.modelMapper.map(eventModel, EventDto.class);
+        System.out.println(eventModel.getParticipants().size());
         eventDto.setAvailableEventId(eventModel.getAvailableEvent().getId());
 
         return eventDto;

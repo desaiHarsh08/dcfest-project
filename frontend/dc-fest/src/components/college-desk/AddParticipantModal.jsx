@@ -1,6 +1,7 @@
+/* eslint-disable react/prop-types */
 // src/components/college-desk/AddParticipantModal.js
-import React, { useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { useState } from 'react';
+import { Modal, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const AddParticipantModal = ({ show, handleClose, handleAdd }) => {

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import com.dcfest.dtos.*;
+import com.dcfest.models.*;
 import com.dcfest.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +14,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.dcfest.exceptions.ResourceNotFoundException;
-import com.dcfest.models.CollegeModel;
-import com.dcfest.models.CollegeParticipationModel;
-import com.dcfest.models.ParticipantModel;
 import com.dcfest.notifications.email.EmailServices;
 import com.dcfest.repositories.CollegeRepository;
 import com.dcfest.repositories.ParticipantRepository;
 import com.dcfest.repositories.UserRepository;
 import com.dcfest.utils.PageResponse;
-import com.dcfest.models.UserModel;
 
 @Service
 public class CollegeServicesImpl implements CollegeServices {
@@ -145,8 +142,33 @@ public class CollegeServicesImpl implements CollegeServices {
         // Save the changes
         foundCollegeModel = this.collegeRepository.save(foundCollegeModel);
 
+        // Notify the college and their representative
+        List<CollegeRepresentativeModel> collegeRepresentativeModels = new ArrayList<>();
+        for (CollegeRepresentativeModel collegeRepresentativeModel: collegeRepresentativeModels) {
+            this.emailServices.sendResetPasswordEmail(
+                    collegeRepresentativeModel.getEmail(),
+                    collegeRepresentativeModel.getName(),
+                    foundCollegeModel.getIcCode(),
+                    collegeDto.getPassword(),
+                    foundCollegeModel.getName()
+            );
+        }
+        // Notify the college
+        String collegeEmail = foundCollegeModel.getEmail();
+        if (!collegeRepresentativeModels.stream().anyMatch(c -> c.getEmail().equalsIgnoreCase(collegeEmail))) {
+            this.emailServices.sendResetPasswordEmail(
+                    collegeEmail,
+                    foundCollegeModel.getName(),
+                    foundCollegeModel.getIcCode(),
+                    collegeDto.getPassword(),
+                    foundCollegeModel.getName()
+            );
+        }
+
+
         return this.collegeModelToDto(foundCollegeModel);
     }
+
 
     @Override
     public boolean deleteCollege(Long id) {
@@ -164,8 +186,11 @@ public class CollegeServicesImpl implements CollegeServices {
         for (CollegeParticipationDto collegeParticipationDto : collegeParticipationDtos) {
             this.collegeParticipationService.deleteParticipation(collegeParticipationDto.getId());
         }
-        // Delete the users
-        this.userRepository.deleteByCollegeId(id);
+        // Delete the representative
+        List<CollegeRepresentativeDto> collegeRepresentativeDtos = this.collegeRepresentativeService.getRepresentativesByCollege(id);
+        for (CollegeRepresentativeDto collegeRepresentativeDto: collegeRepresentativeDtos) {
+            this.collegeRepresentativeService.deleteRepresentative(collegeRepresentativeDto.getId());
+        }
 
         this.collegeRepository.deleteById(id);
 

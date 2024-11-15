@@ -1,8 +1,8 @@
 import fetch from "node-fetch";
-import { categories } from './data.js';
+import { categories } from './data copy.js';
 
 (async () => {
-    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZXNhaWhhcnNoaXQ3MjJAZ21haWwuY29tIiwiaWF0IjoxNzMwODE4MjgxLCJleHAiOjE3MzA5MDQ2ODF9.4UR1rONjxFcYuIvtQbLA0lCkJtE_cfHWjxqfGQtaVwEhh9-znYcmV6AYqbxEStNElj550Bup7i4sXo3j4s4t_w";
+    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZXNhaWhhcnNoaXQ3MjJAZ21haWwuY29tIiwiaWF0IjoxNzMxNTA2OTUyLCJleHAiOjE3MzE1OTMzNTJ9.x97zvbopmZmcu8RAYVWdAWw7M5Jjjnj4_LqmAjhf6gK4Qa7u7M2k1LaY1HfaYR5zloD9eumkfRaYuXTQwZJJNQ";
 
     console.log("Making request!\n");
 
@@ -10,7 +10,7 @@ import { categories } from './data.js';
         console.log(`Sending category: ${categories[i].name}`);
 
         try {
-            const response = await fetch(`http://13.235.168.107:5006/api/categories`, {
+            const response = await fetch(`http://localhost:5006/api/categories`, {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",

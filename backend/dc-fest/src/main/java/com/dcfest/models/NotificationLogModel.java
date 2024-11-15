@@ -36,9 +36,9 @@ public class NotificationLogModel {
     @JoinColumn(nullable = false)
     private AvailableEventModel availableEvent;
 
-    @ManyToOne(targetEntity = UserModel.class)
+    @ManyToOne(targetEntity = ParticipantModel.class)
     @JoinColumn(nullable = false)
-    private UserModel user;
+    private ParticipantModel participant;
 
     @Column(nullable = false)
     String message;

@@ -1,25 +1,20 @@
-import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import '../../styles/Footer.css';
+import { Container, Row, Col } from "react-bootstrap";
+import "../../styles/Footer.css"; // Assuming you want custom styling
 
 const Footer = () => {
     return (
-        <footer className="footer bg-dark text-white mt-auto">
+        <footer className="footer bg-dark text-light">
             <Container>
-                <Row className="justify-content-center py-3">
-                    <Col xs={12} className="d-flex flex-column align-items-center">
-                        <p className="mb-0">DC_FEST © 2024. All Rights Reserved.</p>
-                        <div className="social-icons mt-2">
-                            <a href="#!" className="social-icon">
-                                <i className="fab fa-facebook-f"></i>
-                            </a>
-                            <a href="#!" className="social-icon">
-                                <i className="fab fa-twitter"></i>
-                            </a>
-                            <a href="#!" className="social-icon">
-                                <i className="fab fa-instagram"></i>
-                            </a>
-                        </div>
+                <Row className="justify-content-center">
+                    <Col md={6} className="d-flex align-items-center justify-content-center">
+                        <img
+                            src="/bhawanipur-college-logo.jpg"
+                            alt="Bhawanipur College Logo"
+                            className="footer-logo img-fluid me-2" // reduced space between logo and text
+                        />
+                        <p className="footer-text mb-0">
+                            UMANG &copy; 2024 | All rights reserved
+                        </p>
                     </Col>
                 </Row>
             </Container>

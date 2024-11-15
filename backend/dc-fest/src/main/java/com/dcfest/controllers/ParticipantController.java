@@ -5,8 +5,11 @@ import com.dcfest.services.ParticipantServices;
 import com.dcfest.utils.PageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/participants")
@@ -15,7 +18,7 @@ public class ParticipantController {
     @Autowired
     private ParticipantServices participantServices;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ParticipantDto> createParticipant(@RequestBody ParticipantDto participantDto) {
         ParticipantDto createdParticipant = participantServices.createParticipant(participantDto);
         return new ResponseEntity<>(createdParticipant, HttpStatus.CREATED);
@@ -33,12 +36,6 @@ public class ParticipantController {
         return new ResponseEntity<>(participant, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<ParticipantDto> getParticipantByUserId(@PathVariable Long userId) {
-        ParticipantDto participant = participantServices.getParticipantByUserId(userId);
-        return new ResponseEntity<>(participant, HttpStatus.OK);
-    }
-
     @GetMapping("/college/{collegeId}")
     public ResponseEntity<PageResponse<ParticipantDto>> getParticipantByCollegeId(@RequestParam int pageNumber, @PathVariable Long collegeId) {
         PageResponse<ParticipantDto> participants = participantServices.getParticipantByCollegeId(pageNumber, collegeId);
@@ -52,8 +49,8 @@ public class ParticipantController {
     }
 
     @GetMapping("/event/{eventId}")
-    public ResponseEntity<PageResponse<ParticipantDto>> getParticipantByEventId(@RequestParam int pageNumber, @PathVariable Long eventId) {
-        PageResponse<ParticipantDto> participants = participantServices.getParticipantByEventId(pageNumber, eventId);
+    public ResponseEntity<List<ParticipantDto>> getParticipantByEventId(@PathVariable Long eventId) {
+        List<ParticipantDto> participants = participantServices.getParticipantByEventId(eventId);
         return new ResponseEntity<>(participants, HttpStatus.OK);
     }
 

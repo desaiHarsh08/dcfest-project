@@ -5,6 +5,8 @@ import com.dcfest.models.UserModel;
 import com.dcfest.models.VenueModel;
 import com.dcfest.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -77,6 +79,34 @@ public class EmailServices {
             e.printStackTrace();
         }
     }
+
+    @Async
+    public void sendResetPasswordEmail(String to, String name, String iccode, String password, String institutionName) {
+        String subject = "Reset Password Success - (Umang 2024)";
+
+        try {
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+
+            // Create the HTML content using Thymeleaf template
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("iccode", iccode);
+            context.setVariable("password", password);
+            context.setVariable("institutionName", institutionName);
+
+            String htmlContent = templateEngine.process("resetPasswordEmail", context);
+            helper.setText(htmlContent, true); // Enable HTML content
+
+            emailSender.send(message);
+        } catch (MessagingException e) {
+            // Log the exception for better error tracking
+            e.printStackTrace();
+        }
+    }
+
 
 
     // Send simple HTML email

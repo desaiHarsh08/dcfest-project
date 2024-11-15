@@ -11,6 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "otps")
 @Data
@@ -29,5 +31,7 @@ public class OtpModel {
     private String email;
 
     private String phone;
+
+    private Instant expiryTime;
 
 }

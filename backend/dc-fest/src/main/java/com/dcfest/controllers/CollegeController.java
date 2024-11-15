@@ -35,17 +35,6 @@ public class CollegeController {
         return new ResponseEntity<>(college, HttpStatus.OK);
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<CollegeDto> getCollegeByEmail(@PathVariable String email) {
-        CollegeDto college = collegeServices.getCollegeByEmail(email);
-        return new ResponseEntity<>(college, HttpStatus.OK);
-    }
-
-    @GetMapping("/name/{name}")
-    public ResponseEntity<CollegeDto> getCollegeByName(@PathVariable String name) {
-        CollegeDto college = collegeServices.getCollegeByName(name);
-        return new ResponseEntity<>(college, HttpStatus.OK);
-    }
 
     @GetMapping("/ic-code/{icCode}")
     public ResponseEntity<CollegeDto> getCollegeByIcCode(@PathVariable String icCode) {

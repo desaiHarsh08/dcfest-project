@@ -3,6 +3,8 @@ package com.dcfest.controllers;
 import com.dcfest.notifications.whatsapp.WhatsAppService;
 import jakarta.servlet.http.Cookie;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -102,54 +104,47 @@ public class AuthController {
         CollegeModel collegeModel = new CollegeModel();
         UserModel userModel = this.userRepository.findByEmail(authRequest.getUsername()).orElse(null);
         if (userModel == null) {
-            collegeModel = this.collegeRepository.findByEmail(authRequest.getUsername()).orElse(null);
+            collegeModel = this.collegeRepository.findByIcCode(authRequest.getUsername()).orElse(null);
             if (collegeModel == null) {
-                collegeModel = this.collegeRepository.findByIcCode(authRequest.getUsername()).orElse(null);
-                if (collegeModel == null) {
-                    throw new ResourceNotFoundException("No user exsit for username:" + authRequest.getUsername());
-                }
-                if (collegeModel.getEmail() != null) {
-                    userModel = this.userRepository.findByEmail(collegeModel.getEmail()).orElse(null);
-                }
+                throw new ResourceNotFoundException("No user exsit for username:" + authRequest.getUsername());
             }
         }
 
-
-
         String accessToken = this.jwtTokenHelper.generateToken(userDetails);
         String refreshToken = this.refreshTokenServices.createRefreshToken(authRequest.getUsername()).getRefreshToken();
-        System.out.println("refreshToken: " + refreshToken);
 
-        Cookie emailCookie = new Cookie("email", authRequest.getUsername());
-        emailCookie.setHttpOnly(true);
-        emailCookie.setPath("/");
-        emailCookie.setMaxAge(30 * 24 * 60 * 60); // 30 days expiration
+        // Clear any existing cookies
+        clearCookies(response);
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60); // 30 days expiration
-
-        // Add cookies to the response
-        response.addCookie(emailCookie);
-        response.addCookie(refreshTokenCookie);
-
-        response.addCookie(emailCookie);
-        response.addCookie(refreshTokenCookie);
+        // Set new cookies
+        setCookie(response, "email", authRequest.getUsername(), 30 * 24 * 60 * 60);
+        setCookie(response, "refreshToken", refreshToken, 30 * 24 * 60 * 60);
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setAccessToken(accessToken);
         if (userModel != null) {
             UserDto userDto = this.modelMapper.map(userModel, UserDto.class);
-            if (userModel.getCollege() != null) {
-                userDto.setCollegeId(userModel.getCollege().getId());
-            }
             authResponse.setUser(userDto);
         } else {
             authResponse.setUser(this.collegeServices.getCollegeByIcCode(collegeModel.getIcCode()));
         }
 
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
+    }
+
+    // Helper method to clear cookies
+    private void clearCookies(HttpServletResponse response) {
+        setCookie(response, "email", null, 0);
+        setCookie(response, "refreshToken", null, 0);
+    }
+
+    // Helper method to set cookies
+    private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+        response.addCookie(cookie);
     }
 
     private void authenticateUser(String username, String password) {
@@ -198,19 +193,14 @@ public class AuthController {
         CollegeModel collegeModel = new CollegeModel();
         UserModel userModel = this.userRepository.findByEmail(email).orElse(null);
         if (userModel == null) {
-            collegeModel = this.collegeRepository.findByEmail(email).orElse(null);
+            collegeModel = this.collegeRepository.findByIcCode(email).orElse(null);
             if (collegeModel == null) {
-                String tmp = email;
-                collegeModel = this.collegeRepository.findByIcCode(email).orElseThrow(
-                        () -> new ResourceNotFoundException("No user exsit for username:" + tmp));
+                throw new ResourceNotFoundException("No user exsit for username:" + email);
             }
         }
 
         if (userModel != null) {
             UserDto userDto = this.modelMapper.map(userModel, UserDto.class);
-            if (userModel.getCollege() != null) {
-                userDto.setCollegeId(userModel.getCollege().getId());
-            }
             authResponse.setUser(userDto);
         } else {
             authResponse.setUser(this.collegeServices.getCollegeByIcCode(collegeModel.getIcCode()));
@@ -220,14 +210,75 @@ public class AuthController {
 
     }
 
+//    @PostMapping("/generate-otp")
+//    public ResponseEntity<?> generateOtp(@RequestBody OtpRequest otpRequest) {
+//        if (otpRequest.getEmail() != null) {
+//            // Generate a 6-digit OTP
+//            Long otp = generateRandomOtp();
+//
+//            // Create a new OtpModel instance and save it in the repository
+//            OtpModel otpModel = new OtpModel(null, otp, otpRequest.getEmail(), null, Instant.now().plusMillis(2000));
+//
+//            otpRepository.save(otpModel);
+//
+//            // Send OTP to the user (via email or SMS)
+//            sendOtp(otpRequest, otp);
+//
+//            return ResponseEntity.ok("OTP has been generated and sent!");
+//        } else if (otpRequest.getPhone() != null) {
+//            // Generate a 6-digit OTP
+//            Long otp = generateRandomOtp();
+//
+//            // Create a new OtpModel instance and save it in the repository
+//            OtpModel otpModel = new OtpModel(null, otp, null, otpRequest.getPhone(), Instant.now().plusMillis(2* 1000 * 60));
+//
+//            otpRepository.save(otpModel);
+//
+//            // Send OTP to the user (via email or SMS)
+//            sendOtp(otpRequest, otp);
+//
+//            return ResponseEntity.ok("OTP has been generated and sent!");
+//        }
+//
+//        return ResponseEntity.badRequest().body("Invalid request!");
+//    }
+//
+//    @PostMapping("/verify-otp")
+//    public ResponseEntity<?> verifyOtp(@RequestBody OtpRequest otpRequest) {
+//        OtpModel otpModel;
+//
+//        // Check if the request contains email or phone for OTP validation
+//        if (otpRequest.getEmail() != null) {
+//            otpModel = this.otpRepository
+//                    .findByEmailAndOtp(otpRequest.getEmail(), otpRequest.getOtp())
+//                    .orElseThrow(() -> new IllegalArgumentException("Invalid OTP for the provided email."));
+//
+//        } else if (otpRequest.getPhone() != null) {
+//            otpModel = this.otpRepository
+//                    .findByPhoneAndOtp(otpRequest.getPhone(), otpRequest.getOtp())
+//                    .orElseThrow(() -> new IllegalArgumentException("Invalid OTP for the provided phone number."));
+//        } else {
+//            throw new IllegalArgumentException("Either email or phone must be provided for OTP verification.");
+//        }
+//
+//        // Check if OTP has expired
+//        if (Instant.now().isAfter(otpModel.getExpiryTime())) {
+//            return new ResponseEntity<>("OTP has expired.", HttpStatus.GONE);
+//        }
+//
+//        // OTP is valid and not expired
+//        return new ResponseEntity<>(true, HttpStatus.OK);
+//    }
+
+
     @PostMapping("/generate-otp")
     public ResponseEntity<?> generateOtp(@RequestBody OtpRequest otpRequest) {
         if (otpRequest.getEmail() != null) {
             // Generate a 6-digit OTP
             Long otp = generateRandomOtp();
 
-            // Create a new OtpModel instance and save it in the repository
-            OtpModel otpModel = new OtpModel(null, otp, otpRequest.getEmail(), null);
+            // Create a new OtpModel instance with a more reasonable expiry time (e.g., 5 minutes)
+            OtpModel otpModel = new OtpModel(null, otp, otpRequest.getEmail(), null, Instant.now().plus(Duration.ofMinutes(5)));
 
             otpRepository.save(otpModel);
 
@@ -239,8 +290,8 @@ public class AuthController {
             // Generate a 6-digit OTP
             Long otp = generateRandomOtp();
 
-            // Create a new OtpModel instance and save it in the repository
-            OtpModel otpModel = new OtpModel(null, otp, null, otpRequest.getPhone());
+            // Create a new OtpModel instance with a more reasonable expiry time (e.g., 5 minutes)
+            OtpModel otpModel = new OtpModel(null, otp, null, otpRequest.getPhone(), Instant.now().plus(Duration.ofMinutes(5)));
 
             otpRepository.save(otpModel);
 
@@ -255,21 +306,32 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody OtpRequest otpRequest) {
-        if (otpRequest.getEmail() != null) {
-            this.otpRepository
-                    .findByEmailAndOtp(otpRequest.getEmail(), otpRequest.getOtp())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid otp"));
-        } else if (otpRequest.getPhone() != null) {
-            this.otpRepository
-                    .findByPhoneAndOtp(otpRequest.getPhone(), otpRequest.getOtp())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid otp"));
+        OtpModel otpModel;
 
+        // Check if the request contains email or phone for OTP validation
+        if (otpRequest.getEmail() != null) {
+            otpModel = this.otpRepository
+                    .findByEmailAndOtp(otpRequest.getEmail(), otpRequest.getOtp())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid OTP for the provided email."));
+
+        } else if (otpRequest.getPhone() != null) {
+            otpModel = this.otpRepository
+                    .findByPhoneAndOtp(otpRequest.getPhone(), otpRequest.getOtp())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid OTP for the provided phone number."));
         } else {
-            throw new IllegalArgumentException("Invalid data for otp");
+            throw new IllegalArgumentException("Either email or phone must be provided for OTP verification.");
         }
 
+        // Check if OTP has expired
+        if (Instant.now().isAfter(otpModel.getExpiryTime())) {
+            return new ResponseEntity<>("OTP has expired.", HttpStatus.GONE);
+        }
+
+        // OTP is valid and not expired
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
+
+
 
     private Long generateRandomOtp() {
         Random random = new Random();

@@ -11,6 +11,7 @@ const Root = () => {
         <AnimatedCarousel />
       </div>
       <EventLists/>
+      
     </div>
   )
 }

@@ -1,8 +1,18 @@
 // src/pages/EventParticipationPage.jsx
-import React, { useEffect, useState } from 'react';
-import { Table, Container, Spinner, Alert, Button, Modal, Form, Pagination } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
-import '../styles/EventParticipationPage.css'; // Import custom CSS
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  Container,
+  Spinner,
+  Alert,
+  Button,
+  Modal,
+  Form,
+  Pagination,
+} from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
+import "../styles/EventParticipationPage.css"; // Import custom CSS
+import { fetchCategories } from "../services/categories-api";
 
 const EventParticipationPage = () => {
   const [participants, setParticipants] = useState([]);
@@ -10,8 +20,10 @@ const EventParticipationPage = () => {
   const [error, setError] = useState(null);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [eventFilter, setEventFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [eventFilter, setEventFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+
+  const [categories, setCategories] = useState([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2; // Number of items to display per page
@@ -20,48 +32,48 @@ const EventParticipationPage = () => {
   const dummyData = [
     {
       id: 1,
-      name: 'John Doe',
-      college: 'ABC University',
-      email: 'john.doe@example.com',
-      event: 'Tech Conference 2024',
-      eventCategory: 'Technology',
-      status: 'Attended',
+      name: "John Doe",
+      college: "ABC University",
+      email: "john.doe@example.com",
+      event: "Tech Conference 2024",
+      eventCategory: "Technology",
+      status: "Attended",
     },
     {
       id: 2,
-      name: 'Jane Smith',
-      college: 'XYZ College',
-      email: 'jane.smith@example.com',
-      event: 'Health Awareness Seminar',
-      eventCategory: 'Health',
-      status: 'Attended',
+      name: "Jane Smith",
+      college: "XYZ College",
+      email: "jane.smith@example.com",
+      event: "Health Awareness Seminar",
+      eventCategory: "Health",
+      status: "Attended",
     },
     {
       id: 3,
-      name: 'Mike Johnson',
-      college: 'LMN Institute',
-      email: 'mike.johnson@example.com',
-      event: 'Art Exhibition',
-      eventCategory: 'Arts',
-      status: 'Absent',
+      name: "Mike Johnson",
+      college: "LMN Institute",
+      email: "mike.johnson@example.com",
+      event: "Art Exhibition",
+      eventCategory: "Arts",
+      status: "Absent",
     },
     {
       id: 4,
-      name: 'Emily Davis',
-      college: 'DEF Academy',
-      email: 'emily.davis@example.com',
-      event: 'Science Fair 2024',
-      eventCategory: 'Science',
-      status: 'Attended',
+      name: "Emily Davis",
+      college: "DEF Academy",
+      email: "emily.davis@example.com",
+      event: "Science Fair 2024",
+      eventCategory: "Science",
+      status: "Attended",
     },
     {
       id: 5,
-      name: 'Chris Brown',
-      college: 'GHI College',
-      email: 'chris.brown@example.com',
-      event: 'Music Fest',
-      eventCategory: 'Music',
-      status: 'Attended',
+      name: "Chris Brown",
+      college: "GHI College",
+      email: "chris.brown@example.com",
+      event: "Music Fest",
+      eventCategory: "Music",
+      status: "Attended",
     },
   ];
 
@@ -75,10 +87,31 @@ const EventParticipationPage = () => {
     };
 
     fetchParticipants();
-  }, []); // Empty dependency array to run the effect once when the component mounts
+  }, []);
+
+  useEffect(() => {
+    fetchCategories()
+      .then((data) => {
+        console.log(data);
+        setCategories(data);
+  
+        // Check if data is not empty and has a valid structure before setting filters
+        if (data.length > 0) {
+          const firstCategory = data[0];
+          setCategoryFilter(firstCategory.id);
+  
+          // Check if availableEvents exists and has at least one event
+          if (firstCategory.availableEvents && firstCategory.availableEvents.length > 0) {
+            setEventFilter(firstCategory.availableEvents[0].id);
+          }
+        }
+      })
+      .catch((err) => console.log("Unable to fetch the categories", err));
+  }, []);
+  
 
   // Filtered participants based on selected event and category
-  const filteredParticipants = participants.filter(participant => {
+  const filteredParticipants = participants.filter((participant) => {
     return (
       (eventFilter ? participant.event === eventFilter : true) &&
       (categoryFilter ? participant.eventCategory === categoryFilter : true)
@@ -87,7 +120,10 @@ const EventParticipationPage = () => {
 
   // Calculate total pages and current participants
   const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage);
-  const currentParticipants = filteredParticipants.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentParticipants = filteredParticipants.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleEdit = (participant) => {
     setSelectedParticipant(participant);
@@ -95,7 +131,9 @@ const EventParticipationPage = () => {
   };
 
   const handleRemove = (id) => {
-    setParticipants(participants.filter(participant => participant.id !== id));
+    setParticipants(
+      participants.filter((participant) => participant.id !== id)
+    );
   };
 
   const handleModalClose = () => {
@@ -104,9 +142,13 @@ const EventParticipationPage = () => {
   };
 
   const handleSaveChanges = () => {
-    setParticipants(participants.map(participant =>
-      participant.id === selectedParticipant.id ? selectedParticipant : participant
-    ));
+    setParticipants(
+      participants.map((participant) =>
+        participant.id === selectedParticipant.id
+          ? selectedParticipant
+          : participant
+      )
+    );
     handleModalClose();
   };
 
@@ -122,17 +164,13 @@ const EventParticipationPage = () => {
   if (loading) {
     return (
       <Container className="mt-4 text-center">
-        {/* <Spinner animation="border" role="status">
-          <span className="sr-only">Loading...</span>
-        </Spinner> */}
-        <section class="dots-container">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
+        <section className="dots-container">
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
         </section>
-
       </Container>
     );
   }
@@ -152,29 +190,41 @@ const EventParticipationPage = () => {
       {/* Dropdowns for filtering participants */}
       <div className="mb-4 filter-dropdowns">
         <Form.Select
+          className="category-dropdown"
+          value={categoryFilter}
+          onChange={(e) => {
+            const selectedCategory = categories?.map(
+              (c) => c?.name == e.target.value
+            );
+            setCategoryFilter(e.target.value);
+            setEventFilter(selectedCategory?.availableEvents[0].id);
+          }}
+        >
+          {categories?.map((category, categoryIndex) => (
+            <option key={`category-${categoryIndex}`} value={category?.id}>
+              {category?.name}
+            </option>
+          ))}
+        </Form.Select>
+        <Form.Select
           className="event-dropdown me-2"
           value={eventFilter}
           onChange={(e) => setEventFilter(e.target.value)}
         >
-          <option value="">Select Event</option>
-          <option value="Tech Conference 2024">Tech Conference 2024</option>
-          <option value="Health Awareness Seminar">Health Awareness Seminar</option>
-          <option value="Art Exhibition">Art Exhibition</option>
-          <option value="Science Fair 2024">Science Fair 2024</option>
-          <option value="Music Fest">Music Fest</option>
-        </Form.Select>
-
-        <Form.Select
-          className="category-dropdown"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-        >
-          <option value="">Select Category</option>
-          <option value="Technology">Technology</option>
-          <option value="Health">Health</option>
-          <option value="Arts">Arts</option>
-          <option value="Science">Science</option>
-          <option value="Music">Music</option>
+          {categories?.map((category) => {
+            if (category?.availableEvents?.some((e) => e?.id == eventFilter)) {
+              return category?.availableEvents?.map(
+                (availableEvent, availableEventIndex) => (
+                  <option
+                    key={`availableEvent-${availableEventIndex}`}
+                    value={eventFilter}
+                  >
+                    {availableEvent?.title}
+                  </option>
+                )
+              );
+            }
+          })}
         </Form.Select>
       </div>
 
@@ -196,18 +246,28 @@ const EventParticipationPage = () => {
             <tbody>
               {currentParticipants.map((participant, index) => (
                 <tr key={participant.id}>
-                  <td>{(currentPage - 1) * itemsPerPage + index + 1}</td> {/* Use index for numbering */}
+                  <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>{" "}
+                  {/* Use index for numbering */}
                   <td>{participant.name}</td>
                   <td>{participant.college}</td>
                   <td>{participant.email}</td>
                   <td>{participant.event}</td>
                   <td>{participant.eventCategory}</td>
                   <td>{participant.status}</td>
-                  <td className='d-flex'>
-                    <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant)}>
+                  <td className="d-flex">
+                    <Button
+                      variant="info"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => handleEdit(participant)}
+                    >
                       Edit
                     </Button>
-                    <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleRemove(participant.id)}
+                    >
                       Remove
                     </Button>
                   </td>
@@ -218,13 +278,29 @@ const EventParticipationPage = () => {
 
           {/* Pagination Component */}
           <Pagination className="justify-content-center mt-4">
-            <Pagination.Prev onClick={() => handlePageChange(currentPage > 1 ? currentPage - 1 : 1)} disabled={currentPage === 1} />
+            <Pagination.Prev
+              onClick={() =>
+                handlePageChange(currentPage > 1 ? currentPage - 1 : 1)
+              }
+              disabled={currentPage === 1}
+            />
             {[...Array(totalPages)].map((_, index) => (
-              <Pagination.Item key={index + 1} active={index + 1 === currentPage} onClick={() => handlePageChange(index + 1)}>
+              <Pagination.Item
+                key={index + 1}
+                active={index + 1 === currentPage}
+                onClick={() => handlePageChange(index + 1)}
+              >
                 {index + 1}
               </Pagination.Item>
             ))}
-            <Pagination.Next onClick={() => handlePageChange(currentPage < totalPages ? currentPage + 1 : totalPages)} disabled={currentPage === totalPages} />
+            <Pagination.Next
+              onClick={() =>
+                handlePageChange(
+                  currentPage < totalPages ? currentPage + 1 : totalPages
+                )
+              }
+              disabled={currentPage === totalPages}
+            />
           </Pagination>
         </>
       ) : (

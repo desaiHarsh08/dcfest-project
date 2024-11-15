@@ -2,10 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
 import EventCard from "../components/events/EventCard";
-import { fetchAvailableEvents } from "../services/available-events-apis";
+import {
+  fetchAvailableEvents,
+  fetchAvailableEventsByCategorySlug,
+  fetchAvailableEventsBySlug,
+} from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
+import { useSelector } from "react-redux";
+import { selectCategories } from "../app/slices/categoriesSlice";
 
 const EventsPage = () => {
+  const categories = useSelector(selectCategories);
+  console.log(categories);
   const { categorySlug, iccode } = useParams();
   const [events, setEvents] = useState([]);
   const [college, setCollege] = useState();
@@ -14,13 +22,15 @@ const EventsPage = () => {
 
   useEffect(() => {
     getCollege();
-
-    fetchAvailableEvents()
+    // const categoryId = categories.find(c -> c?.slug == categorySlug)?.id;
+    // if (categoryId) {
+    fetchAvailableEventsByCategorySlug(categorySlug)
       .then((data) => setEvents(data))
       .catch((err) => {
         console.log(err);
         setError(err);
       });
+    // }
   }, [categorySlug]);
 
   const getCollege = async () => {
@@ -29,9 +39,8 @@ const EventsPage = () => {
       setCollege(response);
     } catch (error) {
       console.log(error);
-      alert('Unable to fetch college data');
     }
-  }
+  };
 
   return (
     <Container>
@@ -44,7 +53,11 @@ const EventsPage = () => {
                 <Link to={iccode ? `/${iccode}` : "/home"}>Home</Link>
               </li>
               <li className="breadcrumb-item">
-                <Link to={iccode ? `/${iccode}/categories` : "/home/categories"}>Categories</Link>
+                <Link
+                  to={iccode ? `/${iccode}/categories` : "/home/categories"}
+                >
+                  Categories
+                </Link>
               </li>
             </ol>
           </nav>

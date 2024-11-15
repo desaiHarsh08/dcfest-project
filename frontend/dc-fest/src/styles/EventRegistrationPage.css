@@ -1,4 +1,17 @@
 /* src/pages/EventRegistrationPage.css */
+#event-participant-container {
+    height: calc(100vh - 83px);
+}
+
+#event-participant-main-field .field-card {
+    width: 33%;
+}
+
+#participants-wrapper {
+    /* border: 2px solid red;
+    height: calc(100% - 251px);
+    overflow: auto; */
+}
 
 .form-scroll-container {
     overflow-y: auto;
@@ -41,5 +54,16 @@
 @media (max-height: 700px) {
     .form-scroll-container {
         max-height: 300px;
+    }
+}
+
+@media (max-width: 500px) {
+    #event-participant-main-field {
+        flex-direction: column;
+
+    }
+
+    #event-participant-main-field .field-card {
+        width: 100%;
     }
 }

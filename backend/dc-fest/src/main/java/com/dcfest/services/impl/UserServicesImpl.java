@@ -169,15 +169,6 @@ public class UserServicesImpl implements UserServices {
         return false;
     }
 
-    // @Override
-    // public boolean deleteUser(Long id) {
-    // this.deleteUser(id)
-    // }
-
-    @Override
-    public void deleteUserByCollegesId(Long collegeId) {
-        this.userRepository.deleteByCollegeId(collegeId);
-    }
 
     private UserDto userModelToDto(UserModel userModel) {
         if (userModel == null) {

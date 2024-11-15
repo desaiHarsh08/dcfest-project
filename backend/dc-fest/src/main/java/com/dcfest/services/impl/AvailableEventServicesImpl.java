@@ -3,26 +3,16 @@ package com.dcfest.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.dcfest.dtos.*;
+import com.dcfest.models.*;
+import com.dcfest.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dcfest.dtos.AvailableEventDto;
-import com.dcfest.dtos.EventDto;
-import com.dcfest.dtos.EventRuleDto;
-import com.dcfest.dtos.RoundDto;
-import com.dcfest.dtos.VenueDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
-import com.dcfest.models.AvailableEventModel;
-import com.dcfest.models.EventCategoryModel;
-import com.dcfest.models.NotificationLogModel;
 import com.dcfest.repositories.AvailableEventRepository;
 import com.dcfest.repositories.NotificationLogRepository;
-import com.dcfest.services.AvailableEventServices;
-import com.dcfest.services.EventRuleServices;
-import com.dcfest.services.EventServices;
-import com.dcfest.services.RoundServices;
-import com.dcfest.services.VenueServices;
 
 @Service
 public class AvailableEventServicesImpl implements AvailableEventServices {
@@ -47,6 +37,9 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
     @Autowired
     private NotificationLogRepository notificationLogRepository;
+
+    @Autowired
+    private CollegeParticipationService collegeParticipationService;
 
     @Override
     public AvailableEventDto createAvailableEvent(AvailableEventDto availableEventDto) {
@@ -112,6 +105,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
     @Override
     public AvailableEventDto getAvailableEventBySlug(String slug) {
+        System.out.println("slug: " + slug);
         AvailableEventModel foundAvailableEventModel = this.availableEventRepository.findBySlug(slug).orElseThrow(
                 () -> new ResourceNotFoundException("No `AVAILABLE_EVENT` exist for slug: " + slug));
 
@@ -131,14 +125,27 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         foundAvailableEventModel.setType(availableEventDto.getType());
         // Save the changes
         foundAvailableEventModel = this.availableEventRepository.save(foundAvailableEventModel);
-
         // Update the event_rules
+        List<EventRuleDto> existingEventRuleDtos = this.eventRuleServices.getEventRulesByAvailableEventId(foundAvailableEventModel.getId());
         for (EventRuleDto eventRuleDto : availableEventDto.getEventRules()) {
-            this.eventRuleServices.updateEventRule(eventRuleDto);
+            eventRuleDto.setAvailableEventId(foundAvailableEventModel.getId());
+            if (eventRuleDto.getId() != null && existingEventRuleDtos.stream().anyMatch(e -> e.getId().equals(eventRuleDto.getId()))) {
+                this.eventRuleServices.updateEventRule(eventRuleDto);
+            }
+            else if(existingEventRuleDtos.stream().noneMatch(e -> e.getId().equals(eventRuleDto.getId()))) {
+                this.eventRuleServices.deleteEventRule(eventRuleDto.getId());
+            }
         }
         // Update the round
+        List<RoundDto> existingRoundDtos = this.roundServices.getRoundsByAvailableEventId(foundAvailableEventModel.getId());
         for (RoundDto roundDto : availableEventDto.getRounds()) {
-            this.roundServices.updateRound(roundDto);
+            roundDto.setAvailableEventId(foundAvailableEventModel.getId());
+            if (roundDto.getId() != null && existingRoundDtos.stream().anyMatch(r -> r.getId().equals(roundDto.getId()))) {
+                this.roundServices.updateRound(roundDto);
+            }
+            else if (existingRoundDtos.stream().noneMatch(r -> r.getId().equals(roundDto.getId()))) {
+                this.roundServices.deleteRound(roundDto.getId());
+            }
         }
 
         return this.availableEventModelToDto(foundAvailableEventModel);
@@ -148,7 +155,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
     public boolean deleteAvailableEvent(Long id) {
         AvailableEventDto availableEventDto = this.getAvailableEventById(id);
         // Delete the logs
-        List<NotificationLogModel> notificationLogModels = this.notificationLogRepository.findByAvailableEventId(id);
+        List<NotificationLogModel> notificationLogModels = this.notificationLogRepository.findByAvailableEvent(new AvailableEventModel(id));
         for (NotificationLogModel notificationLogModel : notificationLogModels) {
             this.notificationLogRepository.deleteById(notificationLogModel.getId());
         }
@@ -160,22 +167,17 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         for (RoundDto roundDto : availableEventDto.getRounds()) {
             this.roundServices.deleteRound(roundDto.getId());
         }
+        // Delete all the colleges
 
-        // Delete the available_event
+        // Delete the college_participations
+        List<CollegeParticipationDto> collegeParticipationDtos = this.collegeParticipationService.getByAvailableEvent(id);
+        for (CollegeParticipationDto collegeParticipationDto: collegeParticipationDtos) {
+            this.collegeParticipationService.deleteParticipation(collegeParticipationDto.getId());
+        }
+
         this.availableEventRepository.deleteById(id);
 
         return true;
-    }
-
-    @Override
-    public void deleteAvailableEventsByCategoryId(Long categoryId) {
-        // List<AvailableEventModel>
-        // List<NotificationLogModel> notificationLogModels =
-        // this.notificationLogRepository.findByAvailableEventId(id);
-        // for (NotificationLogModel notificationLogModel: notificationLogModels) {
-        // this.notificationLogRepository.deleteById(notificationLogModel.getId());
-        // }
-        // this.availableEventRepository.deleteByCategoryId(categoryId);
     }
 
     private AvailableEventDto availableEventModelToDto(AvailableEventModel availableEventModel) {

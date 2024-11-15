@@ -1,20 +1,12 @@
 package com.dcfest.notifications.scheduler;
 
+import com.dcfest.models.*;
+import com.dcfest.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.dcfest.models.AvailableEventModel;
-import com.dcfest.models.NotificationLogModel;
-import com.dcfest.models.ParticipantModel;
-import com.dcfest.models.UserModel;
-import com.dcfest.models.VenueModel;
 import com.dcfest.notifications.email.EmailServices;
-import com.dcfest.repositories.AvailableEventRepository;
-import com.dcfest.repositories.NotificationLogRepository;
-import com.dcfest.repositories.ParticipantRepository;
-import com.dcfest.repositories.UserRepository;
-import com.dcfest.repositories.VenueRepository;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -43,6 +35,9 @@ public class EventScheduleService {
     // private WhatsAppService whatsappService;
 
     @Autowired
+    private RoundRepository roundRepository;
+
+    @Autowired
     private ParticipantRepository participantRepository;
 
     @Scheduled(cron = "*/1 * * * * *") // This will run every 1 second
@@ -53,16 +48,19 @@ public class EventScheduleService {
 
         // Fetch venues with a start time today (from midnight today to before midnight
         // tomorrow)
+
         List<VenueModel> venues = venueRepository.findByStartBetween(startOfDay, startOfNextDay);
 
         for (VenueModel venue : venues) {
-            AvailableEventModel availableEventModel = this.availableEventRepository
-                    .findById(venue.getAvailableEvent().getId())
-                    .orElse(null);
-
+            RoundModel roundModel = this.roundRepository.findById(venue.getRound().getId()).orElse(null);
+            if (roundModel == null || roundModel.isDisableNotifications()) {
+                continue;
+            }
+            AvailableEventModel availableEventModel = this.availableEventRepository.findById(roundModel.getId()).orElse(null);
             if (availableEventModel == null) {
                 continue;
             }
+
             LocalDateTime eventStartTime = venue.getStart();
             LocalDateTime threeHoursBefore = eventStartTime.minusHours(3);
             LocalDateTime oneHourBefore = eventStartTime.minusHours(1);
@@ -153,22 +151,17 @@ public class EventScheduleService {
         // Send notifications to all participants
         for (ParticipantModel participant : participantModels) {
             String subject = "Event Notification for " + availableEventModel.getTitle();
-            UserModel userModel = this.userRepository.findById(participant.getUser().getId()).orElse(null);
-            System.out.println("userModel: " + userModel);
-            if (userModel == null) {
-                continue;
-            }
 
             // Check if the notification has already been sent
             NotificationLogModel existingLog = notificationLogRepository
-                    .findByAvailableEventIdAndUserId(availableEventModel.getId(), userModel.getId());
+                    .findByAvailableEventAndParticipant(availableEventModel, participant);
             if (existingLog != null) {
                 // If the log exists, skip sending
                 continue;
             }
 
             // Send Email
-            this.emailServices.sendSimpleMessage(userModel.getEmail(), subject, emailMessage);
+            this.emailServices.sendSimpleMessage(participant.getEmail(), subject, emailMessage);
 
             // Uncomment below for WhatsApp notifications when integrated
             // whatsappService.sendMessage(participant.getPhoneNumber(), whatsappMessage);
@@ -176,8 +169,8 @@ public class EventScheduleService {
             // Log the notification
             NotificationLogModel notificationLog = new NotificationLogModel();
             notificationLog.setAvailableEvent(availableEventModel);
-            notificationLog.setUser(userModel);
-            notificationLog.setMessage(whatsappMessage); // Log email message
+            notificationLog.setParticipant(participant);
+            notificationLog.setMessage(whatsappMessage); // Log message
             notificationLog.setSentAt(LocalDateTime.now());
             notificationLogRepository.save(notificationLog);
         }

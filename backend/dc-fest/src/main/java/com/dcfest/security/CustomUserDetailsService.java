@@ -32,23 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .build();
         }
 
-        CollegeModel collegeModel = this.collegeRepository.findByEmail(username).orElse(null);
-        if (collegeModel == null) {
-            collegeModel = this.collegeRepository.findByIcCode(username).orElse(null);
-            if (collegeModel != null && collegeModel.getEmail() != null) {
-                user = this.userRepository.findByEmail(username).orElse(null);
-            }
-        }
-
-        System.out.println("collegeModel: " + collegeModel);
-
-        if (user != null) {
-            // Create UserDetails object using user data
-            return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
-                    .password(user.getPassword())
-                    .roles("USER") // Add user roles if needed
-                    .build();
-        }
+        CollegeModel collegeModel = this.collegeRepository.findByIcCode(username).orElse(null);
 
         if (collegeModel != null) {
             // Create UserDetails object using college data

@@ -1,230 +1,206 @@
-import React, { useState } from 'react';
-import {
-    Container,
-    Row,
-    Col,
-    Card,
-    Form,
-    Button,
-    Alert,
-} from 'react-bootstrap';
-import {
-    FaUser,
-    FaUniversity,
-    FaPhone,
-    FaAddressCard,
-    FaEnvelope,
-    FaUsers,
-    FaRegCalendarAlt
-} from 'react-icons/fa';
-import '../styles/EventRegistrationPage.css'; // Import the CSS file
+/* eslint-disable no-unused-vars */
+import { useEffect, useState } from "react";
+import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import "../styles/EventRegistrationPage.css"; // Import the CSS file
+import { fetchCategories } from "../services/categories-api";
+import { fetchColleges } from "../services/college-apis";
+import ParticipantFields from "../components/participant-form/ParticipantFields";
+import SelectFields from "../components/participant-form/SelectFields";
+import FormHeading from "../components/participant-form/FormHeading";
+import { fetchEventByAvailableEventId, fetchEventBySlug } from "../services/event-apis";
+import ParticipationForm from "../components/participant-form/ParticipationForm";
+
+const participantObj = {
+  name: "",
+  email: "",
+  whatsappNumber: "",
+  male: true,
+  collegeId: null,
+  eventIds: [],
+};
 
 const EventRegistrationPage = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        college: '',
-        phone: '',
-        address: '',
-        email: '',
-        participants: '',
-        event: '',
-        eventCategory: '', // New field for Event Category
+  const [categories, setCategories] = useState([]);
+  const [colleges, setColleges] = useState([]);
+
+  const [selectedCategory, setSelectedCategory] = useState();
+  const [selectedCollege, setSelectedCollege] = useState();
+  const [selectedAvailableEvent, setSelectedAvailableEvent] = useState();
+
+  const [participants, setParticipants] = useState([participantObj]);
+
+  const [showAlert, setShowAlert] = useState(false);
+  const [validated, setValidated] = useState(false);
+
+  useEffect(() => {
+    fetchCategories()
+      .then((data) => {
+        setCategories(data);
+        setSelectedCategory(data[0]);
+        setSelectedAvailableEvent(data[0]?.availableEvents[0]);
+        handleSetDefaultParticipants(data[0]?.availableEvents[0]);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  useEffect(() => {
+    fetchColleges()
+      .then((data) => {
+        console.log(data);
+        setColleges(data);
+        setSelectedCollege(data[0]?.id);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  // Updated handleChange function
+  const handleChange = (e, participantIndex) => {
+    const { name, value, type, checked } = e.target;
+
+    setParticipants((prevParticipants) => {
+      const updatedParticipants = [...prevParticipants];
+      updatedParticipants[participantIndex] = {
+        ...updatedParticipants[participantIndex],
+        [name]: type === "checkbox" ? checked : value,
+      };
+      return updatedParticipants;
     });
+  };
 
-    const [showAlert, setShowAlert] = useState(false);
-    const [validated, setValidated] = useState(false);
+  const getEvent = async (availableEventId) => {
+    try {
+      const response = await fetchEventByAvailableEventId(availableEventId);
+      return response;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = (e) => {
-        const form = e.currentTarget;
-        e.preventDefault();
-        if (form.checkValidity() === false) {
-            e.stopPropagation();
-        } else {
-            // Handle form submission logic here, e.g., sending data to an API
-            console.log('Form Data Submitted:', formData);
-            setShowAlert(true);
-            // Reset form
-            setFormData({
-                name: '',
-                college: '',
-                phone: '',
-                address: '',
-                email: '',
-                participants: '',
-                event: '',
-                eventCategory: '', // Reset new field
-            });
+  const handleSetDefaultParticipants = (selectedAvailableEvent) => {
+    const newParticipants = [];
+    for (let i = 0; i < selectedAvailableEvent?.eventRules?.length; i++) {
+      console.log(selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name);
+      if (selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name == "NO_OF_PARTICIPANTS") {
+        newParticipants.push(participantObj);
+        break;
+      }
+      if (selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name == "MIN_PARTICIPANTS") {
+        console.log("value for min:", selectedAvailableEvent?.eventRules[i].value);
+        for (let j = 0; j < Number(selectedAvailableEvent?.eventRules[i].value); j++) {
+          newParticipants?.push(participantObj);
         }
-        setValidated(true);
-    };
+        break;
+      }
+    }
+    console.log(newParticipants);
+    setParticipants(newParticipants);
+  };
 
-    return (
-        <Container fluid className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
-            <Row className="w-100">
-                <Col xs={12} md={8} lg={6} className="mx-auto">
-                    <Card className="shadow-lg">
-                        <Card.Body className="d-flex flex-column" style={{ height: '600px' }}>
-                            <div className="text-center mb-4">
-                                <FaRegCalendarAlt size={50} color="#0d6efd" />
-                                <h2 className="mt-3">Event Registration</h2>
-                                <p className="text-muted">Fill out the form below to register for an event.</p>
-                            </div>
-                            {showAlert && (
-                                <Alert variant="success" onClose={() => setShowAlert(false)} dismissible>
-                                    Registration successful!
-                                </Alert>
-                            )}
-                            <div className="form-scroll-container flex-grow-1">
-                                <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                                    <Form.Group className="mb-3" controlId="formName">
-                                        <Form.Label><FaUser className="me-2" /> Name of the Candidate</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            placeholder="Enter your full name"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                            Please provide your name.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+  const isValidDetails = () => {
+    // Check for empty participant details
+    for (let i = 0; i < participants.length; i++) {
+      if ([participants[i].name.trim(), participants[i].email.trim(), participants[i].whatsappNumber.trim()].some((ele) => ele === "")) {
+        return false;
+      }
+    }
 
-                                    <Form.Group className="mb-3" controlId="formCollege">
-                                        <Form.Label><FaUniversity className="me-2" /> College Name</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            placeholder="Enter your college name"
-                                            name="college"
-                                            value={formData.college}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                            Please provide your college name.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+    // Loop through each event rule and validate against the participants array
+    for (let i = 0; i < selectedAvailableEvent?.eventRules.length; i++) {
+      const eventRule = selectedAvailableEvent.eventRules[i];
+      const ruleValue = Number(eventRule.value);
 
-                                    <Form.Group className="mb-3" controlId="formPhone">
-                                        <Form.Label><FaPhone className="me-2" /> Phone Number</Form.Label>
-                                        <Form.Control
-                                            type="tel"
-                                            placeholder="Enter your phone number"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            required
-                                            pattern="^[0-9]{10}$"
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                            Please provide a valid 10-digit phone number.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+      switch (eventRule.name) {
+        case "NO_OF_PARTICIPANTS":
+          if (participants.length !== ruleValue) return false;
+          break;
 
-                                    <Form.Group className="mb-3" controlId="formAddress">
-                                        <Form.Label><FaAddressCard className="me-2" /> Address</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            placeholder="Enter your address"
-                                            name="address"
-                                            value={formData.address}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                            Please provide your address.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+        case "MIN_PARTICIPANTS":
+          if (participants.length < ruleValue) return false;
+          break;
 
-                                    <Form.Group className="mb-3" controlId="formEmail">
-                                        <Form.Label><FaEnvelope className="me-2" /> Email</Form.Label>
-                                        <Form.Control
-                                            type="email"
-                                            placeholder="Enter your email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                            Please provide a valid email.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+        case "MAX_PARTICIPANTS":
+          if (participants.length > ruleValue) return false;
+          break;
 
-                                    <Form.Group className="mb-3" controlId="formParticipants">
-                                        <Form.Label><FaUsers className="me-2" /> Total Number of Participants/Team</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            placeholder="Enter number of participants or team size"
-                                            name="participants"
-                                            value={formData.participants}
-                                            onChange={handleChange}
-                                            required
-                                            min="1"
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                            Please enter at least 1 participant.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+        case "MALE_PARTICIPANTS":
+          if (participants.filter((p) => p.male).length !== ruleValue) return false;
+          break;
 
-                                    {/* New Event Category Field */}
-                                    <Form.Group className="mb-4" controlId="formEventCategory">
-                                        <Form.Label>Select Event Category</Form.Label>
-                                        <Form.Select
-                                            name="eventCategory"
-                                            value={formData.eventCategory}
-                                            onChange={handleChange}
-                                            required
-                                        >
-                                            <option value="">Choose an event category...</option>
-                                            <option value="technical">Technical</option>
-                                            <option value="cultural">Cultural</option>
-                                            <option value="sports">Sports</option>
-                                            <option value="workshop">Workshop</option>
-                                            <option value="seminar">Seminar</option>
-                                        </Form.Select>
-                                        <Form.Control.Feedback type="invalid">
-                                            Please select an event category.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+        case "FEMALE_PARTICIPANTS":
+          if (participants.filter((p) => !p.male).length !== ruleValue) return false;
+          break;
 
-                                    <Form.Group className="mb-4" controlId="formEvent">
-                                        <Form.Label>Select the Event You Want to Participate</Form.Label>
-                                        <Form.Select
-                                            name="event"
-                                            value={formData.event}
-                                            onChange={handleChange}
-                                            required
-                                        >
-                                            <option value="">Choose an event...</option>
-                                            <option value="coding">Coding Contest</option>
-                                            <option value="robotics">Robotics</option>
-                                            <option value="quiz">Quiz Competition</option>
-                                            <option value="sports">Sports Event</option>
-                                            <option value="design">Design Workshop</option>
-                                        </Form.Select>
-                                        <Form.Control.Feedback type="invalid">
-                                            Please select an event.
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
-                                </Form>
-                            </div>
-                            <div className="submit-button-container">
-                                <Button variant="primary" type="submit" size="lg" className="w-100">
-                                    Register
-                                </Button>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-        </Container>
-    );
+        default:
+          break;
+      }
+    }
+
+    // Return true if all rules are passed
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("selectedCategory:", selectedCategory);
+    console.log("selectedCollege:", selectedCollege);
+    console.log("selected available event:", selectedAvailableEvent);
+
+    console.log("participants:", participants);
+
+    const event = await getEvent(selectedAvailableEvent?.id);
+    if (event == null) {
+      alert("Some error occured while adding participants!");
+      return;
+    }
+    console.log("event:", event);
+  };
+
+  return <ParticipationForm formType="REGISTRATION" />;
 };
 
 export default EventRegistrationPage;
+
+{
+  /* <Container fluid className="d-flex align-items-center justify-content-center bg-light" id="event-participant-container">
+      <Row className="w-100 h-100 py-2">
+        <Col xs={12} md={8} lg={8} className="mx-auto h-100">
+          <Card className="shadow-lg h-100">
+            <Card.Body className="d-flex flex-column" style={{ height: "700px" }}>
+              <FormHeading showAlert={showAlert} setShowAlert={setShowAlert} />
+              <div className="form-scroll-container flex-grow-1">
+                <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                  <SelectFields
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    onSetDefaultParticipants={handleSetDefaultParticipants}
+                    categories={categories}
+                    selectedAvailableEvent={selectedAvailableEvent}
+                    setSelectedAvailableEvent={setSelectedAvailableEvent}
+                    colleges={colleges}
+                    selectedCollege={selectedCollege}
+                    setSelectedCollege={setSelectedCollege}
+                  />
+                  <div id="participants-wrapper">
+                    <h2>Participants Details</h2>
+                    <div id="participants-container" className="d-flex flex-column gap-2">
+                      {participants?.map((participant, participantIndex) => (
+                        <ParticipantFields key={`participant-${participantIndex}`} participant={participant} participantIndex={participantIndex} onChange={handleChange} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className=" d-flex justify-content-center">
+                    <p>
+                      <Button disabled={!(isValidDetails() && colleges.length > 0)} variant="primary" type="submit" size="lg" className="w-100">
+                        Register
+                      </Button>
+                    </p>
+                  </div>
+                </Form>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container> */
+}

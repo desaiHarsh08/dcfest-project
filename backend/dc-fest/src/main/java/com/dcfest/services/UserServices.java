@@ -19,6 +19,4 @@ public interface UserServices {
 
     boolean resetPassword(String email, String rawPassword);
 
-    void deleteUserByCollegesId(Long collegeId);
-
 }

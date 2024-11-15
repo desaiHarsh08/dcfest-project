@@ -84,6 +84,15 @@ public class VenueServicesImpl implements VenueServices {
         return true;
     }
 
+    @Override
+    public List<VenueDto> getVenueByRoundId(Long roundId) {
+        List<VenueModel> venueModels = this.venueRepository.findByRound(new RoundModel(roundId));
+        if(venueModels.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return venueModels.stream().map(this::venueModelToDto).collect(Collectors.toList());
+    }
 
     private VenueDto venueModelToDto(VenueModel venueModel) {
         if (venueModel == null) {

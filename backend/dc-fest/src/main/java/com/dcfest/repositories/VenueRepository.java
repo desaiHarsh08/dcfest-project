@@ -20,7 +20,6 @@ public interface VenueRepository extends JpaRepository<VenueModel, Long> {
 
     List<VenueModel> findByStart(LocalDateTime start);
 
-    List<RoundModel> findByStatus(RoundStatus status);
 
     List<VenueModel> findByStartBetween(LocalDateTime start, LocalDateTime end);
 

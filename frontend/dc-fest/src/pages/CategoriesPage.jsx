@@ -1,19 +1,28 @@
+/* eslint-disable no-unused-vars */
 import CategoryList from "../components/categories/CategoryList";
 import { useEffect, useState } from "react";
 import { fetchCategories } from "../services/categories-api";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import "../styles/CategoriesPage.css";
+import { useDispatch } from "react-redux";
+import { setCategories as reduxSetCategories } from "../app/slices/categoriesSlice"
 
 const CategoriesPage = () => {
   const { iccode } = useParams();
 
+  const dispatch = useDispatch();
+
   const [categories, setCategories] = useState();
+
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories()
-      .then((data) => setCategories(data))
+      .then((data) => {
+        console.log("fetched categories:", data);
+        dispatch(reduxSetCategories(data));
+        setCategories(data);
+      })
       .catch((err) => {
         console.log(err);
         setError(err);

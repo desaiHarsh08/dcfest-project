@@ -1,7 +1,8 @@
-import React from "react";
+/* eslint-disable react/prop-types */
 import styles from "../../styles/CollegeParticipation.module.css"; // Import custom styles
 
-const CollegeParticipation = ({ college }) => {
+const CollegeParticipation = ({ participations }) => {
+
   return (
     <div className={`container ${styles.participationStats} mt-4`}>
       <div className="row justify-content-center">
@@ -22,7 +23,7 @@ const CollegeParticipation = ({ college }) => {
                 className={`card-text ${styles.statValue}`}
                 style={{ color: "white" }}
               >
-                {college?.participations.length}
+                {participations.length}
               </p>
             </div>
           </div>

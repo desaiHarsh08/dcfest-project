@@ -40,7 +40,7 @@ public class AvailableEventModel {
     @JoinColumn(name = "event_category_id_fk", nullable = false)
     private EventCategoryModel eventCategory;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true)
     private String slug;
 
     public AvailableEventModel(Long id) {

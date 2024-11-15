@@ -22,8 +22,10 @@ public interface ParticipantRepository extends JpaRepository<ParticipantModel, L
 
     Page<ParticipantModel> findByIsPresent(Pageable pageable, boolean isPresent);
 
+    List<ParticipantModel> findByGroup(String group);
+
     @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId")
-    List<ParticipantModel> findByEventId(@Param("eventId") Long eventId);
+    List<ParticipantModel> findByEvents_Id(@Param("eventId") Long eventId);
 
     @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.availableEvent.id = :availableEventId")
     List<ParticipantModel> findByAvailableEventId(@Param("availableEventId") Long availableEventId);

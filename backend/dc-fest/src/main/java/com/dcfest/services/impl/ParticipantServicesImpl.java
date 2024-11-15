@@ -10,6 +10,7 @@ import java.util.Map;
 import java.security.SecureRandom;
 import javax.imageio.ImageIO;
 
+import com.dcfest.constants.EventType;
 import com.dcfest.constants.RoundStatus;
 import com.dcfest.constants.RoundType;
 import com.dcfest.models.*;
@@ -42,6 +43,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
     private static final int RANDOM_PART_LENGTH = 16; // Length of the random alphanumeric part
 
     @Autowired
+    private NotificationLogRepository notificationLogRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
@@ -65,10 +69,15 @@ public class ParticipantServicesImpl implements ParticipantServices {
     @Autowired
     private EmailServices emailServices;
 
+    @Autowired
+    private CollegeRepository collegeRepository;
+
     @Override
     public ParticipantDto createParticipant(ParticipantDto participantDto) {
-        CollegeModel collegeModel = new CollegeModel();
-        collegeModel.setId(participantDto.getCollegeId());
+        CollegeModel collegeModel = this.collegeRepository.findById(participantDto.getCollegeId()).orElseThrow(
+                () -> new IllegalArgumentException("Please provide the valid college id")
+        );
+
         EventModel eventModel = this.eventRepository.findById(participantDto.getEventIds().get(0)).orElseThrow(
                 () -> new IllegalArgumentException("Please provide the valid event_id"));
         eventModel.setId(participantDto.getEventIds().get(0));
@@ -83,6 +92,14 @@ public class ParticipantServicesImpl implements ParticipantServices {
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
         participantModel.setCollege(collegeModel);
         participantModel.getEvents().add(eventModel);
+        String group;
+        if (availableEventModel.getType().equals(EventType.TEAM)) {
+            group = collegeModel.getIcCode() + "_T" + (this.participantRepository.count() + 1);
+        }
+        else {
+            group = collegeModel.getIcCode() + "_P" + (this.participantRepository.count() + 1);
+        }
+        participantModel.setGroup(group);
 
         String qrData = this.generateAlphanumericUUID();
         participantModel.setQrcode(qrData);
@@ -95,26 +112,26 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         
         
-        byte[] qrCodeImage = null;
-        try {
-            qrCodeImage = generateQRCodeImage(qrData, 200, 200);
-        } catch (Exception e) {
-            // Log the exception or handle it as needed
-            e.printStackTrace(); // This logs the exception
-            throw new RuntimeException("Failed to generate QR code", e);
-        }
+//        byte[] qrCodeImage = null;
+//        try {
+//            qrCodeImage = generateQRCodeImage(qrData, 200, 200);
+//        } catch (Exception e) {
+//            // Log the exception or handle it as needed
+//            e.printStackTrace(); // This logs the exception
+//            throw new RuntimeException("Failed to generate QR code", e);
+//        }
 
         // Notify the participant
-        String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle()
-                + " - Umang DCFest 2024";
-        String body = this.generateMailBody(participantModel, eventModel);
-        if (body != null) {
-            this.emailServices.sendSimpleMessageWithAttachment(participantModel.getEmail(),
-                    subject,
-                    body,
-                    qrCodeImage,
-                    "QRCode_Participant_" + participantModel.getId() + ".png");
-        }
+//        String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle()
+//                + " - Umang DCFest 2024";
+//        String body = this.generateMailBody(participantModel, eventModel);
+//        if (body != null) {
+//            this.emailServices.sendSimpleMessageWithAttachment(participantModel.getEmail(),
+//                    subject,
+//                    body,
+//                    qrCodeImage,
+//                    "QRCode_Participant_" + participantModel.getId() + ".png");
+//        }
 
         return this.participantModelToDto(participantModel);
     }
@@ -301,34 +318,15 @@ public class ParticipantServicesImpl implements ParticipantServices {
     }
 
     @Override
-    public PageResponse<ParticipantDto> getParticipantByEventId(int pageNumber, Long eventId) {
-        // if (pageNumber < 1) {
-        // throw new IllegalArgumentException("Page no. should always be greater than
-        // 0.");
-        // }
-
-        // Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE);
-
-        // EventModel eventModel = new EventModel();
-        // eventModel.setId(eventId);
-
-        // Page<ParticipantModel> pageParticipant =
-        // this.participantRepository.findBy(pageable, collegeModel);
-
-        // List<ParticipantModel> participantModels = pageParticipant.getContent();
-
-        // List<ParticipantDto> participantDtos =
-        // participantModels.stream().map(this::participantModelToDto)
-        // .collect(Collectors.toList());
-
-        // return new PageResponse<>(
-        // pageNumber,
-        // PAGE_SIZE,
-        // pageParticipant.getTotalPages(),
-        // pageParticipant.getTotalElements(),
-        // participantDtos);
-
-        return null;
+    public List<ParticipantDto> getParticipantByEventId(Long eventId) {
+         EventModel eventModel = new EventModel();
+         eventModel.setId(eventId);
+        System.out.println(eventId);
+         List<ParticipantModel> participants = this.participantRepository.findByEvents_Id(eventId);
+         if (participants.isEmpty()) {
+             return new ArrayList<>();
+         }
+         return participants.stream().map(this::participantModelToDto).collect(Collectors.toList());
     }
 
     @Override
@@ -338,11 +336,10 @@ public class ParticipantServicesImpl implements ParticipantServices {
                         () -> new ResourceNotFoundException(
                                 "No `PARTICIPANT` exist for id: " + participantDto.getId()));
         // Update the fields
-        foundParticipantModel.setPoints(participantDto.getPoints());
-
-
-
-
+        foundParticipantModel.setName(participantDto.getName());
+        foundParticipantModel.setEmail(participantDto.getEmail());
+        foundParticipantModel.setPresent(participantDto.isPresent());
+        foundParticipantModel.setWhatsappNumber(participantDto.getWhatsappNumber());
 
         // Save the changes
         foundParticipantModel = this.participantRepository.save(foundParticipantModel);
@@ -351,8 +348,36 @@ public class ParticipantServicesImpl implements ParticipantServices {
     }
 
     @Override
+    public boolean markPoints(Long points, String group) {
+        List<ParticipantModel> participantModels = this.participantRepository.findByGroup(group);
+        if (participantModels.isEmpty()) {
+            throw new ResourceNotFoundException("No participant(s) found for identifier: " + group);
+        }
+        for (ParticipantModel participantModel: participantModels) {
+            participantModel.setPoints(points);
+            this.participantRepository.save(participantModel);
+        }
+
+        return true;
+    }
+
+    @Override
     public boolean deleteParticipant(Long id) {
-        this.getParticipantById(id);
+        // Fetch the participant by ID
+        ParticipantModel participant = this.participantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Participant not found with ID: " + id));
+
+        // Remove the participant from each event's participants list
+        for (EventModel event : participant.getEvents()) {
+            event.getParticipants().remove(participant);
+            this.eventRepository.save(event);  // Save each event after removing the participant
+        }
+
+        // Clear the events list in the participant itself to complete the cleanup
+        participant.getEvents().clear();
+        this.participantRepository.save(participant);
+
+        // Now delete the participant
         this.participantRepository.deleteById(id);
 
         return true;
@@ -360,12 +385,28 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Override
     public void deleteParticipantsByEventId(Long eventId) {
-        // this.participantRepository.dele(collegeId);
+         List<ParticipantModel> participantModels = this.participantRepository.findByEvents_Id(eventId);
+         for (ParticipantModel participantModel: participantModels) {
+             this.deleteParticipant(participantModel.getId());
+         }
     }
 
     @Override
     public void deleteParticipantsByCollegesId(Long collegeId) {
-        this.participantRepository.deleteByCollegeId(collegeId);
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
+        Page<ParticipantModel> pageParticipant = this.participantRepository.findByCollege(pageable, new CollegeModel(collegeId));
+        List<ParticipantModel> participantModels = pageParticipant.getContent();
+        for (ParticipantModel participantModel: participantModels) {
+            this.deleteParticipant(participantModel.getId());
+        }
+        for (int i = 1; i < participantModels.size(); i++) {
+            pageable = PageRequest.of(i, PAGE_SIZE);
+            pageParticipant = this.participantRepository.findByCollege(pageable, new CollegeModel(collegeId));
+            participantModels = pageParticipant.getContent();
+            for (ParticipantModel participantModel: participantModels) {
+                this.deleteParticipant(participantModel.getId());
+            }
+        }
     }
 
     private ParticipantDto participantModelToDto(ParticipantModel participantModel) {
@@ -374,6 +415,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         }
         ParticipantDto participantDto = this.modelMapper.map(participantModel, ParticipantDto.class);
         participantDto.setCollegeId(participantModel.getCollege().getId());
+        // participantDto.setEvents(new ArrayList<>());
 
         // Convert the list of EventModel to a list of event IDs
         List<Long> eventIds = participantModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());

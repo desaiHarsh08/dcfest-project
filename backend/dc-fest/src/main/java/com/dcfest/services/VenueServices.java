@@ -14,6 +14,8 @@ public interface VenueServices {
 
     VenueDto updateVenue(VenueDto venueDto);
 
+    List<VenueDto> getVenueByRoundId(Long roundId);
+
     boolean deleteVenue(Long id);
 
 }

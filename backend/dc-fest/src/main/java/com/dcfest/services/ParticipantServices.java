@@ -3,6 +3,8 @@ package com.dcfest.services;
 import com.dcfest.dtos.ParticipantDto;
 import com.dcfest.utils.PageResponse;
 
+import java.util.List;
+
 public interface ParticipantServices {
 
     ParticipantDto createParticipant(ParticipantDto participantDto);
@@ -15,7 +17,9 @@ public interface ParticipantServices {
 
     PageResponse<ParticipantDto> getParticipantByIsPresent(int pageNumber, boolean isPresent);
 
-    PageResponse<ParticipantDto> getParticipantByEventId(int pageNumber, Long eventId);
+    List<ParticipantDto> getParticipantByEventId(Long eventId);
+
+    boolean markPoints(Long points, String group);
 
     ParticipantDto updateParticipant(ParticipantDto participantDto);
 

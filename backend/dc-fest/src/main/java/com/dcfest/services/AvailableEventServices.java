@@ -22,6 +22,5 @@ public interface AvailableEventServices {
 
     boolean deleteAvailableEvent(Long id);
 
-    void deleteAvailableEventsByCategoryId(Long categoryId);
 
 }

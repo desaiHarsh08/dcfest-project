@@ -16,6 +16,7 @@ export const fetchParticipationEventsByCollegeId = async (collegeId) => {
     return response.data;
 };
 
+
 export const doParticipate = async (collegeParticiption) => {
     console.log('registering college event :', collegeParticiption)
     const response = await API.post('/api/participations', collegeParticiption, {

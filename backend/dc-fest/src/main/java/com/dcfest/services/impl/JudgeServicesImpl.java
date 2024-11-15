@@ -164,8 +164,21 @@ public class JudgeServicesImpl implements JudgeServices {
 
     @Override
     public boolean deleteJudge(Long id) {
-        this.getJudgeById(id);
-        // Delete the judge
+       // Fetch the judge by ID
+        JudgeModel judge = this.judgeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Judge not found with ID: " + id));
+
+        // Remove the judge from each event's judges list
+        for (EventModel event : judge.getEvents()) {
+            event.getJudges().remove(judge);
+            this.eventRepository.save(event);  // Save each event after removing the judge
+        }
+
+        // Clear the events list in the judge itself to complete the cleanup
+        judge.getEvents().clear();
+        this.judgeRepository.save(judge);
+
+        // Now delete the judge
         this.judgeRepository.deleteById(id);
 
         return true;

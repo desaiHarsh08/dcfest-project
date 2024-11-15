@@ -12,7 +12,7 @@
 .nav-link-custom {
     font-size: 1rem; /* Adjust font size */
     font-weight: 500; /* Semi-bold */
-    color: #333; /* Text color */
+    color: #333; 
     padding: 10px 15px; /* Padding for better clickability */
     border-radius: 5px; /* Rounded corners */
     transition: background-color 0.3s, color 0.3s; /* Transition for hover effects */
@@ -21,8 +21,10 @@
 
 /* Navbar link hover effects */
 .nav-link-custom:hover {
-    background-color: #007bff; /* Change background on hover */
-    color: #fff; /* Change text color on hover */
+    /* background-color: #007bff; Change background on hover */
+    /* color: #fff; Change text color on hover */
+    text-decoration: underline !important;
+    color: black !important;
 }
 
 /* Brand styles */
@@ -35,4 +37,20 @@
     .nav-link-custom {
         font-size: 0.9rem; /* Smaller font size for mobile */
     }
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.nav-link-custom {
+    font-size: 1rem;
+    color: #333;
 }

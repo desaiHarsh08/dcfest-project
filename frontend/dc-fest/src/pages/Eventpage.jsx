@@ -1,14 +1,12 @@
-import { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import styles from "../styles/EventPage.module.css";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Button, Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
+import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt, FaEdit } from 'react-icons/fa';
 import EditModal from "./EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
-import { AuthContext } from "../providers/AuthProvider";
 
 const EventPage = () => {
-  const { user } = useContext(AuthContext);
   const { eventSlug } = useParams();
-  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -33,131 +31,115 @@ const EventPage = () => {
   const closeModal = () => setModalOpen(false);
 
   if (error) {
-    return <p className={styles.error}>{error}</p>;
+    return <p className="text-danger">{error}</p>;
   }
 
-  return (
-    <div className={styles.eventPage}>
-      {/* Breadcrumb Button */}
-      {/* <button className={styles.breadcrumbButton} onClick={() => navigate(-1)}>
-        ← Back
-      </button> */}
+  // Function to format date and time in AM/PM format
+  const formatDateTime = (dateTime) => {
+    return new Date(dateTime).toLocaleString("en-US", {
+    //   weekday: "long", // Day of the week (e.g., Monday)
+      year: "numeric", // Year (e.g., 2024)
+      month: "long", // Month (e.g., November)
+      day: "numeric", // Day (e.g., 14)
+      hour: "2-digit", // Hour (e.g., 09)
+      minute: "2-digit", // Minute (e.g., 30)
+    //   second: "2-digit", // Second (e.g., 05)
+      hour12: true, // Use AM/PM format
+    });
+  };
 
+  return (
+    <Container className="py-5">
       {event && (
-        <div className={styles.container}>
+        <Row>
           {/* Event Image */}
-          <div className={styles.imageContainer}>
-            <img
-              src={`/${event.slug}.jpg`}
-              alt={event.title}
-              className={styles.coverImage}
-            />
-          </div>
+          <Col md={6} className="mb-4">
+            <Card className="border-0 shadow-sm">
+              <Card.Img
+                variant="top"
+                src={`/${event?.slug}.jpg`}
+                alt={event?.title}
+                className="img-fluid rounded-lg" // Added rounded corners and made image responsive
+                style={{ height:"100vh", width:"100vw", objectFit: "cover" }} // Ensures the image looks good within a fixed height
+              />
+            </Card>
+          </Col>
 
           {/* Event Content */}
-          <div className={styles.eventContent}>
-            {/* Event Title and One-Liner */}
-            <h1 className={styles.eventTitle}>{event.title}</h1>
-            <h2 className={styles.oneLiner}>{event.oneLiner}</h2>
-
-            {/* Event Description */}
-            <p className={styles.eventDescription}>{event.description}</p>
-
-            {/* Event Details (Type and Venue) */}
-            <div className={styles.details}>
-              <h3 className={styles.detailsHeading}>Event Details</h3>
-              <div className={styles.detailsGrid}>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailIcon}>🎟️</span>
-                  <p className={styles.detailText}>
-                    <strong>Type:</strong> {event.type}
-                  </p>
+          <Col md={6}>
+            <Card className="mb-4">
+              <Card.Body>
+                <Card.Title className="h1">{event?.title}</Card.Title>
+                <Card.Subtitle className="mb-2 text-muted">{event?.oneLiner}</Card.Subtitle>
+                <Card.Text>{event?.description}</Card.Text>
+                <hr />
+                <div>
+                  <h5>Event Details</h5>
+                  <ListGroup variant="flush">
+                    <ListGroup.Item>
+                      <FaTicketAlt className="me-2" />
+                      <strong>Type:</strong> {event?.type}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <FaUsers className="me-2" />
+                      <strong>Max Participants:</strong> {event?.maxParticipants || 20}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <FaUsers className="me-2" />
+                      <strong>Min Participants:</strong> {event?.minParticipants || 1}
+                    </ListGroup.Item>
+                  </ListGroup>
                 </div>
-
-                <div className={styles.detailItem}>
-                  <span className={styles.detailIcon}>📍</span>
-                  <p className={styles.detailText}>
-                    <strong>Venue:</strong> {event.venues[0]?.name || "N/A"}
-                  </p>
+                <hr />
+                <div>
+                  <h5>Event Rules</h5>
+                  <ListGroup>
+                    {event?.eventRules.map((rule, index) => (
+                      <ListGroup.Item key={index}>
+                        <strong>{rule.eventRuleTemplate.name}:</strong>{" "}
+                        {rule.type !== "OTSE" ? (
+                          <span>{rule.value}</span>
+                        ) : (
+                          <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>
+                        )}
+                      </ListGroup.Item>
+                    ))}
+                  </ListGroup>
                 </div>
-
-                <div className={styles.detailItem}>
-                  <span className={styles.detailIcon}>🕒</span>
-                  <p className={styles.detailText}>
-                    <strong>Start:</strong>{" "}
-                    {new Date(event.venues[0]?.start).toLocaleString() || "N/A"}
-                  </p>
+                <hr />
+                <div>
+                  <h5>Event Rounds</h5>
+                  {event?.rounds.map((round, index) => (
+                    <Card key={index} className="mb-3 shadow-sm">
+                      <Card.Body>
+                        <h6>Round {index + 1}: {round.roundType}</h6>
+                        <Badge pill bg="info" className="me-2">{round.roundType}</Badge>
+                        <ListGroup variant="flush" className="mt-3">
+                          {round?.venues.map((venue, venueIndex) => (
+                            <ListGroup.Item key={`venue-${venueIndex}`} className="d-flex justify-content-between">
+                              <div>
+                                <FaMapMarkerAlt className="me-2" />
+                                <strong>{venue.name}</strong>
+                              </div>
+                              <div>
+                                
+                                <p><FaRegClock className="me-2" />{formatDateTime(venue.start)}</p>
+                                <p><FaRegClock className="me-2" />{formatDateTime(venue.end)}</p>
+                              </div>
+                            </ListGroup.Item>
+                          ))}
+                        </ListGroup>
+                      </Card.Body>
+                    </Card>
+                  ))}
                 </div>
-
-                <div className={styles.detailItem}>
-                  <span className={styles.detailIcon}>🕓</span>
-                  <p className={styles.detailText}>
-                    <strong>End:</strong>{" "}
-                    {new Date(event.venues[0]?.end).toLocaleString() || "N/A"}
-                  </p>
-                </div>
-
-                <div className={styles.detailItem}>
-                  <span className={styles.detailIcon}>👥</span>
-                  <p className={styles.detailText}>
-                    <strong>Max Participants:</strong>{" "}
-                    {event.maxParticipants || 20}
-                  </p>
-                </div>
-
-                <div className={styles.detailItem}>
-                  <span className={styles.detailIcon}>👤</span>
-                  <p className={styles.detailText}>
-                    <strong>Min Participants:</strong>{" "}
-                    {event.minParticipants || 1}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Event Rules */}
-            <div className={styles.rulesSection}>
-              <h3>Event Rules</h3>
-              <ul className={styles.rulesList}>
-                {event.eventRules.map((rule, index) => (
-                  <li
-                    key={index}
-                    className={`${styles.ruleItem} d-flex align-items-center gap-2`}
-                  >
-                    <p className="fw-bold">{rule.type}:</p>
-                    <p className="d-flex gap-2">
-                      {rule.type !== "OTSE" && <span>{rule.value}</span>}
-                      <span>{rule.type === "TIME_LIMIT" && "Min."}</span>
-                      {rule.type === "OTSE" && (
-                        <span>
-                          {rule.type === "OTSE" ? "Allowed" : "Not Allowed"}
-                        </span>
-                      )}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Event Rounds */}
-            <div className={styles.roundsSection}>
-              <h3>Event Rounds</h3>
-              <ul className={styles.roundsList}>
-                {event.rounds.map((round, index) => (
-                  <li key={index} className={styles.roundItem}>
-                    <strong>{round.name}</strong>
-                    <span>{round.roundType}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Edit Button */}
-          <button className={styles.editButton} onClick={openModal}>
-            Edit Event
-          </button>
-        </div>
+                <Button variant="primary" onClick={openModal}>
+                  <FaEdit className="me-2" /> Edit Event
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       )}
 
       {/* Edit Modal */}
@@ -167,7 +149,7 @@ const EventPage = () => {
         event={event}
         onUpdate={handleUpdate}
       />
-    </div>
+    </Container>
   );
 };
 

@@ -61,6 +61,9 @@ public class EventRuleServicesImpl implements EventRuleServices {
 
     @Override
     public EventRuleDto updateEventRule(EventRuleDto eventRuleDto) {
+        if (eventRuleDto.getId() == null) {
+            this.createEventRule(eventRuleDto);
+        }
         EventRuleModel foundEventRuleModel = this.eventRuleRepository.findById(eventRuleDto.getId()).orElseThrow(
                 () -> new ResourceNotFoundException("No `EVENT_RULE` exist for id: " + eventRuleDto.getId()));
         // Update the fields

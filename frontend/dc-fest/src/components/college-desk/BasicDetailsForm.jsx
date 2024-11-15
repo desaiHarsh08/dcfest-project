@@ -1,27 +1,29 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Row, Form } from "react-bootstrap";
-// import "../../styles/BasicDetailsForm.css"; // Import your custom CSS file for additional styling
 import CollegeRepForm from "./CollegeRepForm";
-import EmailModal from "./EmailModal";
-import PhoneModal from "./PhoneModal";
-import { createUser } from "../../services/auth-apis";
 import { updateCollege } from "../../services/college-apis";
 import { fetchUserByEmail } from "../../services/user-api";
+import { createCollegeRep } from "../../services/college-rep-apis";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { selectResetPasswordFlag, setFlag } from "../../app/slices/resetPasswordOneTimeSlice";
+import { setCollege as reduxSetCollege } from '../../app/slices/collegeSlice'
 
-const BasicDetailsForm = ({
-  college,
-  setCollege,
-  getCollege,
-  setShowResetPasswordForm,
-}) => {
+const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswordForm }) => {
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
     console.log(college);
   }, [college]);
-
+  const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([
     {
       name: "",
-      email: "desaiharsh183@gmail.com",
+      email: "",
       password: "",
       phone: "",
       type: "COLLEGE_REPRESENTATIVE",
@@ -33,7 +35,7 @@ const BasicDetailsForm = ({
     },
     {
       name: "",
-      email: "harshndesai.it@kdkce.edu.in",
+      email: "",
       password: "",
       phone: "",
       type: "COLLEGE_REPRESENTATIVE",
@@ -76,18 +78,19 @@ const BasicDetailsForm = ({
     }
   };
 
-  const createCollegeRepresentative = async (user) => {
-    try {
-      const response = await createUser(user);
-      console.log("create user response:", response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //   const createCollegeRepresentative = async (user) => {
+  //     try {
+  //       const response = await createUser(user);
+  //       console.log("create user response:", response);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     console.log("in submit, college:", college);
     console.log("in submit, college:", users);
     if (users.some((user) => user.emailVerified === false) || !college) {
@@ -96,62 +99,86 @@ const BasicDetailsForm = ({
 
     let uniqueUserEmails = false;
     // Both the users should have unique emails
-    if (
-      users[0].email.trim().toLowerCase() == users[1].email.trim().toLowerCase()
-    ) {
+    if (users[0].email.trim().toLowerCase() == users[1].email.trim().toLowerCase()) {
       uniqueUserEmails = true;
-      alert("College representative should have similar email addresses");
+      alert("College representative should have unique email addresses");
 
       return;
     }
     // Check from db
-    for (let i = 0; i < users.length; i++) {
-      let email = users[i].email;
-      try {
-        const response = await fetchUserByEmail(email);
-        console.log(response);
-        uniqueUserEmails = false;
-        setUsers(
-          users.map((user) => {
-            if (user.email === email) {
-              return { ...user, emailVerified: false };
-            }
-            return user;
-          })
-        );
-        alert(`Email already exist: ${email}`);
-        break;
-      } catch (error) {
-        console.log(error);
-        if (error.response.status === 404) {
-          uniqueUserEmails = true;
-          console.log(email);
-        }
-      }
-    }
-    if (!uniqueUserEmails) {
-      return;
-    }
+    // for (let i = 0; i < users.length; i++) {
+    //   let email = users[i].email;
+    // //   try {
+    // //     const response = await fetchUserByEmail(email);
+    // //     console.log(response);
+    // //     uniqueUserEmails = false;
+    // //     setUsers(
+    // //       users.map((user) => {
+    // //         if (user.email === email) {
+    // //           return { ...user, emailVerified: false };
+    // //         }
+    // //         return user;
+    // //       })
+    // //     );
+    // //     alert(`Email already exist: ${email}`);
+    // //     break;
+    // //   } catch (error) {
+    // //     console.log(error);
+    // //     if (error.response.status === 404) {
+    // //       uniqueUserEmails = true;
+    // //       console.log(email);
+    // //     }
+    // //   }
+    // }
+    // if (!uniqueUserEmails) {
+    //   return;
+    // }
 
     try {
       await updateCollegeDetails();
       for (let i = 0; i < users.length; i++) {
-        const tmpUser = {
-          name: users[i]?.name,
-          email: users[i]?.email,
-          password: college?.rp,
-          phone: users[i]?.phone,
-          type: "COLLEGE_REPRESENTATIVE",
+        const collegeRepObj = {
           collegeId: college?.id,
-          whatsappNumber: users[i]?.whatsappNumber,
+          name: users[i].name,
+          email: users[i].email,
+          phone: users[i].phone,
+          whatsappNumber: users[i].whatsappNumber,
         };
-        await createCollegeRepresentative(tmpUser);
+        await createCollegeRepresentative(collegeRepObj);
       }
+      //   for (let i = 0; i < users.length; i++) {
+      //     const tmpUser = {
+      //       name: users[i]?.name,
+      //       email: users[i]?.email,
+      //       password: college?.rp,
+      //       phone: users[i]?.phone,
+      //       type: "COLLEGE_REPRESENTATIVE",
+      //       collegeId: college?.id,
+      //       whatsappNumber: users[i]?.whatsappNumber,
+      //     };
+      //     await createCollegeRepresentative(tmpUser);
+      //   }
       alert("Details saved successfully...!");
-      setShowResetPasswordForm(true);
+      dispatch(reduxSetCollege(college))
+      dispatch(setFlag());
+      dispatch(setCollege(college));
+      setFlag(true);
+      ;
     } catch (error) {
       console.log(error);
-      alert("Unable to save the college");
+    //   alert("Unable to save the college");
+    }
+    navigate("/reset-password")
+    setLoading(false);
+  };
+
+  const createCollegeRepresentative = async (collegeRepObj) => {
+    try {
+      const response = await createCollegeRep(collegeRepObj);
+      console.log("Created rep:", response);
+    } catch (error) {
+      alert("Some error occured!");
+      console.log("Unable to add college rep!", error);
     }
   };
 
@@ -163,69 +190,33 @@ const BasicDetailsForm = ({
           <h4 className="mb-3 section-title">College Details</h4>
           <Form.Group controlId="collegeName" className="mb-3">
             <Form.Label>College Name</Form.Label>
-            <Form.Control
-              type="text"
-              name="name"
-              value={college?.name}
-              style={{ background: "aliceblue" }}
-              placeholder="Enter college name"
-              required
-            />
+            <Form.Control type="text" name="name" value={college?.name} style={{ background: "aliceblue" }} placeholder="Enter college name" required />
           </Form.Group>
 
           <Form.Group controlId="collegeAddress" className="mb-3">
             <Form.Label>College Address</Form.Label>
-            <Form.Control
-              type="text"
-              name="address"
-              value={college?.address}
-              onChange={handleInputChange}
-              placeholder="Enter college address"
-              required
-            />
+            <Form.Control type="text" name="address" value={college?.address} onChange={handleInputChange} placeholder="Enter college address" required />
           </Form.Group>
 
           <Form.Group controlId="email" className="mb-3">
             <Form.Label>Email</Form.Label>
             <Row>
               <Col md={9} xs={8}>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  value={college?.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter email"
-                  required
-                />
+                <Form.Control type="email" name="email" value={college?.email} onChange={handleInputChange} placeholder="Enter email" required />
               </Col>
             </Row>
           </Form.Group>
 
           <Form.Group controlId="icCode" className="mb-3">
             <Form.Label>IC Code</Form.Label>
-            <Form.Control
-              type="text"
-              name="icCode"
-              value={college?.icCode}
-              style={{ background: "aliceblue" }}
-              placeholder="Enter IC Code"
-              required
-            />
+            <Form.Control type="text" name="icCode" value={college?.icCode} style={{ background: "aliceblue" }} placeholder="Enter IC Code" required />
           </Form.Group>
 
           <Form.Group controlId="phone" className="mb-3">
             <Form.Label>Phone</Form.Label>
             <Row>
               <Col md={9} xs={8}>
-                <Form.Control
-                  type="tel"
-                  name="phone"
-                  isCollege={true}
-                  value={college?.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter number"
-                  required
-                />
+                <Form.Control type="tel" name="phone" isCollege={true} value={college?.phone} onChange={handleInputChange} placeholder="Enter number" required />
               </Col>
             </Row>
           </Form.Group>
@@ -234,29 +225,13 @@ const BasicDetailsForm = ({
           <h4 className="mt-4 mb-3 section-title">College Representative 1</h4>
           {users.map((user, index) => (
             <>
-              {index === 1 && (
-                <h4 className="mt-4 mb-3 section-title">
-                  College Representative 2
-                </h4>
-              )}
-              <CollegeRepForm
-                key={`user-${index}`}
-                onChange={(e) => handleUserChange(e, index)}
-                index={index}
-                user={user}
-                users={users}
-                setUsers={setUsers}
-              />
+              {index === 1 && <h4 className="mt-4 mb-3 section-title">College Representative 2</h4>}
+              <CollegeRepForm key={`user-${index}`} onChange={(e) => handleUserChange(e, index)} index={index} user={user} users={users} setUsers={setUsers} />
             </>
           ))}
 
-          <Button
-            disabled={users.some((user) => user.emailVerified === false)}
-            variant="primary"
-            type="submit"
-            className="mt-4"
-          >
-            Submit
+          <Button disabled={users.some((user) => user.emailVerified === false)} variant="primary" type="submit" className="mt-4">
+            {loading ? "Please wait..." : "Submit"}
           </Button>
         </Form>
       </Card>

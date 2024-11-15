@@ -15,3 +15,12 @@ export const fetchCategoryById = async (id) => {
     console.log(response)
     return response.data;
 };
+
+
+export const addAvailableEvent = async (availableEvent) => {
+    const response = await API.post(`/api/available-events`, availableEvent, {
+        withCredentials: true
+    });
+    console.log(response)
+    return response.data;
+};

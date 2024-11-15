@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../../styles/ParticipationStats.module.css"; // Import custom styles
 import { fetchColleges } from "../../services/college-apis";
+import { FaUsers, FaCheckCircle, FaExclamationCircle } from "react-icons/fa"; // Import icons from react-icons
 
 const ParticipationStats = () => {
   const [stats, setStats] = useState();
@@ -21,7 +22,7 @@ const ParticipationStats = () => {
   }, []);
 
   return (
-    <div className={`container ${styles.participationStats} mt-4`}>
+    <div className={'container ${styles.participationStats} mt-4'}>
       <div className="row justify-content-center">
         <div className="col-12 col-md-4 mb-4">
           <div
@@ -30,11 +31,10 @@ const ParticipationStats = () => {
           >
             <div className="card-body text-center">
               <div className={styles.icon}>
-                {/* Add a suitable icon, e.g., Total icon */}
-                <i className="fas fa-users"></i>
+                <FaUsers size={40} style={{color:"white"}} /> {/* Total icon */}
               </div>
               <h5 className="card-title" style={{ color: "white" }}>
-                Total Registration
+                Total Colleges
               </h5>
               <p
                 className={`card-text ${styles.statValue}`}
@@ -52,8 +52,7 @@ const ParticipationStats = () => {
           >
             <div className="card-body text-center">
               <div className={styles.icon}>
-                {/* Add a success-related icon */}
-                <i className="fas fa-check-circle"></i>
+                <FaCheckCircle size={40} style={{ color: "white" }} /> {/* Success-related icon */}
               </div>
               <h5 className="card-title" style={{ color: "white" }}>
                 Successful Registration
@@ -74,8 +73,7 @@ const ParticipationStats = () => {
           >
             <div className="card-body text-center">
               <div className={styles.icon}>
-                {/* Add a warning-related icon */}
-                <i className="fas fa-exclamation-circle"></i>
+                <FaExclamationCircle size={40} style={{ color: "white" }} /> {/* Warning-related icon */}
               </div>
               <h5 className="card-title" style={{ color: "white" }}>
                 Incomplete Registration

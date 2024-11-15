@@ -3,6 +3,7 @@ package com.dcfest.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -39,8 +40,10 @@ public class ParticipantModel {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
+
+    private boolean isMale;
 
     @Column(nullable = false)
     private String whatsappNumber;
@@ -56,6 +59,11 @@ public class ParticipantModel {
     private CollegeModel college;
 
     @ManyToMany(mappedBy = "participants")
+    @JsonBackReference
     private List<EventModel> events =  new ArrayList<>();
+
+    public ParticipantModel(Long id) {
+        this.id = id;
+    }
 
 }

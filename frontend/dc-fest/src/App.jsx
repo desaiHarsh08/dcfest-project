@@ -1,12 +1,4 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Outlet,
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import { Outlet, createBrowserRouter, RouterProvider } from "react-router-dom";
 import CollegeRepresentativePage from "./pages/CollegeRepresentativePage";
 import TeamsParticipatedPage from "./pages/TeamsParticipatedPage";
 import CollegeRankingPage from "./pages/CollegeRankingPage";
@@ -26,7 +18,6 @@ import EventParticipationPage from "./pages/EventParticipationPage";
 import HelpDesk from "./pages/HelpDesk";
 import ScoringDepartment from "./pages/ScoringDepartment";
 import CollegeDesk from "./pages/CollegeDesk";
-import CategoryList from "./components/categories/CategoryList";
 import CollegeEvent from "./pages/CollegeEvent";
 import Settings from "./pages/Settings";
 import CollegeDeskLayout from "./components/layout/CollegeDeskLayout";
@@ -34,6 +25,8 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CollegeGreetings from "./pages/CollegeGreetings";
 import EventPage from "./pages/Eventpage";
 import RootEvent from "./pages/RootEvent";
+import AddEventPage from "./pages/AddEventPage";
+import { AuthProvider } from "./providers/AuthProvider";
 
 const router = createBrowserRouter([
   {
@@ -47,7 +40,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/reset-password",
-    element: <ResetPasswordPage />,
+    element: (
+      <AuthProvider>
+        <ResetPasswordPage />
+      </AuthProvider>
+    ),
   },
   {
     path: "/college-greeting",
@@ -92,6 +89,7 @@ const router = createBrowserRouter([
     children: [
       { path: "", element: <HomeDesk /> },
       { path: "settings", element: <Settings /> },
+      { path: "add-event", element: <AddEventPage /> },
       {
         path: "categories",
         element: <Outlet />,

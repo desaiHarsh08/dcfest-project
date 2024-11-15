@@ -27,12 +27,6 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @GetMapping("/college/{collegeId}")
-    public ResponseEntity<PageResponse<UserDto>> getUsersByCollegeId(@RequestParam(defaultValue = "0") int pageNumber, @PathVariable Long collegeId) {
-        PageResponse<UserDto> users = userServices.getUsersByCollegeId(pageNumber, collegeId);
-        return new ResponseEntity<>(users, HttpStatus.OK);
-    }
-
     @GetMapping("/email/{email}")
     public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
         UserDto user = userServices.getUserByEmail(email);
@@ -61,9 +55,4 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/college/{collegeId}")
-    public ResponseEntity<Void> deleteUserByCollegesId(@PathVariable Long collegeId) {
-        userServices.deleteUserByCollegesId(collegeId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
 }
