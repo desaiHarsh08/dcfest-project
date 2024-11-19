@@ -30,6 +30,8 @@ public class AvailableEventDto {
 
     private Long eventCategoryId;
 
+    private boolean closeRegistration;
+
     private List<EventRuleDto> eventRules = new ArrayList<>();
 
     private List<RoundDto> rounds = new ArrayList<>();

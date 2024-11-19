@@ -123,6 +123,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         foundAvailableEventModel.setOneLiner(availableEventDto.getOneLiner());
         foundAvailableEventModel.setDescription(availableEventDto.getDescription());
         foundAvailableEventModel.setType(availableEventDto.getType());
+        foundAvailableEventModel.setCloseRegistration(availableEventDto.isCloseRegistration());
         // Save the changes
         foundAvailableEventModel = this.availableEventRepository.save(foundAvailableEventModel);
         // Update the event_rules
