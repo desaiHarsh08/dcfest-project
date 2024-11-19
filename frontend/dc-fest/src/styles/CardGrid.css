@@ -60,3 +60,67 @@
     width: 100%;
     /* Makes sure images take the full width of the card */
 }
+
+/* User greeting section */
+.user-greeting {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.user-greeting h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.user-greeting p {
+    font-size: 1rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+/* Icon background styling */
+.icon-bg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #56CCF2, #2F80ED);
+    color: white;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-right: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.icon-bg:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .user-greeting h2 {
+        font-size: 1.5rem;
+    }
+
+    .user-greeting p {
+        font-size: 0.9rem;
+    }
+
+    .icon-bg {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+}

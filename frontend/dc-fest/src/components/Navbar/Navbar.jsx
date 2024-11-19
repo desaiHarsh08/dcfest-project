@@ -81,6 +81,7 @@ const Navbar = () => {
         bg="light"
         variant="light"
         className="border-bottom shadow-sm"
+        // style={{height:"60px"}}
       >
         <Container>
           <div className="navbar-brand ms-2 fs-5 font-bold d-flex align-items-center">
@@ -107,7 +108,7 @@ const Navbar = () => {
                 <FaBook className="me-1" /> Registration Rules
               </Button>
               {!authContext?.user ? (
-                <Link to="/login" className="nav-link-custom text-decoration-none d-flex align-items-center" style={{fontSize:"1.36rem"}} >
+                <Link to="/login" className="nav-link-custom text-decoration-none d-flex align-items-center" style={{fontSize:"1.36rem" , background:"cornflowerblue", borderRadius:"12px", color:"white"}} >
                   <FaSignInAlt className="me-1" /> Login
                 </Link>
               ) : (

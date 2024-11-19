@@ -55,7 +55,7 @@ const ParticipationStats = () => {
                 <FaCheckCircle size={40} style={{ color: "white" }} /> {/* Success-related icon */}
               </div>
               <h5 className="card-title" style={{ color: "white" }}>
-                Successful Registration
+                Total College Registered
               </h5>
               <p
                 className={`card-text ${styles.statValue}`}
@@ -76,7 +76,7 @@ const ParticipationStats = () => {
                 <FaExclamationCircle size={40} style={{ color: "white" }} /> {/* Warning-related icon */}
               </div>
               <h5 className="card-title" style={{ color: "white" }}>
-                Incomplete Registration
+               Total Incomplete Registration
               </h5>
               <p
                 className={`card-text ${styles.statValue}`}
