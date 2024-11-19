@@ -7,6 +7,8 @@ import {
   fetchCollegeByIcCode,
   fetchCollegeById,
 } from "../services/college-apis";
+import { FiLock, FiUser } from "react-icons/fi";
+import { h1 } from "framer-motion/client";
 const Login = () => {
   const navigate = useNavigate();
 
@@ -55,7 +57,10 @@ const Login = () => {
               <h3 className="text-center mb-4">Sign In</h3>
               <Form onSubmit={handleLogin}>
                 <Form.Group controlId="formBasicusername" className="mb-3">
-                  <Form.Label>IC Code / Email</Form.Label>
+                  <Form.Label>
+                    <FiUser />
+                    Enter your IC Code :-
+                    </Form.Label>
                   <Form.Control
                     type="text"
                     value={credentials.username}
@@ -65,12 +70,15 @@ const Login = () => {
                         username: e.target.value,
                       }))
                     }
-                    placeholder="Enter IC Code or username"
+                    placeholder="Enter IC Code"
                   />
                 </Form.Group>
 
                 <Form.Group controlId="formBasicPassword" className="mb-3">
-                  <Form.Label>Password</Form.Label>
+                  <Form.Label>
+                    <FiLock />
+                     Enter your Password :-
+                    </Form.Label>
                   <Form.Control
                     type="password"
                     placeholder="Enter password"

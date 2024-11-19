@@ -97,7 +97,7 @@ const TeamsParticipatedPage = () => {
     <Container className="mt-5">
       <Row className="justify-content-center">
         <Col md={6}>
-          <h1 className="text-center mb-4">Teams Participated Page</h1>
+          <h1 className="text-center mb-4">Upload College List</h1>
           <p className="text-center">
             This is where you can upload event participation files for the
             college.
