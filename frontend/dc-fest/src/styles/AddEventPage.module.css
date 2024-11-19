@@ -1,0 +1,19 @@
+.scrollable-container {
+    max-height: 400px; /* Adjust to fit your design */
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+  
+  .scrollable-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollable-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  .scrollable-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
