@@ -1,4 +1,3 @@
-import { AuthProvider } from "../providers/AuthProvider";
 import DeskLayout from "../components/college-desk/DeskLayout";
 
 import "../styles/CollegeDesk.css";

@@ -40,7 +40,7 @@ const ParticipationStats = () => {
                 className={`card-text ${styles.statValue}`}
                 style={{ color: "white" }}
               >
-                {stats?.total}
+                {!stats ? "..." : stats?.total}
               </p>
             </div>
           </div>
@@ -61,7 +61,7 @@ const ParticipationStats = () => {
                 className={`card-text ${styles.statValue}`}
                 style={{ color: "white" }}
               >
-                {stats?.sucessfulRegistration}
+                {!stats ? "..." : stats?.sucessfulRegistration}
               </p>
             </div>
           </div>
@@ -82,7 +82,7 @@ const ParticipationStats = () => {
                 className={`card-text ${styles.statValue}`}
                 style={{ color: "white" }}
               >
-                {stats?.incompleteRegistration}
+                {!stats ? "..." : stats?.incompleteRegistration}
               </p>
             </div>
           </div>
