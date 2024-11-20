@@ -136,16 +136,18 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         }
         // Update the round
         List<RoundDto> existingRoundDtos = this.roundServices.getRoundsByAvailableEventId(foundAvailableEventModel.getId());
-        for (RoundDto roundDto : availableEventDto.getRounds()) {
-            roundDto.setAvailableEventId(foundAvailableEventModel.getId());
-            if (roundDto.getId() != null && existingRoundDtos.stream().anyMatch(r -> r.getId().equals(roundDto.getId()))) {
-                this.roundServices.updateRound(roundDto);
-            }
-            else if (existingRoundDtos.stream().noneMatch(r -> r.getId().equals(roundDto.getId()))) {
-                this.roundServices.deleteRound(roundDto.getId());
+        if (!existingRoundDtos.isEmpty()) {
+            for (RoundDto roundDto : availableEventDto.getRounds()) {
+                roundDto.setAvailableEventId(foundAvailableEventModel.getId());
+                if (roundDto.getId() != null && existingRoundDtos.stream().anyMatch(r -> r.getId().equals(roundDto.getId()))) {
+                    this.roundServices.updateRound(roundDto);
+                }
+                else if (existingRoundDtos.stream().noneMatch(r -> r.getId().equals(roundDto.getId()))) {
+                    this.roundServices.deleteRound(roundDto.getId());
+                }
             }
         }
-
+        
         return this.availableEventModelToDto(foundAvailableEventModel);
     }
 

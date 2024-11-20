@@ -54,7 +54,7 @@ public class AvailableEventController {
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity<AvailableEventDto> updateAvailableEvent(@RequestBody AvailableEventDto availableEventDto) {
         AvailableEventDto updatedEvent = availableEventServices.updateAvailableEvent(availableEventDto);
         return new ResponseEntity<>(updatedEvent, HttpStatus.OK);
