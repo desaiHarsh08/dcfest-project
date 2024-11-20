@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import com.dcfest.dtos.VenueDto;
-import com.dcfest.models.VenueModel;
-import com.dcfest.services.VenueServices;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,9 +24,6 @@ public class RoundServicesImpl implements RoundServices {
     @Autowired
     private RoundRepository roundRepository;
 
-    @Autowired
-    private VenueServices venueServices;
-
     @Override
     public RoundDto createRound(RoundDto roundDto) {
         AvailableEventModel availableEventModel = new AvailableEventModel();
@@ -39,15 +33,6 @@ public class RoundServicesImpl implements RoundServices {
         roundModel.setAvailableEvent(availableEventModel);
         // Save the round
         roundModel = this.roundRepository.save(roundModel);
-        // Creating the venues
-        for (VenueDto venueDto: roundDto.getVenues()) {
-            venueDto.setRoundId(roundModel.getId());
-            VenueDto createdVenue = this.venueServices.createVenue(venueDto);
-            if (createdVenue != null) {
-                System.out.println("Created venue:"+ createdVenue.getId());
-            }
-
-        }
 
         return this.roundModelToDto(roundModel);
     }
@@ -94,6 +79,12 @@ public class RoundServicesImpl implements RoundServices {
         foundRoundModel.setQualifyNumber(roundDto.getQualifyNumber());
         foundRoundModel.setStatus(roundDto.getStatus());
         foundRoundModel.setNote(roundDto.getNote());
+        foundRoundModel.setVenue(roundDto.getVenue());
+        foundRoundModel.setStartDate(roundDto.getStartDate());
+        foundRoundModel.setEndDate(roundDto.getEndDate());
+        foundRoundModel.setStartTime(roundDto.getStartTime());
+        foundRoundModel.setEndTime(roundDto.getEndTime());
+        foundRoundModel.setDisableNotifications(roundDto.isDisableNotifications());
         // Save the changes
         foundRoundModel = this.roundRepository.save(foundRoundModel);
 
@@ -103,11 +94,6 @@ public class RoundServicesImpl implements RoundServices {
     @Override
     public boolean deleteRound(Long id) {
         this.getRoundById(id);
-        // Delete all the venues
-        List<VenueDto> venueDtos = this.venueServices.getVenueByRoundId(id);
-        for (VenueDto venueDto: venueDtos) {
-            this.venueServices.deleteVenue(venueDto.getId());
-        }
         // Delete the round
         this.roundRepository.deleteById(id);
 
@@ -121,7 +107,6 @@ public class RoundServicesImpl implements RoundServices {
 
         RoundDto roundDto = this.modelMapper.map(roundModel, RoundDto.class);
         roundDto.setAvailableEventId(roundModel.getAvailableEvent().getId());
-        roundDto.setVenues(this.venueServices.getVenueByRoundId(roundModel.getId()));
 
         return roundDto;
     }

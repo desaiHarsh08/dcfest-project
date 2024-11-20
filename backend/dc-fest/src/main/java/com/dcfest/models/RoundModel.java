@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 
 @Entity
@@ -41,6 +44,16 @@ public class RoundModel {
     private AvailableEventModel availableEvent;
 
     private boolean disableNotifications;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
+
+    private String venue;
 
     public RoundModel(Long id) {
         this.id = id;

@@ -2,7 +2,6 @@ package com.dcfest.notifications.email;
 
 import com.dcfest.models.EventModel;
 import com.dcfest.models.UserModel;
-import com.dcfest.models.VenueModel;
 import com.dcfest.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -55,30 +54,30 @@ public class EmailServices {
         }
     }
 
-    @Async
-    public void sendParticipantRegistrationEmail(String to, String name, List<VenueModel> venueModels, EventModel eventModel) {
-        String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle() + " - Umang DCFest 2024";
-
-        try {
-            MimeMessage message = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(to);
-            helper.setSubject(subject);
-
-            // Create the HTML content using Thymeleaf template
-            Context context = new Context();
-            context.setVariable("name", name);
-            context.setVariable("eventModel", eventModel);
-            context.setVariable("venueModels", venueModels);
-
-            String htmlContent = templateEngine.process("participantRegistration", context);
-            helper.setText(htmlContent, true); // Enable HTML content
-
-            this.emailSender.send(message);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-    }
+//    @Async
+//    public void sendParticipantRegistrationEmail(String to, String name, List<VenueModel> venueModels, EventModel eventModel) {
+//        String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle() + " - Umang DCFest 2024";
+//
+//        try {
+//            MimeMessage message = emailSender.createMimeMessage();
+//            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+//            helper.setTo(to);
+//            helper.setSubject(subject);
+//
+//            // Create the HTML content using Thymeleaf template
+//            Context context = new Context();
+//            context.setVariable("name", name);
+//            context.setVariable("eventModel", eventModel);
+//            context.setVariable("venueModels", venueModels);
+//
+//            String htmlContent = templateEngine.process("participantRegistration", context);
+//            helper.setText(htmlContent, true); // Enable HTML content
+//
+//            this.emailSender.send(message);
+//        } catch (MessagingException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Async
     public void sendResetPasswordEmail(String to, String name, String iccode, String password, String institutionName) {

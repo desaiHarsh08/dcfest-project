@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,14 @@ public class RoundDto {
 
     private boolean disableNotifications;
 
-    private List<VenueDto> venues = new ArrayList<>();
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
+
+    private String venue;
 
 }

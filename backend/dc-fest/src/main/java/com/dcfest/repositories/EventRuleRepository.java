@@ -1,6 +1,7 @@
 package com.dcfest.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.dcfest.models.EventRuleTemplateModel;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +19,6 @@ public interface EventRuleRepository extends JpaRepository<EventRuleModel, Long>
 
     List<EventRuleModel> findByEventRuleTemplate(EventRuleTemplateModel eventRuleTemplate);
 
-    @Query("DELETE FROM EventRuleModel e WHERE e.availableEvent.id = :availableEventId")
-    void deleteByAvailableEventId(@Param("availableEventId") Long availableEventId);
+
 
 }

@@ -27,9 +27,6 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
     private EventRuleServices eventRuleServices;
 
     @Autowired
-    private VenueServices venueServices;
-
-    @Autowired
     private EventServices eventServices;
 
     @Autowired

@@ -1,12 +1,9 @@
 package com.dcfest.services.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.security.SecureRandom;
 import javax.imageio.ImageIO;
 
@@ -64,13 +61,13 @@ public class ParticipantServicesImpl implements ParticipantServices {
     private RoundRepository roundRepository;
 
     @Autowired
-    private VenueRepository venueRepository;
-
-    @Autowired
     private EmailServices emailServices;
 
     @Autowired
     private CollegeRepository collegeRepository;
+
+    @Autowired
+    private EventRuleRepository eventRuleRepository;
 
     @Override
     public ParticipantDto createParticipant(ParticipantDto participantDto) {
@@ -87,6 +84,19 @@ public class ParticipantServicesImpl implements ParticipantServices {
                         () -> new IllegalArgumentException(
                                 "Invalid `AVAILABLE_EVENT` id provided: " + eventModel.getAvailableEvent().getId()));
         eventModel.setAvailableEvent(availableEventModel);
+
+        List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(availableEventModel);
+
+        EventRuleModel eventRuleModel = eventRuleModels.stream().filter(ele -> ele.getEventRuleTemplate().getId().equals(6L)).findAny().orElse(null);
+        if (eventRuleModel == null) {
+            throw new IllegalArgumentException("Unable to get the Maximum slots available");
+        }
+
+        int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
+        int slotsOccupied = this.getParticipantByEventId(eventModel.getId()).size();
+        if (slotsOccupied == maxSlotsAvailable) {
+            throw new IllegalArgumentException("No slots available for participating!");
+        }
 
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
@@ -181,17 +191,17 @@ public class ParticipantServicesImpl implements ParticipantServices {
         );
         List<RoundModel> roundModels = this.roundRepository.findByAvailableEvent(availableEventModel);
 
-        List<VenueModel> venueModels = new ArrayList<>();
-        for (RoundModel roundModel: roundModels) {
-            if (roundModel.getRoundType().equals(RoundType.PRELIMINARY) && roundModel.getStatus().equals(RoundStatus.NOT_STARTED)) {
-                venueModels = this.venueRepository.findByRound(roundModel);
-                break;
-            }
-        }
+//        List<VenueModel> venueModels = new ArrayList<>();
+//        for (RoundModel roundModel: roundModels) {
+//            if (roundModel.getRoundType().equals(RoundType.PRELIMINARY) && roundModel.getStatus().equals(RoundStatus.NOT_STARTED)) {
+//                venueModels = this.venueRepository.findByRound(roundModel);
+//                break;
+//            }
+//        }
 
-        if (venueModels.isEmpty()) {
-            return null;
-        }
+//        if (venueModels.isEmpty()) {
+//            return null;
+//        }
 
 //        this.emailServices.sendParticipantRegistrationEmail(ve);
 
@@ -206,19 +216,20 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 .append("</li>");
 
         // Add venue details for each venue
-        for (VenueModel venueModel : venueModels) {
-            emailBody.append("<li><strong>Venue:</strong> ").append(venueModel.getName()).append("</li>")
-                    .append("<li><strong>Date & Time:</strong> ")
-                    .append(venueModel.getStart().toLocalDate()).append(" at ")
-                    .append(venueModel.getStart().toLocalTime()).append(" to ")
-                    .append(venueModel.getEnd().toLocalTime()).append("</li>");
-        }
+//        for (VenueModel venueModel : venueModels) {
+//            emailBody.append("<li><strong>Venue:</strong> ").append(venueModel.getName()).append("</li>")
+//                    .append("<li><strong>Date & Time:</strong> ")
+//                    .append(venueModel.getStart().toLocalDate()).append(" at ")
+//                    .append(venueModel.getStart().toLocalTime()).append(" to ")
+//                    .append(venueModel.getEnd().toLocalTime()).append("</li>");
+//        }
+//
+//        emailBody.append("</ul>")
+//                .append("<p>We look forward to your participation. Please feel free to contact us if you have any questions.</p>")
+//                .append("<p>Best regards,<br>The Umang DCFest Team</p>");
 
-        emailBody.append("</ul>")
-                .append("<p>We look forward to your participation. Please feel free to contact us if you have any questions.</p>")
-                .append("<p>Best regards,<br>The Umang DCFest Team</p>");
-
-        return emailBody.toString();
+//        return emailBody.toString();
+        return null;
     }
 
     public byte[] generateQRCodeImage(String data, int width, int height) throws Exception {

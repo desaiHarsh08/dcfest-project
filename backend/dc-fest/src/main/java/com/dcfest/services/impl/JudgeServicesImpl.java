@@ -12,17 +12,14 @@ import com.dcfest.dtos.JudgeDto;
 import com.dcfest.dtos.UserDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.AvailableEventModel;
-import com.dcfest.models.CollegeModel;
 import com.dcfest.models.EventModel;
 import com.dcfest.models.JudgeModel;
 import com.dcfest.models.UserModel;
-import com.dcfest.models.VenueModel;
 import com.dcfest.notifications.email.EmailServices;
 import com.dcfest.repositories.AvailableEventRepository;
 import com.dcfest.repositories.EventRepository;
 import com.dcfest.repositories.JudgeRepository;
 import com.dcfest.repositories.UserRepository;
-import com.dcfest.repositories.VenueRepository;
 import com.dcfest.services.JudgeServices;
 
 @Service
@@ -45,9 +42,6 @@ public class JudgeServicesImpl implements JudgeServices {
 
     @Autowired
     private EmailServices emailServices;
-
-    @Autowired
-    private VenueRepository venueRepository;
 
     @Override
     public JudgeDto createJudge(JudgeDto judgeDto) {

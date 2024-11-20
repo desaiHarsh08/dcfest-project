@@ -27,10 +27,8 @@ public class AvailableEventModel {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
     private String oneLiner;
 
-    @Column(nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)

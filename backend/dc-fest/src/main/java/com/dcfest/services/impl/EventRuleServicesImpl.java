@@ -86,7 +86,10 @@ public class EventRuleServicesImpl implements EventRuleServices {
 
     @Override
     public void deleteEventRulesByAvailableEventId(Long availableEventId) {
-        this.eventRuleRepository.deleteByAvailableEventId(availableEventId);
+        List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(new AvailableEventModel(availableEventId));
+        for (EventRuleModel eventRuleModel: eventRuleModels) {
+            this.deleteEventRule(eventRuleModel.getId());
+        }
     }
 
     private EventRuleDto eventRuleModelToDto(EventRuleModel eventRuleModel) {
