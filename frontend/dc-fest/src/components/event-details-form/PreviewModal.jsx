@@ -2,7 +2,7 @@
 import { Modal, Button, Card, ListGroup, Badge, Row, Col } from "react-bootstrap";
 import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt } from "react-icons/fa";
 
-const PreviewModal = ({ show, event, onClose, onConfirm }) => {
+const PreviewModal = ({ show, event, onClose, onConfirm, isLoading }) => {
   // Function to format date and time in AM/PM format
   const formatDateTime = (dateTime) => {
     return new Date(dateTime).toLocaleString("en-US", {
@@ -67,38 +67,40 @@ const PreviewModal = ({ show, event, onClose, onConfirm }) => {
                   <hr />
                   <div>
                     <h5>Event Rounds</h5>
-                    {event?.rounds.map((round, index) => (
-                      <Card key={index} className="mb-3 shadow-sm">
-                        <Card.Body>
-                          <h6>
-                            Round {index + 1}: {round.roundType}
-                          </h6>
-                          <Badge pill bg="info" className="me-2">
-                            {round.roundType}
-                          </Badge>
-                          <ListGroup variant="flush" className="mt-3">
-                            {round?.venues.map((venue, venueIndex) => (
-                              <ListGroup.Item key={`venue-${venueIndex}`} className="d-flex justify-content-between">
-                                <div>
-                                  <FaMapMarkerAlt className="me-2" />
-                                  <strong>{venue.name}</strong>
-                                </div>
-                                <div>
-                                  <p>
-                                    <FaRegClock className="me-2" />
-                                    {formatDateTime(venue.start)}
-                                  </p>
-                                  <p>
-                                    <FaRegClock className="me-2" />
-                                    {formatDateTime(venue.end)}
-                                  </p>
-                                </div>
-                              </ListGroup.Item>
-                            ))}
-                          </ListGroup>
-                        </Card.Body>
-                      </Card>
-                    ))}
+                    {event?.rounds.map((round, index) => {
+                      if (round?.venue.trim() != "") {
+                        return (
+                          <Card key={index} className="mb-3 shadow-sm">
+                            <Card.Body>
+                              <h6>
+                                Round {index + 1}: {round?.roundType}
+                              </h6>
+                              <Badge pill bg="info" className="me-2">
+                                {round?.roundType}
+                              </Badge>
+                              <ListGroup variant="flush" className="mt-3">
+                                <ListGroup.Item className="d-flex justify-content-between">
+                                  <div>
+                                    <FaMapMarkerAlt className="me-2" />
+                                    <strong>{round?.venue}</strong>
+                                  </div>
+                                  <div>
+                                    <p>
+                                      <FaRegClock className="me-2" />
+                                      {/* {round?.startDate} {round?.startTime} */}
+                                    </p>
+                                    <p>
+                                      <FaRegClock className="me-2" />
+                                      {/* {round?.endDate} {round?.endTime} */}
+                                    </p>
+                                  </div>
+                                </ListGroup.Item>
+                              </ListGroup>
+                            </Card.Body>
+                          </Card>
+                        );
+                      }
+                    })}
                   </div>
                 </Card.Body>
               </Card>
@@ -110,8 +112,8 @@ const PreviewModal = ({ show, event, onClose, onConfirm }) => {
         <Button variant="secondary" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={onConfirm}>
-          Confirm
+        <Button variant="primary" disabled={isLoading} onClick={onConfirm}>
+          {isLoading ? "Please wait..." : "Confirm"}
         </Button>
       </Modal.Footer>
     </Modal>

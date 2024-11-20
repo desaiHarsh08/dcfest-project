@@ -23,7 +23,7 @@ import Settings from "./pages/Settings";
 import CollegeDeskLayout from "./components/layout/CollegeDeskLayout";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CollegeGreetings from "./pages/CollegeGreetings";
-import EventPage from "./pages/Eventpage";
+import EventPage from "./pages/EventPage";
 import RootEvent from "./pages/RootEvent";
 import AddEventPage from "./pages/AddEventPage";
 import { AuthProvider } from "./providers/AuthProvider";

@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+/* eslint-disable no-unused-vars */
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
 import EventCard from "../components/events/EventCard";
 import {
-  fetchAvailableEvents,
   fetchAvailableEventsByCategorySlug,
-  fetchAvailableEventsBySlug,
 } from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
 import { useSelector } from "react-redux";
@@ -18,7 +17,6 @@ const EventsPage = () => {
   const [events, setEvents] = useState([]);
   const [college, setCollege] = useState();
   const [error, setError] = useState(null); // State to hold any fetch errors
-  const navigate = useNavigate();
 
   useEffect(() => {
     getCollege();

@@ -23,9 +23,16 @@ export const fetchAvailableEventsBySlug = async (slug) => {
     return response.data;
 };
 
-
 export const fetchAvailableEventsByCategorySlug = async (slug) => {
     const response = await API.get(`/api/available-events/category/${slug}`, {
+        withCredentials: true
+    });
+    console.log(response)
+    return response.data;
+};
+
+export const deleteAvailableEvent = async (id) => {
+    const response = await API.delete(`/api/available-events/${id}`, {
         withCredentials: true
     });
     console.log(response)

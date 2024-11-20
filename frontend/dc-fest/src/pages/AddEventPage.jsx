@@ -1,262 +1,3 @@
-// import { useEffect, useState } from "react";
-// import { addAvailableEvent, fetchCategories } from "../services/categories-api";
-// import EventInfo from "../components/event-details-form/EventInfo";
-// import EventRules from "../components/event-details-form/EventRules";
-// import EventRounds from "../components/event-details-form/EventRounds";
-// import { fetchEventTemplateRules } from "../services/event-rule-templates-api";
-
-// const AddEventPage = () => {
-//   const [categories, setCategories] = useState([]);
-//   const [ruleTemplates, setRuleTemplates] = useState([]);
-//   const [event, setEvent] = useState({
-//     title: "",
-//     oneLiner: "",
-//     description: "",
-//     slug: "",
-//     type: "INDIVIDUAL",
-//     eventCategoryId: null,
-//     eventRules: [],
-//     rounds: [
-//       {
-//         roundType: "PRELIMINARY",
-//         qualifyNumber: 2,
-//         status: "NOT_STARTED",
-//         note: "",
-//         disableNotifications: false,
-//         venues: [
-//           {
-//             name: "",
-//             roundId: undefined,
-//             start: "",
-//             end: "",
-//           },
-//         ],
-//       },
-//     ],
-//   });
-
-//   useEffect(() => {
-//     fetchCategories()
-//       .then((data) => {
-//         console.log(data);
-//         setCategories(data);
-//         setEvent((prev) => ({ ...prev, eventCategoryId: data[0]?.id }));
-//       })
-//       .catch((error) => console.log(error));
-//   }, []);
-
-//   useEffect(() => {
-//     fetchEventTemplateRules().then((data) => {
-//       console.log("rule templates:", data);
-//       setRuleTemplates(data);
-//       setEvent((prev) => ({
-//         ...prev,
-//         eventRules: [
-//           {
-//             value: "",
-//             eventRuleTemplate: data[0],
-//           },
-//         ],
-//       }));
-//     });
-//   }, []);
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setEvent((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleAddRound = () => {
-//     const newEvent = { ...event };
-//     const newRounds = [
-//       {
-//         roundType: "PRELIMINARY",
-//         qualifyNumber: 2,
-//         status: "NOT_STARTED",
-//         note: "",
-//         disableNotifications: false,
-//         venues: [
-//           {
-//             name: "",
-//             roundId: undefined,
-//             start: new Date(),
-//             end: new Date(),
-//           },
-//         ],
-//       },
-//       ...newEvent.rounds,
-//     ];
-//     newEvent.rounds = newRounds;
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleAddRule = () => {
-//     const newEvent = { ...event };
-//     newEvent.eventRules = [
-//       {
-//         eventRuleTemplate: ruleTemplates[0],
-//         value: "",
-//       },
-//       ...newEvent.eventRules,
-//     ];
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleDeleteRule = (ruleIndex) => {
-//     const newEvent = { ...event };
-//     newEvent.eventRules = newEvent.eventRules.filter((ele, index) => index != ruleIndex);
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleChangeRule = (e, ruleIndex) => {
-//     const { name, value } = e.target;
-//     const newEvent = { ...event };
-//     newEvent.eventRules = newEvent.eventRules.map((ele, index) => {
-//       if (index === ruleIndex) {
-//         console.log("name:", name, value);
-//         //   console.log(eventRuleTemplate)
-//         if (name == "eventRuleTemplate") {
-//           const eventRuleTemplate = ruleTemplates.find((r) => r.id == value);
-//           console.log(eventRuleTemplate);
-//           return { ...ele, [name]: eventRuleTemplate };
-//         }
-
-//         return { ...ele, [name]: value };
-//       }
-
-//       return ele;
-//     });
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleDeleteRound = (roundIndex) => {
-//     const newEvent = { ...event };
-//     newEvent.rounds = newEvent.rounds.filter((ele, index) => index != roundIndex);
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleChangeRound = (e, roundIndex) => {
-//     const { name, value } = e.target;
-//     const newEvent = { ...event };
-//     newEvent.rounds = newEvent.rounds.map((round, index) => {
-//       if (roundIndex == index) {
-//         return { ...round, [name]: value };
-//       }
-//       return round;
-//     });
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleAddVenue = (roundIndex) => {
-//     const newEvent = { ...event };
-//     newEvent.rounds = newEvent.rounds.map((round, index) => {
-//       if (roundIndex == index) {
-//         const newRound = { ...round };
-//         newRound.venues = [
-//           {
-//             name: "",
-//             roundId: undefined,
-//             start: "",
-//             end: "",
-//           },
-//           ...newRound.venues,
-//         ];
-
-//         return newRound;
-//       }
-
-//       return round;
-//     });
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleDeleteVenue = (roundIndex, venueIndex) => {
-//     const newEvent = { ...event };
-//     newEvent.rounds = newEvent.rounds.map((round, index) => {
-//       if (roundIndex == index) {
-//         const newRound = { ...round };
-//         newRound.venues = newRound.venues.filter((_, idx) => idx != venueIndex);
-
-//         return newRound;
-//       }
-
-//       return round;
-//     });
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleVenueChange = (e, roundIndex, venueIndex) => {
-//     const { name, value } = e.target;
-//     const newEvent = { ...event };
-//     newEvent.rounds = newEvent.rounds.map((round, index) => {
-//       if (roundIndex == index) {
-//         const newRound = { ...round };
-//         newRound.venues = newRound.venues.map((venue, idx) => {
-//           if (idx == venueIndex) {
-//             return { ...venue, [name]: value };
-//           }
-//         });
-
-//         return newRound;
-//       }
-
-//       return round;
-//     });
-
-//     setEvent(newEvent);
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     console.log("new event:", event);
-//     try {
-//       const response = await addAvailableEvent(event);
-//       console.log(response);
-//       alert("Event Successfully added!");
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
-
-//   return (
-//     <div className="p-3">
-//       <h1 className="border-bottom pb-2">Add Event</h1>
-//       <form className="row" onSubmit={handleSubmit}>
-//         <div className="d-flex mt-5">
-//           <button>Submit</button>
-//         </div>
-//         <div className="col-3 px-4">
-//           <EventInfo categories={categories} event={event} onChange={handleChange} />
-//         </div>
-//         <div className="col-4 border-start border-end px-4">
-//           <EventRules ruleTemplates={ruleTemplates} event={event} onAddRule={handleAddRule} onDeleteRule={handleDeleteRule} onChangeRule={handleChangeRule} />
-//         </div>
-//         <div className="col-5 px-4">
-//           <EventRounds
-//             event={event}
-//             onAddRound={handleAddRound}
-//             onDeleteRound={handleDeleteRound}
-//             onChange={handleChangeRound}
-//             onAddVenue={handleAddVenue}
-//             onDeleteVenue={handleDeleteVenue}
-//             onChangeVenue={handleVenueChange}
-//           />
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default AddEventPage;
-
 import { useEffect, useState } from "react";
 import { addAvailableEvent, fetchCategories } from "../services/categories-api";
 import EventInfo from "../components/event-details-form/EventInfo";
@@ -265,10 +6,29 @@ import EventRounds from "../components/event-details-form/EventRounds";
 import { fetchEventTemplateRules } from "../services/event-rule-templates-api";
 import { motion } from "framer-motion";
 import PreviewModal from "../components/event-details-form/PreviewModal";
+import { fetchAvailableEventsBySlug } from "../services/available-events-apis";
+
+const roundType = ["PRELIMINARY", "QUARTER", "SEMI_FINAL", "FINAL"];
+const rounds = [];
+for (let i = 0; i < roundType.length; i++) {
+  rounds.push({
+    roundType: roundType[i],
+    status: "NOT_STARTED",
+    note: "",
+    disableNotifications: false,
+    qualifyNumber: 1,
+    venue: "",
+    startDate: new Date(),
+    endDate: new Date(),
+    startTime: new Date(),
+    endTime: new Date(),
+  });
+}
 
 const AddEventPage = () => {
   const [showPreview, setShowPreview] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [eventRounds, setEventRounds] = useState(rounds);
   const [categories, setCategories] = useState([]);
   const [ruleTemplates, setRuleTemplates] = useState([]);
   const [event, setEvent] = useState({
@@ -279,23 +39,7 @@ const AddEventPage = () => {
     type: "INDIVIDUAL",
     eventCategoryId: null,
     eventRules: [],
-    rounds: [
-      {
-        roundType: "PRELIMINARY",
-        qualifyNumber: 2,
-        status: "NOT_STARTED",
-        note: "",
-        disableNotifications: false,
-        venues: [
-          {
-            name: "",
-            roundId: undefined,
-            start: "",
-            end: "",
-          },
-        ],
-      },
-    ],
+    rounds: [],
   });
 
   useEffect(() => {
@@ -312,15 +56,23 @@ const AddEventPage = () => {
     fetchEventTemplateRules().then((data) => {
       console.log("rule templates:", data);
       setRuleTemplates(data);
-      setEvent((prev) => ({
-        ...prev,
-        eventRules: [
-          {
+      const eventRules = [];
+      for (let i = 0; i < data.length; i++) {
+        if (data[i]?.name != "NOTE") {
+          eventRules.push({
             value: "",
-            eventRuleTemplate: data[0],
-          },
-        ],
-      }));
+            eventRuleTemplate: data[i],
+          });
+        }
+      }
+      const ruleTemplate = data.find((ele) => ele.name == "NOTE");
+      if (ruleTemplate) {
+        for (let i = 0; i < 5; i++) {
+          eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+        }
+      }
+
+      setEvent((prev) => ({ ...prev, eventRules, rounds }));
     });
   }, []);
 
@@ -348,40 +100,16 @@ const AddEventPage = () => {
     }
   };
 
-  const handleAddRound = () => {
-    const newEvent = { ...event };
-    const newRounds = [
-      {
-        roundType: "PRELIMINARY",
-        qualifyNumber: 2,
-        status: "NOT_STARTED",
-        note: "",
-        disableNotifications: false,
-        venues: [
-          {
-            name: "",
-            roundId: undefined,
-            start: new Date(),
-            end: new Date(),
-          },
-        ],
-      },
-      ...newEvent.rounds,
-    ];
-    newEvent.rounds = newRounds;
-
-    setEvent(newEvent);
-  };
-
   const handleAddRule = () => {
     const newEvent = { ...event };
     newEvent.eventRules = [
+      ...newEvent.eventRules,
       {
         eventRuleTemplate: ruleTemplates[0],
         value: "",
       },
-      ...newEvent.eventRules,
     ];
+    alert("Rule added, please scroll the rule's section");
 
     setEvent(newEvent);
   };
@@ -414,110 +142,92 @@ const AddEventPage = () => {
     setEvent(newEvent);
   };
 
-  const handleDeleteRound = (roundIndex) => {
-    const newEvent = { ...event };
-    newEvent.rounds = newEvent.rounds.filter((ele, index) => index != roundIndex);
-
-    setEvent(newEvent);
-  };
-
   const handleChangeRound = (e, roundIndex) => {
     const { name, value } = e.target;
-    const newEvent = { ...event };
-    newEvent.rounds = newEvent.rounds.map((round, index) => {
+    let newEventRounds = [...eventRounds];
+    newEventRounds = newEventRounds.map((round, index) => {
       if (roundIndex == index) {
         return { ...round, [name]: value };
       }
       return round;
     });
 
-    setEvent(newEvent);
+    setEventRounds(newEventRounds);
+    setEvent((prev) => ({ ...prev, rounds: newEventRounds }));
   };
-
-  const handleAddVenue = (roundIndex) => {
-    const newEvent = { ...event };
-    newEvent.rounds = newEvent.rounds.map((round, index) => {
-      if (roundIndex == index) {
-        const newRound = { ...round };
-        newRound.venues = [
-          {
-            name: "",
-            roundId: undefined,
-            start: "",
-            end: "",
-          },
-          ...newRound.venues,
-        ];
-
-        return newRound;
-      }
-
-      return round;
-    });
-
-    setEvent(newEvent);
-  };
-
-  const handleDeleteVenue = (roundIndex, venueIndex) => {
-    const newEvent = { ...event };
-    newEvent.rounds = newEvent.rounds.map((round, index) => {
-      if (roundIndex == index) {
-        const newRound = { ...round };
-        newRound.venues = newRound.venues.filter((_, idx) => idx != venueIndex);
-
-        return newRound;
-      }
-
-      return round;
-    });
-
-    setEvent(newEvent);
-  };
-
-  const handleVenueChange = (e, roundIndex, venueIndex) => {
-    const { name, value } = e.target;
-    const newEvent = { ...event };
-    newEvent.rounds = newEvent.rounds.map((round, index) => {
-      if (roundIndex == index) {
-        const newRound = { ...round };
-        newRound.venues = newRound.venues.map((venue, idx) => {
-          if (idx == venueIndex) {
-            return { ...venue, [name]: value };
-          }
-        });
-
-        return newRound;
-      }
-
-      return round;
-    });
-
-    setEvent(newEvent);
-  };
-
-  //   const handleSubmit = async (e) => {
-  //     e.preventDefault();
-  //     console.log("new event:", event);
-  //     try {
-  //       const response = await addAvailableEvent(event);
-  //       console.log(response);
-  //       alert("Event Successfully added!");
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (event.title == null || event.title == undefined || event.title.trim() == "") {
+      alert("Please provide the event title!");
+      return;
+    }
+    if (event.eventRules.length === 0) {
+      alert("Please provide the rules!");
+      return;
+    }
+    if (event.rounds.length === 0) {
+      alert("Please provide the rounds!");
+      return;
+    }
+
+    const existRegisteredSlots = event.eventRules.find((ele) => ele.eventRuleTemplate.id == 6);
+    if (!existRegisteredSlots) {
+      alert("Please provide the REGISTERED_SLOTS_AVAILABLE");
+      return;
+    }
+
+    console.log("creating event:", event);
+
+    const validRounds = event.rounds.filter((r) => r.venue.trim() != "");
+    console.log("validRounds:", validRounds);
+    if (validRounds.length == 0) {
+      alert("Please provide the rounds (Round with empty input for venue is ignored).");
+      return;
+    }
+
+    console.log(`event.title: ${event.title}, event.slug: ${event.slug}`);
+
+    try {
+      const response = await fetchAvailableEventsBySlug(event.slug);
+      console.log(response);
+      alert("Please provide the unique event title");
+      return;
+    } catch (error) {
+      console.log(error);
+    }
 
     // Open the preview modal
     setShowPreview(true);
   };
 
+  const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
+
   const handleConfirmSubmit = async () => {
     // Submit the event
+    const validRounds = event.rounds
+      .filter((r) => r.venue.trim() !== "") // Filter rounds with non-empty venues
+      .map((r) => ({
+        ...r,
+        startDate: r.startDate ? formatDate(new Date(r.startDate)) : null,
+        endDate: r.endDate ? formatDate(new Date(r.endDate)) : null,
+        startTime: `${r.startDate}T${r.startTime}`,
+        endTime: `${r.endDate}T${r.endTime}`,
+      }));
+
+    let newEvent = { ...event, rounds: validRounds };
+    console.log("newEvent:", newEvent);
+    setEvent(newEvent);
+
+    setLoading(true);
+    console.log(" confirm, newEvent:", newEvent);
     try {
-      const response = await addAvailableEvent(event);
+      const response = await addAvailableEvent(newEvent);
       console.log(response);
       alert("Event Successfully added!");
     } catch (error) {
@@ -526,6 +236,7 @@ const AddEventPage = () => {
       // Close the modal after submission
       setShowPreview(false);
     }
+    setLoading(false);
   };
 
   const handleClosePreview = () => {
@@ -534,39 +245,24 @@ const AddEventPage = () => {
   };
 
   return (
-    <motion.div className="container mt-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+    <motion.div className="container mt-5 pb-5 mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <h1 className="text-center text-primary mb-4">Add New Event</h1>
       <form onSubmit={handleSubmit}>
-      <div className="d-flex justify-content-center mt-4">
-          <button type="submit" className="btn btn-success btn-lg">
-            Submit Event
-          </button>
-        </div>
         <div className="row g-4">
-          <div className="col-md-4">
-            <EventInfo categories={categories} event={event} onChange={handleChange} />
-          </div>
-          <div className="col-md-4">
-            <EventRules ruleTemplates={ruleTemplates} event={event} onAddRule={handleAddRule} onDeleteRule={handleDeleteRule} onChangeRule={handleChangeRule} />
-          </div>
-          <div className="col-md-4">
-            <EventRounds
-              event={event}
-              onAddRound={handleAddRound}
-              onDeleteRound={handleDeleteRound}
-              onChange={handleChangeRound}
-              onAddVenue={handleAddVenue}
-              onDeleteVenue={handleDeleteVenue}
-              onChangeVenue={handleVenueChange}
-            />
-          </div>
+          <EventInfo categories={categories} event={event} onChange={handleChange} />
+          <EventRounds eventRounds={eventRounds} onChange={handleChangeRound} />
+          <EventRules ruleTemplates={ruleTemplates} event={event} onAddRule={handleAddRule} onDeleteRule={handleDeleteRule} onChangeRule={handleChangeRule} />
         </div>
 
-        
+        <div className="d-flex justify-content-center mt-4">
+          <button type="submit" disabled={loading} className="btn btn-success btn-lg">
+            {loading ? "Adding..." : "Submit Event"}
+          </button>
+        </div>
       </form>
 
       {/* Preview Modal */}
-      <PreviewModal show={showPreview} event={event} onClose={handleClosePreview} onConfirm={handleConfirmSubmit} />
+      <PreviewModal show={showPreview} event={event} isLoading={loading} onClose={handleClosePreview} onConfirm={handleConfirmSubmit} />
     </motion.div>
   );
 };

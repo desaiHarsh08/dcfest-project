@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
-import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt, FaEdit, FaArrowLeft } from "react-icons/fa";
+import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt, FaEdit, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
 import EditModal from "./EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
-// import { nav } from "framer-motion/m";
+import ConfirmationModal from "../components/event/ConfirmationModal";
+import { deleteAvailableEvent } from "../services/available-events-apis";
 
 const EventPage = () => {
   const { eventSlug } = useParams();
@@ -13,6 +14,8 @@ const EventPage = () => {
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openCloseRegModal, setOpenCloseRegModal] = useState(false);
 
   useEffect(() => {
     fetchEventBySlug(eventSlug)
@@ -30,6 +33,14 @@ const EventPage = () => {
     }));
   };
 
+  const formatDate = (date) => {
+    date = new Date();
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
@@ -37,18 +48,36 @@ const EventPage = () => {
     return <p className="text-danger">{error}</p>;
   }
 
-  // Function to format date and time in AM/PM format
+  // Utility function to format date and time
   const formatDateTime = (dateTime) => {
-    return new Date(dateTime).toLocaleString("en-US", {
-      //   weekday: "long", // Day of the week (e.g., Monday)
-      year: "numeric", // Year (e.g., 2024)
-      month: "long", // Month (e.g., November)
-      day: "numeric", // Day (e.g., 14)
-      hour: "2-digit", // Hour (e.g., 09)
-      minute: "2-digit", // Minute (e.g., 30)
-      //   second: "2-digit", // Second (e.g., 05)
-      hour12: true, // Use AM/PM format
+    const date = new Date(dateTime);
+    const formattedDate = date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
+    const formattedTime = date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return `${formattedDate}, ${formattedTime}`;
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!event.id) {
+      alert("Unable to find the event!");
+      return;
+    }
+    try {
+      const response = await deleteAvailableEvent(event?.id);
+      console.log("delete the event:", response);
+      console.log(`${event.title} deleted successfully!`);
+      navigate(-1);
+    } catch (error) {
+      alert("Unable to delete the event!");
+      console.log(error);
+    }
   };
 
   return (
@@ -63,13 +92,7 @@ const EventPage = () => {
           {/* Event Image */}
           <Col md={6} className="mb-4">
             <Card className="border-0 shadow-sm">
-              <Card.Img
-                variant="top"
-                src={`/${event?.slug}.jpg`}
-                alt={event?.title}
-                className="img-fluid rounded-lg" // Added rounded corners and made image responsive
-                style={{ height: "100vh", width: "100vw", objectFit: "cover" }} // Ensures the image looks good within a fixed height
-              />
+              <Card.Img variant="top" src={`/${event?.slug}.jpg`} alt={event?.title} className="img-fluid rounded-lg" style={{ height: "100vh", width: "100vw", objectFit: "cover" }} />
             </Card>
           </Col>
 
@@ -84,25 +107,7 @@ const EventPage = () => {
                 <Card.Text>{event?.description}</Card.Text>
                 <hr />
                 <div>
-                  <h5>Event Details</h5>
-                  <ListGroup variant="flush">
-                    <ListGroup.Item>
-                      <FaTicketAlt className="me-2" />
-                      <strong>Type:</strong> {event?.type}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <FaUsers className="me-2" />
-                      <strong>Max Participants:</strong> {event?.maxParticipants || 20}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <FaUsers className="me-2" />
-                      <strong>Min Participants:</strong> {event?.minParticipants || 1}
-                    </ListGroup.Item>
-                  </ListGroup>
-                </div>
-                <hr />
-                <div>
-                  <h5>Event Rules</h5>
+                  <h5 className="my-4">Event Rules</h5>
                   <ListGroup>
                     {event?.eventRules.map((rule, index) => (
                       <ListGroup.Item key={index}>
@@ -124,24 +129,18 @@ const EventPage = () => {
                           {round.roundType}
                         </Badge>
                         <ListGroup variant="flush" className="mt-3">
-                          {round?.venues.map((venue, venueIndex) => (
-                            <ListGroup.Item key={`venue-${venueIndex}`} className="d-flex justify-content-between">
-                              <div>
-                                <FaMapMarkerAlt className="me-2" />
-                                <strong>{venue.name}</strong>
-                              </div>
-                              <div>
-                                <p>
-                                  <FaRegClock className="me-2" />
-                                  {formatDateTime(venue.start)}
-                                </p>
-                                <p>
-                                  <FaRegClock className="me-2" />
-                                  {formatDateTime(venue.end)}
-                                </p>
-                              </div>
-                            </ListGroup.Item>
-                          ))}
+                          <ListGroup.Item className="d-fle x justify-content-between align-items-start">
+                            <div>
+                              <FaMapMarkerAlt className="me-2" />
+                              <strong>{round?.venue}</strong>
+                            </div>
+                            <div>
+                              <p>
+                                <FaCalendarAlt className="me-2" />
+                                {formatDateTime(round?.startTime)} - {formatDateTime(round?.endTime)}
+                              </p>
+                            </div>
+                          </ListGroup.Item>
                         </ListGroup>
                       </Card.Body>
                     </Card>
@@ -150,12 +149,26 @@ const EventPage = () => {
                 <Button variant="primary" onClick={openModal}>
                   <FaEdit className="me-2" /> Edit Event
                 </Button>
-                <Button variant="danger" onClick={openModal}>
+                <Button variant="danger" onClick={() => setOpenDeleteModal(true)}>
                   <AiFillDelete className="me-2" /> Delete
                 </Button>
-                <Button variant="info" onClick={openModal}>
+                <ConfirmationModal
+                  show={openDeleteModal}
+                  onHide={() => setOpenDeleteModal(false)}
+                  onConfirm={handleDeleteEvent}
+                  title="Confirm?"
+                  message={"Are your sure that you want to delete this event. This process cannot be undone."}
+                />
+                <Button variant="info" onClick={() => setOpenCloseRegModal(true)}>
                   <AiFillDelete className="me-2" /> Close Registration
                 </Button>
+                <ConfirmationModal
+                  show={openCloseRegModal}
+                  onHide={() => setOpenCloseRegModal(false)}
+                  onConfirm={() => {}}
+                  title="Confirm?"
+                  message={"Are your sure that you want to close the registration for this event."}
+                />
               </Card.Body>
             </Card>
           </Col>
