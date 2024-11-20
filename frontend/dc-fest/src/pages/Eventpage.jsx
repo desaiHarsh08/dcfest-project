@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
-import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt, FaEdit } from "react-icons/fa";
+import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt, FaEdit, FaArrowLeft } from "react-icons/fa";
 import EditModal from "./EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
+// import { nav } from "framer-motion/m";
 
 const EventPage = () => {
   const { eventSlug } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -51,6 +53,11 @@ const EventPage = () => {
 
   return (
     <Container className="py-5">
+      {/* Back Button */}
+      <Button variant="outline-secondary" onClick={() => navigate(-1)} className="mb-4" style={{ height: "38px", width: "89px" }}>
+        <FaArrowLeft className="me-2" />
+        Back
+      </Button>
       {event && (
         <Row>
           {/* Event Image */}
@@ -72,7 +79,7 @@ const EventPage = () => {
               <Card.Body>
                 <Card.Title className="h1">{event?.title}</Card.Title>
                 <Card.Subtitle className="mb-4 text-muted my-3 ">
-                    <i>&quot;{event?.oneLiner}&quot;</i>
+                  <i>&quot;{event?.oneLiner}&quot;</i>
                 </Card.Subtitle>
                 <Card.Text>{event?.description}</Card.Text>
                 <hr />
