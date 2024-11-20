@@ -1,12 +1,14 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import { addAvailableEvent, fetchCategories } from "../services/categories-api";
-import EventInfo from "../components/event-details-form/EventInfo";
-import EventRules from "../components/event-details-form/EventRules";
-import EventRounds from "../components/event-details-form/EventRounds";
-import { fetchEventTemplateRules } from "../services/event-rule-templates-api";
+import { fetchCategories } from "../../services/categories-api";
+import { fetchAvailableEventsBySlug } from "../../services/available-events-apis";
 import { motion } from "framer-motion";
-import PreviewModal from "../components/event-details-form/PreviewModal";
-import { fetchAvailableEventsBySlug } from "../services/available-events-apis";
+import PreviewModal from "./PreviewModal";
+import EventRules from "./EventRules";
+import EventRounds from "./EventRounds";
+import EventInfo from "./EventInfo";
+import { fetchEventTemplateRules } from "../../services/event-rule-templates-api";
 
 const RULE_SEQ_NAME = [
   "REGISTERED_SLOTS_AVAILABLE",
@@ -23,7 +25,6 @@ const RULE_SEQ_NAME = [
   "OTSE",
   "NOTE",
 ];
-
 const roundType = ["PRELIMINARY", "QUARTER", "SEMI_FINAL", "FINAL"];
 const rounds = [];
 for (let i = 0; i < roundType.length; i++) {
@@ -41,23 +42,12 @@ for (let i = 0; i < roundType.length; i++) {
   });
 }
 
-const AddEventPage = () => {
+export default function EventForm({ event, setEvent, formType = "Add", onConfirmAction }) {
   const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [eventRounds, setEventRounds] = useState(rounds);
+  const [eventRounds, setEventRounds] = useState(formType.toLowerCase() == "add" ? rounds : event?.rounds);
   const [categories, setCategories] = useState([]);
   const [ruleTemplates, setRuleTemplates] = useState([]);
-  const [event, setEvent] = useState({
-    title: "",
-    oneLiner: "",
-    closeRegistration: false,
-    description: "",
-    slug: "",
-    type: "INDIVIDUAL",
-    eventCategoryId: null,
-    eventRules: [],
-    rounds: [],
-  });
 
   useEffect(() => {
     fetchCategories()
@@ -75,32 +65,26 @@ const AddEventPage = () => {
       console.log("rule templates:", data);
       setRuleTemplates(data);
 
-      const eventRules = [];
-      for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
-        const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
-        if (ruleTemp) {
-          eventRules.push({
-            value: "",
-            eventRuleTemplate: ruleTemp,
-          });
+      if (formType.toLowerCase() == "add") {
+        const eventRules = [];
+        for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
+          const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
+          if (ruleTemp) {
+            eventRules.push({
+              value: "",
+              eventRuleTemplate: ruleTemp,
+            });
+          }
         }
-      }
-      //   for (let i = 0; i < data.length; i++) {
-      //     if (data[i]?.name != "NOTE") {
-      //       eventRules.push({
-      //         value: "",
-      //         eventRuleTemplate: data[i],
-      //       });
-      //     }
-      //   }
-      const ruleTemplate = data.find((ele) => ele.name == "NOTE");
-      if (ruleTemplate) {
-        for (let i = 0; i < 5; i++) {
-          eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+        const ruleTemplate = data.find((ele) => ele.name == "NOTE");
+        if (ruleTemplate) {
+          for (let i = 0; i < 5; i++) {
+            eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+          }
         }
-      }
 
-      setEvent((prev) => ({ ...prev, eventRules, rounds }));
+        setEvent((prev) => ({ ...prev, eventRules, rounds }));
+      }
     });
   }, []);
 
@@ -220,13 +204,15 @@ const AddEventPage = () => {
 
     console.log(`event.title: ${event.title}, event.slug: ${event.slug}`);
 
-    try {
-      const response = await fetchAvailableEventsBySlug(event.slug);
-      console.log(response);
-      alert("Please provide the unique event title");
-      return;
-    } catch (error) {
-      console.log(error);
+    if (formType.toLowerCase() == "add") {
+      try {
+        const response = await fetchAvailableEventsBySlug(event.slug);
+        console.log(response);
+        alert("Please provide the unique event title");
+        return;
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     // Open the preview modal
@@ -244,13 +230,28 @@ const AddEventPage = () => {
     // Submit the event
     const validRounds = event.rounds
       .filter((r) => r.venue.trim() !== "") // Filter rounds with non-empty venues
-      .map((r) => ({
-        ...r,
-        startDate: r.startDate ? formatDate(new Date(r.startDate)) : null,
-        endDate: r.endDate ? formatDate(new Date(r.endDate)) : null,
-        startTime: `${r.startDate}T${r.startTime}`,
-        endTime: `${r.endDate}T${r.endTime}`,
-      }));
+      .map((r) => {
+        if (formType.toLowerCase() == "add") {
+          let startTime = r.startTime;
+          let endTime = r.endTime;
+          if (!r.startTime.includes(r.startDate)) {
+            startTime = `${r.startDate}T${r.startTime}`;
+          }
+
+          if (!r.endTime.includes(r.endTime)) {
+            startTime = `${r.endDate}T${r.endTime}`;
+          }
+          return {
+            ...r,
+            startDate: r.startDate ? formatDate(new Date(r.startDate)) : null,
+            endDate: r.endDate ? formatDate(new Date(r.endDate)) : null,
+            startTime: startTime,
+            endTime: endTime,
+          };
+        } else {
+          return r;
+        }
+      });
 
     let newEvent = { ...event, rounds: validRounds };
     console.log("newEvent:", newEvent);
@@ -259,9 +260,9 @@ const AddEventPage = () => {
     setLoading(true);
     console.log(" confirm, newEvent:", newEvent);
     try {
-      const response = await addAvailableEvent(newEvent);
+      const response = await onConfirmAction(newEvent);
       console.log(response);
-      alert("Event Successfully added!");
+      alert("Event Successfully saved!");
     } catch (error) {
       console.log(error);
     } finally {
@@ -278,7 +279,7 @@ const AddEventPage = () => {
 
   return (
     <motion.div className="container mt-5 pb-5 mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-      <h1 className="text-center text-primary mb-4">Add New Event</h1>
+      <h1 className="text-center text-primary mb-4">{formType} Event</h1>
       <form onSubmit={handleSubmit}>
         <div className="row g-4">
           <EventInfo categories={categories} event={event} onChange={handleChange} />
@@ -297,6 +298,4 @@ const AddEventPage = () => {
       <PreviewModal show={showPreview} event={event} isLoading={loading} onClose={handleClosePreview} onConfirm={handleConfirmSubmit} />
     </motion.div>
   );
-};
-
-export default AddEventPage;
+}

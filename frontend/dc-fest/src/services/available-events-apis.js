@@ -38,3 +38,11 @@ export const deleteAvailableEvent = async (id) => {
     console.log(response)
     return response.data;
 };
+
+export const updateAvailableEvent = async (availableEvent) => {
+    const response = await API.put(`/api/available-events/${availableEvent.id}`, availableEvent, {
+        withCredentials: true
+    });
+    console.log(response)
+    return response.data;
+};

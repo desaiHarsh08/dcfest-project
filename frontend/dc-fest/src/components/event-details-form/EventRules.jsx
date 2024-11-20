@@ -36,7 +36,7 @@ const EventRules = ({ ruleTemplates = [], event, onAddRule, onDeleteRule, onChan
                     )}
                     {eventRule?.eventRuleTemplate?.valueType === "BOOLEAN" && (
                       <div className="form-check">
-                        <input className="form-check-input" type="radio" onChange={(e) => onChangeRule(e, ruleIndex)} checked={eventRule?.value} name="value" />
+                        <input className="form-check-input" type="checkbox" onChange={(e) => onChangeRule(e, ruleIndex)} checked={eventRule?.value} name="value" />
                         <p>{eventRule?.value}</p>
                       </div>
                     )}

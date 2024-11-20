@@ -35,6 +35,28 @@ const attributes = [
 
 /* eslint-disable react/prop-types */
 const EventRounds = ({ eventRounds, onChange }) => {
+  const formatTime = (dateTimeString, format = "HH:mm") => {
+    // Create a Date object from the input string
+    const date = new Date(dateTimeString);
+
+    // Get hours, minutes, seconds, and milliseconds
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
+
+    // Format based on the provided format
+    switch (format) {
+      case "HH:mm:ss":
+        return `${hours}:${minutes}:${seconds}`;
+      case "HH:mm:ss.SSS":
+        return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+      case "HH:mm":
+      default:
+        return `${hours}:${minutes}`;
+    }
+  };
+
   return (
     <div className="mb-5">
       <div className="border-bottom mb-4 d-flex align-items-center gap-2">
@@ -67,10 +89,10 @@ const EventRounds = ({ eventRounds, onChange }) => {
                     <input value={round.endDate} onChange={(e) => onChange(e, roundIndex)} name="endDate" type="date" className="form-control" />
                   </td>
                   <td>
-                    <input value={round.startTime} onChange={(e) => onChange(e, roundIndex)} name="startTime" type="time" className="form-control" />
+                    <input value={formatTime(round.startTime)} onChange={(e) => onChange(e, roundIndex)} name="startTime" type="time" className="form-control" />
                   </td>
                   <td>
-                    <input value={round.endTime} onChange={(e) => onChange(e, roundIndex)} name="endTime" type="time" className="form-control" />
+                    <input value={formatTime(round.endTime)} onChange={(e) => onChange(e, roundIndex)} name="endTime" type="time" className="form-control" />
                   </td>
                 </motion.tr>
               ))}

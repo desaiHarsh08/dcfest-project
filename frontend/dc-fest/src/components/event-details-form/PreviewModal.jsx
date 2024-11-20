@@ -1,18 +1,21 @@
 /* eslint-disable react/prop-types */
 import { Modal, Button, Card, ListGroup, Badge, Row, Col } from "react-bootstrap";
-import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt } from "react-icons/fa";
+import { FaTicketAlt, FaUsers, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 
-const PreviewModal = ({ show, event, onClose, onConfirm, isLoading }) => {
-  // Function to format date and time in AM/PM format
+const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoading }) => {
   const formatDateTime = (dateTime) => {
-    return new Date(dateTime).toLocaleString("en-US", {
+    const date = new Date(dateTime);
+    const formattedDate = date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
       year: "numeric",
-      month: "long",
-      day: "numeric",
+    });
+    const formattedTime = date.toLocaleTimeString("en-IN", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
     });
+    return `${formattedDate}, ${formattedTime}`;
   };
 
   return (
@@ -79,19 +82,16 @@ const PreviewModal = ({ show, event, onClose, onConfirm, isLoading }) => {
                                 {round?.roundType}
                               </Badge>
                               <ListGroup variant="flush" className="mt-3">
-                                <ListGroup.Item className="d-flex justify-content-between">
+                                <ListGroup.Item className="d-fle x justify-content-between align-items-start">
                                   <div>
                                     <FaMapMarkerAlt className="me-2" />
                                     <strong>{round?.venue}</strong>
                                   </div>
                                   <div>
                                     <p>
-                                      <FaRegClock className="me-2" />
-                                      {/* {round?.startDate} {round?.startTime} */}
-                                    </p>
-                                    <p>
-                                      <FaRegClock className="me-2" />
-                                      {/* {round?.endDate} {round?.endTime} */}
+                                      <FaCalendarAlt className="me-2" />
+                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.startDate}T${round?.startTime}` : round.startTime)} -{" "}
+                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.endDate}T${round?.endTime}` : round?.endTime)}
                                     </p>
                                   </div>
                                 </ListGroup.Item>

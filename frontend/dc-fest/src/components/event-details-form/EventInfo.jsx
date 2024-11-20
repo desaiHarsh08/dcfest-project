@@ -46,6 +46,22 @@ const EventInfo = ({ categories, event, onChange }) => {
           <option value="TEAM">TEAM</option>
         </select>
       </div>
+      {/* <div className="mb-3 d-flex ">
+        <label htmlFor="disableNotifications" className="form-label w-25 ">
+          Disable Notifications
+        </label>
+        <div className="form-check w-75">
+          <input name="disableNotifications" value={event?.description} type="checkbox" onChange={onChange} className="form-check"></input>
+        </div>
+      </div> */}
+      <div className="mb-3 d-flex ">
+        <label htmlFor="closeRegistration" className="form-label w-25 ">
+          Close Registration
+        </label>
+        <div className="form-check w-75">
+          <input name="closeRegistration" value={event?.closeRegistration} type="checkbox" onChange={onChange} className="form-check"></input>
+        </div>
+      </div>
     </motion.div>
   );
 };

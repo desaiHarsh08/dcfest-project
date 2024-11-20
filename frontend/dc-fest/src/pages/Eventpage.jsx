@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
-import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt, FaEdit, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
-import EditModal from "./EditModal";
+import { FaMapMarkerAlt, FaEdit, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import EditModal from "../components/event/EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
 import ConfirmationModal from "../components/event/ConfirmationModal";
-import { deleteAvailableEvent } from "../services/available-events-apis";
+import { deleteAvailableEvent, updateAvailableEvent } from "../services/available-events-apis";
 
 const EventPage = () => {
   const { eventSlug } = useParams();
@@ -16,6 +16,7 @@ const EventPage = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openCloseRegModal, setOpenCloseRegModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchEventBySlug(eventSlug)
@@ -31,14 +32,6 @@ const EventPage = () => {
       ...prevEvent,
       ...updatedEvent,
     }));
-  };
-
-  const formatDate = (date) => {
-    date = new Date();
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
   };
 
   const openModal = () => setModalOpen(true);
@@ -69,6 +62,7 @@ const EventPage = () => {
       alert("Unable to find the event!");
       return;
     }
+    setIsLoading(true);
     try {
       const response = await deleteAvailableEvent(event?.id);
       console.log("delete the event:", response);
@@ -77,6 +71,29 @@ const EventPage = () => {
     } catch (error) {
       alert("Unable to delete the event!");
       console.log(error);
+    } finally {
+      setIsLoading(true);
+      setOpenDeleteModal(false);
+    }
+  };
+
+  const handleCloseRegistration = async () => {
+    setIsLoading(true);
+    try {
+      const newEvent = { ...event };
+      if (newEvent.closeRegistration) {
+        newEvent.closeRegistration = false;
+      } else {
+        newEvent.closeRegistration = true;
+      }
+      const response = await updateAvailableEvent(newEvent);
+      console.log("closed registration:", response);
+      setEvent(newEvent);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+      setOpenCloseRegModal(false);
     }
   };
 
@@ -123,10 +140,10 @@ const EventPage = () => {
                     <Card key={index} className="mb-3 shadow-sm">
                       <Card.Body>
                         <h6>
-                          Round {index + 1}: {round.roundType}
+                          Round {index + 1}: {round?.roundType}
                         </h6>
                         <Badge pill bg="info" className="me-2">
-                          {round.roundType}
+                          {round?.roundType}
                         </Badge>
                         <ListGroup variant="flush" className="mt-3">
                           <ListGroup.Item className="d-fle x justify-content-between align-items-start">
@@ -154,20 +171,22 @@ const EventPage = () => {
                 </Button>
                 <ConfirmationModal
                   show={openDeleteModal}
+                  isLoading={isLoading}
                   onHide={() => setOpenDeleteModal(false)}
                   onConfirm={handleDeleteEvent}
                   title="Confirm?"
                   message={"Are your sure that you want to delete this event. This process cannot be undone."}
                 />
-                <Button variant="info" onClick={() => setOpenCloseRegModal(true)}>
-                  <AiFillDelete className="me-2" /> Close Registration
+                <Button variant={event?.closeRegistration ? "info" : "success"} onClick={() => setOpenCloseRegModal(true)}>
+                  {event?.closeRegistration ? "Closed" : "Open"}
                 </Button>
                 <ConfirmationModal
                   show={openCloseRegModal}
                   onHide={() => setOpenCloseRegModal(false)}
-                  onConfirm={() => {}}
+                  onConfirm={handleCloseRegistration}
+                  isLoading={isLoading}
                   title="Confirm?"
-                  message={"Are your sure that you want to close the registration for this event."}
+                  message={"Are your sure that you want to toggle the registration for this event."}
                 />
               </Card.Body>
             </Card>
@@ -176,7 +195,7 @@ const EventPage = () => {
       )}
 
       {/* Edit Modal */}
-      <EditModal isOpen={isModalOpen} onClose={closeModal} event={event} onUpdate={handleUpdate} />
+      <EditModal isOpen={isModalOpen} setEvent={setEvent} onClose={closeModal} event={event} onUpdate={handleUpdate} />
     </Container>
   );
 };
