@@ -147,7 +147,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
                 }
             }
         }
-        
+
         return this.availableEventModelToDto(foundAvailableEventModel);
     }
 
