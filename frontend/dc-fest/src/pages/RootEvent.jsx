@@ -22,10 +22,9 @@ const RootEvent = () => {
     return <p className="text-danger">{error}</p>;
   }
 
-  let srno = 0;
-
   // Function to format date and time in AM/PM format
   const formatDateTime = (dateTime) => {
+    console.log("in format date time:", dateTime);
     return new Date(dateTime).toLocaleString("en-US", {
       //   weekday: "long", // Day of the week (e.g., Monday)
       year: "numeric", // Year (e.g., 2024)
@@ -102,16 +101,17 @@ const RootEvent = () => {
                   <h5 className="my-4">NOTE:</h5>
                   <ListGroup>
                     {event?.eventRules.map((rule, index) => {
-                      if (rule.eventRuleTemplate.name.toLowerCase() == "note") {
+                      if (rule.eventRuleTemplate.name.toLowerCase() === "note") {
                         return (
                           <ListGroup.Item key={index}>
-                            {++srno}. <span>{rule.value}</span>
+                            <span dangerouslySetInnerHTML={{ __html: rule.value }} />
                           </ListGroup.Item>
                         );
                       }
                     })}
                   </ListGroup>
                 </div>
+
                 <hr />
                 <div>
                   <h5>Event Rounds</h5>
@@ -133,11 +133,11 @@ const RootEvent = () => {
                             <div>
                               <p>
                                 <FaRegClock className="me-2" />
-                                {formatDateTime(round?.start)}
+                                {formatDateTime(round?.startTime)}
                               </p>
                               <p>
                                 <FaRegClock className="me-2" />
-                                {formatDateTime(round?.end)}
+                                {formatDateTime(round?.endTime)}
                               </p>
                             </div>
                           </ListGroup.Item>

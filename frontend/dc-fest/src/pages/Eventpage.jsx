@@ -140,13 +140,25 @@ const EventPage = () => {
                   </ListGroup>
                 </div>
                 <div>
-                  <ListGroup>
+                  {/* <ListGroup>
                     <h5 className="my-4">NOTE:</h5>
                     {event?.eventRules.map((rule, index) => {
                       if (rule.eventRuleTemplate.name.toLowerCase() == "note") {
                         return (
                           <ListGroup.Item key={index}>
                             {++srno}. <span>{rule.value}</span>
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
+                  </ListGroup> */}
+                  <ListGroup>
+                    <h5 className="my-4">NOTE:</h5>
+                    {event?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate.name.toLowerCase() === "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            <span dangerouslySetInnerHTML={{ __html: rule.value }} />
                           </ListGroup.Item>
                         );
                       }

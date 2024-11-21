@@ -3,11 +3,6 @@ import { motion } from "framer-motion";
 
 const attributes = [
   {
-    htmlLabel: "qualifyNumber",
-    name: "Qualify No.",
-    type: "number",
-  },
-  {
     htmlLabel: "venue",
     name: "Venue",
     type: "text",
@@ -77,9 +72,6 @@ const EventRounds = ({ eventRounds, onChange }) => {
               {eventRounds.map((round, roundIndex) => (
                 <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} key={`row-round-${roundIndex}`}>
                   <td>{round?.roundType}</td>
-                  <td>
-                    <input value={round.qualifyNumber} onChange={(e) => onChange(e, roundIndex)} name="qualifyNumber" type="number" className="form-control" />
-                  </td>
                   <td>
                     <input value={round.venue} onChange={(e) => onChange(e, roundIndex)} name="venue" type="text" className="form-control" />
                   </td>

@@ -1,10 +1,12 @@
 /* eslint-disable react/prop-types */
 import { Modal, Button, Card, ListGroup, Badge, Row, Col } from "react-bootstrap";
 import { FaTicketAlt, FaUsers, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
+import RTE from "../globals/RTE";
 
 const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoading }) => {
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
+    console.log(dateTime);
     const formattedDate = date.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "2-digit",
@@ -72,18 +74,29 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
                         }
                       })}
                     </ListGroup>
-                    <ListGroup>
+                    {/* <ListGroup>
                       <h5>NOTE:</h5>
                       {event?.eventRules.map((rule, index) => {
                         if (rule.eventRuleTemplate.name.toLowerCase() == "note") {
                           return (
                             <ListGroup.Item key={index}>
-                              {++srno}. <span>{rule.value}</span>
+                              <RTE defaultValue={rule.value} onChange={() => {}} />
                             </ListGroup.Item>
                           );
                         }
                       })}
-                    </ListGroup>
+                    </ListGroup> */}
+                    <ListGroup>
+                    {event?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate.name.toLowerCase() === "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            <span dangerouslySetInnerHTML={{ __html: rule.value }} />
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
+                  </ListGroup>
                   </div>
                   <hr />
                   <div>

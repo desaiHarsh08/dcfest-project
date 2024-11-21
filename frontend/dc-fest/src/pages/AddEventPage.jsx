@@ -19,7 +19,6 @@ const RULE_SEQ_NAME = [
   "TIME_LIMIT",
   "THEME",
   "LANGUAGE",
-  "OTSE",
   "NOTE",
 ];
 
@@ -74,24 +73,23 @@ const AddEventPage = () => {
       console.log("rule templates:", data);
       setRuleTemplates(data);
 
-    //   const eventRules = [];
-    //   for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
-    //     const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
-    //     if (ruleTemp) {
-    //       eventRules.push({
-    //         value: "",
-    //         eventRuleTemplate: ruleTemp,
-    //       });
-    //     }
-    //   }
+      //   const eventRules = [];
+      //   for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
+      //     const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
+      //     if (ruleTemp) {
+      //       eventRules.push({
+      //         value: "",
+      //         eventRuleTemplate: ruleTemp,
+      //       });
+      //     }
+      //   }
 
-    //   const ruleTemplate = data.find((ele) => ele.name == "NOTE");
-    //   if (ruleTemplate) {
-    //     for (let i = 0; i < 5; i++) {
-    //       eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
-    //     }
-    //   }
-
+      //   const ruleTemplate = data.find((ele) => ele.name == "NOTE");
+      //   if (ruleTemplate) {
+      //     for (let i = 0; i < 5; i++) {
+      //       eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+      //     }
+      //   }
 
       setEvent((prev) => ({ ...prev, eventRules: handleDefaultEventRules(data), rounds }));
     });
@@ -109,12 +107,12 @@ const AddEventPage = () => {
       }
     }
 
-    const ruleTemplate = ruleTemplates.find((ele) => ele.name == "NOTE");
-    if (ruleTemplate) {
-      for (let i = 0; i < 5; i++) {
-        eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
-      }
-    }
+    // const ruleTemplate = ruleTemplates.find((ele) => ele.name == "NOTE");
+    // if (ruleTemplate) {
+    //   for (let i = 0; i < 5; i++) {
+    //     eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+    //   }
+    // }
 
     return eventRules;
   };
@@ -164,23 +162,26 @@ const AddEventPage = () => {
     setEvent(newEvent);
   };
 
-  const handleChangeRule = (e, ruleIndex) => {
-    const { name, value, checked } = e.target;
+  const handleChangeRule = (e, ruleIndex, isRTE) => {
     const newEvent = { ...event };
     newEvent.eventRules = newEvent.eventRules.map((ele, index) => {
       if (index === ruleIndex) {
-        console.log("name:", name, value, checked);
+        if (isRTE && ele.eventRuleTemplate.name == "NOTE") {
+          return { ...ele, value: e };
+        }
+        const { name, value, checked } = e.target;
         if (name == "eventRuleTemplate") {
           const eventRuleTemplate = ruleTemplates.find((r) => r.id == value);
           console.log(eventRuleTemplate);
           return { ...ele, [name]: eventRuleTemplate };
         }
+
         console.log(`ele.eventRuleTemplate.name: ${ele.eventRuleTemplate.name}`);
         if (ele.eventRuleTemplate.name == "OTSE") {
           return { ...ele, [name]: checked };
         }
 
-        return { ...ele, [name]: value };
+        return { ...ele, [e.target.name]: e.target.value };
       }
 
       return ele;
@@ -223,6 +224,11 @@ const AddEventPage = () => {
       alert("Please provide the REGISTERED_SLOTS_AVAILABLE");
       return;
     }
+    console.log(event);
+    if (event?.eventRules?.filter((rule) => rule.value?.trim() == "").length > 0) {
+      alert("Please provide the rules!");
+      return;
+    }
 
     console.log("creating event:", event);
 
@@ -231,6 +237,14 @@ const AddEventPage = () => {
     if (validRounds.length == 0) {
       alert("Please provide the rounds (Round with empty input for venue is ignored).");
       return;
+    }
+
+    for (let i = 0; i < validRounds.length; i++) {
+      console.log(validRounds[i]);
+      if (!validRounds[i].startDate || !validRounds[i].endDate || !validRounds[i].startTime || !validRounds[i].endTime) {
+        alert("Please provide the date & time");
+        return;
+      }
     }
 
     console.log(`event.title: ${event.title}, event.slug: ${event.slug}`);
@@ -284,6 +298,7 @@ const AddEventPage = () => {
       setShowPreview(false);
     }
     setLoading(false);
+    setEventRounds(rounds);
 
     setEvent({
       title: "",
@@ -294,7 +309,7 @@ const AddEventPage = () => {
       type: "INDIVIDUAL",
       eventCategoryId: null,
       eventRules: handleDefaultEventRules(ruleTemplates),
-      rounds,
+      rounds: eventRounds,
     });
   };
 
