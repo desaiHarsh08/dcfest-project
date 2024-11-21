@@ -22,6 +22,8 @@ const RootEvent = () => {
     return <p className="text-danger">{error}</p>;
   }
 
+  let srno = 0;
+
   // Function to format date and time in AM/PM format
   const formatDateTime = (dateTime) => {
     return new Date(dateTime).toLocaleString("en-US", {
@@ -82,11 +84,32 @@ const RootEvent = () => {
                 <div>
                   <h5>Event Rules</h5>
                   <ListGroup>
-                    {event?.eventRules.map((rule, index) => (
-                      <ListGroup.Item key={index}>
-                        <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
-                      </ListGroup.Item>
-                    ))}
+                    {event?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate?.name?.toLowerCase().includes("otse")) {
+                        return null;
+                      }
+                      if (rule.eventRuleTemplate?.name?.toLowerCase() != "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
+                  </ListGroup>
+                </div>
+                <div>
+                  <h5 className="my-4">NOTE:</h5>
+                  <ListGroup>
+                    {event?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate.name.toLowerCase() == "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            {++srno}. <span>{rule.value}</span>
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
                   </ListGroup>
                 </div>
                 <hr />
@@ -102,24 +125,22 @@ const RootEvent = () => {
                           {round.roundType}
                         </Badge>
                         <ListGroup variant="flush" className="mt-3">
-                          {round?.venues.map((venue, venueIndex) => (
-                            <ListGroup.Item key={`venue-${venueIndex}`} className="d-flex justify-content-between">
-                              <div>
-                                <FaMapMarkerAlt className="me-2" />
-                                <strong>{venue.name}</strong>
-                              </div>
-                              <div>
-                                <p>
-                                  <FaRegClock className="me-2" />
-                                  {formatDateTime(venue.start)}
-                                </p>
-                                <p>
-                                  <FaRegClock className="me-2" />
-                                  {formatDateTime(venue.end)}
-                                </p>
-                              </div>
-                            </ListGroup.Item>
-                          ))}
+                          <ListGroup.Item className="d-flex justify-content-between">
+                            <div>
+                              <FaMapMarkerAlt className="me-2" />
+                              <strong>{round?.venue}</strong>
+                            </div>
+                            <div>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                {formatDateTime(round?.start)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                {formatDateTime(round?.end)}
+                              </p>
+                            </div>
+                          </ListGroup.Item>
                         </ListGroup>
                       </Card.Body>
                     </Card>

@@ -97,6 +97,8 @@ const EventPage = () => {
     }
   };
 
+  let srno = 0;
+
   return (
     <Container className="py-5">
       {/* Back Button */}
@@ -126,11 +128,29 @@ const EventPage = () => {
                 <div>
                   <h5 className="my-4">Event Rules</h5>
                   <ListGroup>
-                    {event?.eventRules.map((rule, index) => (
-                      <ListGroup.Item key={index}>
-                        <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
-                      </ListGroup.Item>
-                    ))}
+                    {event?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate.name.toLowerCase() != "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
+                  </ListGroup>
+                </div>
+                <div>
+                  <ListGroup>
+                    <h5 className="my-4">NOTE:</h5>
+                    {event?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate.name.toLowerCase() == "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            {++srno}. <span>{rule.value}</span>
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
                   </ListGroup>
                 </div>
                 <hr />

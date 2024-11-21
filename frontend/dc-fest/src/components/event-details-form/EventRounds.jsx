@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { motion } from "framer-motion";
 
 const attributes = [
@@ -89,10 +90,10 @@ const EventRounds = ({ eventRounds, onChange }) => {
                     <input value={round.endDate} onChange={(e) => onChange(e, roundIndex)} name="endDate" type="date" className="form-control" />
                   </td>
                   <td>
-                    <input value={formatTime(round.startTime)} onChange={(e) => onChange(e, roundIndex)} name="startTime" type="time" className="form-control" />
+                    <input value={round.startTime} onChange={(e) => onChange(e, roundIndex)} name="startTime" type="time" className="form-control" />
                   </td>
                   <td>
-                    <input value={formatTime(round.endTime)} onChange={(e) => onChange(e, roundIndex)} name="endTime" type="time" className="form-control" />
+                    <input value={round.endTime} onChange={(e) => onChange(e, roundIndex)} name="endTime" type="time" className="form-control" />
                   </td>
                 </motion.tr>
               ))}

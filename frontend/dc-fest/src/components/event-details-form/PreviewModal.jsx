@@ -18,6 +18,8 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
     return `${formattedDate}, ${formattedTime}`;
   };
 
+  let srno = 0;
+
   return (
     <Modal show={show} onHide={onClose} size="xl">
       <Modal.Header closeButton>
@@ -48,11 +50,11 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
                       </ListGroup.Item>
                       <ListGroup.Item>
                         <FaUsers className="me-2" />
-                        <strong>Max Participants:</strong> {event?.maxParticipants || 20}
+                        <strong>Max Participants:</strong> {event?.maxParticipants}
                       </ListGroup.Item>
                       <ListGroup.Item>
                         <FaUsers className="me-2" />
-                        <strong>Min Participants:</strong> {event?.minParticipants || 1}
+                        <strong>Min Participants:</strong> {event?.minParticipants}
                       </ListGroup.Item>
                     </ListGroup>
                   </div>
@@ -60,11 +62,27 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
                   <div>
                     <h5>Event Rules</h5>
                     <ListGroup>
-                      {event?.eventRules.map((rule, index) => (
-                        <ListGroup.Item key={index}>
-                          <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
-                        </ListGroup.Item>
-                      ))}
+                      {event?.eventRules.map((rule, index) => {
+                        if (rule.eventRuleTemplate.name.toLowerCase() != "note") {
+                          return (
+                            <ListGroup.Item key={index}>
+                              <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
+                            </ListGroup.Item>
+                          );
+                        }
+                      })}
+                    </ListGroup>
+                    <ListGroup>
+                      <h5>NOTE:</h5>
+                      {event?.eventRules.map((rule, index) => {
+                        if (rule.eventRuleTemplate.name.toLowerCase() == "note") {
+                          return (
+                            <ListGroup.Item key={index}>
+                              {++srno}. <span>{rule.value}</span>
+                            </ListGroup.Item>
+                          );
+                        }
+                      })}
                     </ListGroup>
                   </div>
                   <hr />

@@ -14,7 +14,6 @@ const RULE_SEQ_NAME = [
   "MAX_PARTICIPANTS",
   "MALE_PARTICIPANTS",
   "FEMALE_PARTICIPANTS",
-  "NO_OF_PARTICIPANTS",
   "COLLEGE_ACOMPANIST",
   "OTSE_SLOTS",
   "TIME_LIMIT",
@@ -75,34 +74,50 @@ const AddEventPage = () => {
       console.log("rule templates:", data);
       setRuleTemplates(data);
 
-      const eventRules = [];
-      for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
-        const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
-        if (ruleTemp) {
-          eventRules.push({
-            value: "",
-            eventRuleTemplate: ruleTemp,
-          });
-        }
-      }
-      //   for (let i = 0; i < data.length; i++) {
-      //     if (data[i]?.name != "NOTE") {
-      //       eventRules.push({
-      //         value: "",
-      //         eventRuleTemplate: data[i],
-      //       });
-      //     }
-      //   }
-      const ruleTemplate = data.find((ele) => ele.name == "NOTE");
-      if (ruleTemplate) {
-        for (let i = 0; i < 5; i++) {
-          eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
-        }
-      }
+    //   const eventRules = [];
+    //   for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
+    //     const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
+    //     if (ruleTemp) {
+    //       eventRules.push({
+    //         value: "",
+    //         eventRuleTemplate: ruleTemp,
+    //       });
+    //     }
+    //   }
 
-      setEvent((prev) => ({ ...prev, eventRules, rounds }));
+    //   const ruleTemplate = data.find((ele) => ele.name == "NOTE");
+    //   if (ruleTemplate) {
+    //     for (let i = 0; i < 5; i++) {
+    //       eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+    //     }
+    //   }
+
+
+      setEvent((prev) => ({ ...prev, eventRules: handleDefaultEventRules(data), rounds }));
     });
   }, []);
+
+  const handleDefaultEventRules = (ruleTemplates) => {
+    const eventRules = [];
+    for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
+      const ruleTemp = ruleTemplates.find((ele) => ele.name == RULE_SEQ_NAME[i]);
+      if (ruleTemp) {
+        eventRules.push({
+          value: "",
+          eventRuleTemplate: ruleTemp,
+        });
+      }
+    }
+
+    const ruleTemplate = ruleTemplates.find((ele) => ele.name == "NOTE");
+    if (ruleTemplate) {
+      for (let i = 0; i < 5; i++) {
+        eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+      }
+    }
+
+    return eventRules;
+  };
 
   const generateSlug = (title) => {
     return title
@@ -269,6 +284,18 @@ const AddEventPage = () => {
       setShowPreview(false);
     }
     setLoading(false);
+
+    setEvent({
+      title: "",
+      oneLiner: "",
+      closeRegistration: false,
+      description: "",
+      slug: "",
+      type: "INDIVIDUAL",
+      eventCategoryId: null,
+      eventRules: handleDefaultEventRules(ruleTemplates),
+      rounds,
+    });
   };
 
   const handleClosePreview = () => {
