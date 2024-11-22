@@ -56,14 +56,6 @@ jobs:
               exit 1
             fi
 
-            # Replace placeholders in application-prod.properties with secret values
-            sudo sed -i "s|${BACKEND_PORT}|${{ secrets.BACKEND_PORT }}|g" $PROPERTIES_FILE
-            sudo sed -i "s|${BACKEND_DB_URL}|${{ secrets.BACKEND_DB_URL }}|g" $PROPERTIES_FILE
-            sudo sed -i "s|${BACKEND_DB_USERNAME}|${{ secrets.BACKEND_DB_USERNAME }}|g" $PROPERTIES_FILE
-            sudo sed -i "s|${BACKEND_DB_PASSWORD}|${{ secrets.BACKEND_DB_PASSWORD }}|g" $PROPERTIES_FILE
-            sudo sed -i "s|${BACKEND_DB_SECRET}|${{ secrets.BACKEND_DB_SECRET }}|g" $PROPERTIES_FILE
-            sudo sed -i "s|${UPLOAD_FILE_DIRECTORY}|${{ secrets.UPLOAD_FILE_DIRECTORY }}|g" $PROPERTIES_FILE
-
             # Run the backend with PM2
             echo "Starting backend with PM2..."
             pm2 delete dcfest-backend || true
