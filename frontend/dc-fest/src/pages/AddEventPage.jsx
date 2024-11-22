@@ -32,8 +32,8 @@ for (let i = 0; i < roundType.length; i++) {
     disableNotifications: false,
     qualifyNumber: 1,
     venue: "",
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, "0")}-${new Date().getDate().toString().padStart(2, "0")}`,
+    endDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, "0")}-${new Date().getDate().toString().padStart(2, "0")}`,
     startTime: new Date(),
     endTime: new Date(),
   });
@@ -73,24 +73,6 @@ const AddEventPage = () => {
       console.log("rule templates:", data);
       setRuleTemplates(data);
 
-      //   const eventRules = [];
-      //   for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
-      //     const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
-      //     if (ruleTemp) {
-      //       eventRules.push({
-      //         value: "",
-      //         eventRuleTemplate: ruleTemp,
-      //       });
-      //     }
-      //   }
-
-      //   const ruleTemplate = data.find((ele) => ele.name == "NOTE");
-      //   if (ruleTemplate) {
-      //     for (let i = 0; i < 5; i++) {
-      //       eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
-      //     }
-      //   }
-
       setEvent((prev) => ({ ...prev, eventRules: handleDefaultEventRules(data), rounds }));
     });
   }, []);
@@ -106,13 +88,6 @@ const AddEventPage = () => {
         });
       }
     }
-
-    // const ruleTemplate = ruleTemplates.find((ele) => ele.name == "NOTE");
-    // if (ruleTemplate) {
-    //   for (let i = 0; i < 5; i++) {
-    //     eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
-    //   }
-    // }
 
     return eventRules;
   };
@@ -169,6 +144,7 @@ const AddEventPage = () => {
         if (isRTE && ele.eventRuleTemplate.name == "NOTE") {
           return { ...ele, value: e };
         }
+
         const { name, value, checked } = e.target;
         if (name == "eventRuleTemplate") {
           const eventRuleTemplate = ruleTemplates.find((r) => r.id == value);
@@ -192,9 +168,16 @@ const AddEventPage = () => {
 
   const handleChangeRound = (e, roundIndex) => {
     const { name, value } = e.target;
+    console.log(`${name}: ${value}`);
     let newEventRounds = [...eventRounds];
     newEventRounds = newEventRounds.map((round, index) => {
       if (roundIndex == index) {
+        if (name == "startTime" || name == "endTime") {
+          return { ...round, [name]: `${round.startDate}T${value}` };
+        }
+        if (name == "endTime") {
+          return { ...round, [name]: `${round.endDate}T${value}` };
+        }
         return { ...round, [name]: value };
       }
       return round;
@@ -277,8 +260,8 @@ const AddEventPage = () => {
         ...r,
         startDate: r.startDate ? formatDate(new Date(r.startDate)) : null,
         endDate: r.endDate ? formatDate(new Date(r.endDate)) : null,
-        startTime: `${r.startDate}T${r.startTime}`,
-        endTime: `${r.endDate}T${r.endTime}`,
+        // startTime: `${r.startDate}T${r.startTime}`,
+        // endTime: `${r.endDate}T${r.endTime}`,
       }));
 
     let newEvent = { ...event, rounds: validRounds };
@@ -301,16 +284,29 @@ const AddEventPage = () => {
     setEventRounds(rounds);
 
     setEvent({
+      ...newEvent,
       title: "",
       oneLiner: "",
       closeRegistration: false,
       description: "",
       slug: "",
       type: "INDIVIDUAL",
-      eventCategoryId: null,
+
       eventRules: handleDefaultEventRules(ruleTemplates),
       rounds: eventRounds,
     });
+    console.log({
+      title: "",
+      oneLiner: "",
+      closeRegistration: false,
+      description: "",
+      slug: "",
+      type: "INDIVIDUAL",
+      eventCategoryId: categories[1].id,
+      eventRules: handleDefaultEventRules(ruleTemplates),
+      rounds: eventRounds,
+    });
+    // window.location.reload();
   };
 
   const handleClosePreview = () => {
@@ -336,7 +332,7 @@ const AddEventPage = () => {
       </form>
 
       {/* Preview Modal */}
-      <PreviewModal show={showPreview} event={event} isLoading={loading} onClose={handleClosePreview} onConfirm={handleConfirmSubmit} />
+      <PreviewModal formType="ADD" show={showPreview} event={event} isLoading={loading} onClose={handleClosePreview} onConfirm={handleConfirmSubmit} />
     </motion.div>
   );
 };

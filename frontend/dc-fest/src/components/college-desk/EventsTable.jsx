@@ -4,6 +4,7 @@ import { Table } from "react-bootstrap";
 import EventRow from "./EventRow";
 
 const EventsTable = ({ events, onView, onRemove }) => {
+  console.log("events:", events);
   return (
     <Table striped bordered hover responsive>
       <thead>
@@ -18,14 +19,13 @@ const EventsTable = ({ events, onView, onRemove }) => {
         </tr>
       </thead>
       <tbody>
-        {events?.map((event, index) => (
-          <EventRow
-            index={index}
-            key={`event-${index}`}
-            eventId={event?.availableEventId}
-            onRemove={() => {}}
-          />
-        ))}
+        {events &&
+          events?.map((event, index) => (
+            <>
+              {event.id}
+              <EventRow index={index} key={`event-${index}`} eventId={event.id} ava onRemove={() => {}} />
+            </>
+          ))}
       </tbody>
     </Table>
   );

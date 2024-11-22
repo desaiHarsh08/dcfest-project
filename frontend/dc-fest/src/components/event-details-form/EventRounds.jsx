@@ -41,6 +41,7 @@ const EventRounds = ({ eventRounds, onChange }) => {
     const seconds = String(date.getSeconds()).padStart(2, "0");
     const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
 
+    console.log(dateTimeString);
     // Format based on the provided format
     switch (format) {
       case "HH:mm:ss":
@@ -82,10 +83,19 @@ const EventRounds = ({ eventRounds, onChange }) => {
                     <input value={round.endDate} onChange={(e) => onChange(e, roundIndex)} name="endDate" type="date" className="form-control" />
                   </td>
                   <td>
-                    <input value={round.startTime} onChange={(e) => onChange(e, roundIndex)} name="startTime" type="time" className="form-control" />
+                    <input
+                      value={formatTime(round.startTime)}
+                      onChange={(e) => {
+                        console.log(e.target.value)
+                        onChange(e, roundIndex);
+                      }}
+                      name="startTime"
+                      type="time"
+                      className="form-control"
+                    />
                   </td>
                   <td>
-                    <input value={round.endTime} onChange={(e) => onChange(e, roundIndex)} name="endTime" type="time" className="form-control" />
+                    <input value={formatTime(round.endTime)} onChange={(e) => onChange(e, roundIndex)} name="endTime" type="time" className="form-control" />
                   </td>
                 </motion.tr>
               ))}

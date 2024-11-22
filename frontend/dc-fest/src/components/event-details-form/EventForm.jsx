@@ -133,23 +133,26 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
     setEvent(newEvent);
   };
 
-  const handleChangeRule = (e, ruleIndex) => {
-    const { name, value, checked } = e.target;
+  const handleChangeRule = (e, ruleIndex, isRTE) => {
     const newEvent = { ...event };
     newEvent.eventRules = newEvent.eventRules.map((ele, index) => {
       if (index === ruleIndex) {
-        console.log("name:", name, value, checked);
+        if (isRTE && ele.eventRuleTemplate.name == "NOTE") {
+          return { ...ele, value: e };
+        }
+        const { name, value, checked } = e.target;
         if (name == "eventRuleTemplate") {
           const eventRuleTemplate = ruleTemplates.find((r) => r.id == value);
           console.log(eventRuleTemplate);
           return { ...ele, [name]: eventRuleTemplate };
         }
+
         console.log(`ele.eventRuleTemplate.name: ${ele.eventRuleTemplate.name}`);
         if (ele.eventRuleTemplate.name == "OTSE") {
           return { ...ele, [name]: checked };
         }
 
-        return { ...ele, [name]: value };
+        return { ...ele, [e.target.name]: e.target.value };
       }
 
       return ele;
@@ -160,9 +163,18 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
 
   const handleChangeRound = (e, roundIndex) => {
     const { name, value } = e.target;
+    console.log(`${name}: ${value}`);
+
     let newEventRounds = [...eventRounds];
     newEventRounds = newEventRounds.map((round, index) => {
       if (roundIndex == index) {
+        console.log(round);
+        if (name == "startTime" || name == "endTime") {
+          return { ...round, [name]: `${round.startDate}T${value}` };
+        }
+        if (name == "endTime") {
+          return { ...round, [name]: `${round.endDate}T${value}` };
+        }
         return { ...round, [name]: value };
       }
       return round;
@@ -295,7 +307,7 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
       </form>
 
       {/* Preview Modal */}
-      <PreviewModal show={showPreview} event={event} isLoading={loading} onClose={handleClosePreview} onConfirm={handleConfirmSubmit} />
+      <PreviewModal show={showPreview} event={event} isLoading={loading} formType="UPDATE" onClose={handleClosePreview} onConfirm={handleConfirmSubmit} />
     </motion.div>
   );
 }

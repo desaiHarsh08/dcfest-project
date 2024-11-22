@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
 import { Modal, Button, Card, ListGroup, Badge, Row, Col } from "react-bootstrap";
-import { FaTicketAlt, FaUsers, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
-import RTE from "../globals/RTE";
+import { FaTicketAlt, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 
 const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoading }) => {
+  console.log(formType);
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
     console.log(dateTime);
@@ -19,8 +19,6 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
     });
     return `${formattedDate}, ${formattedTime}`;
   };
-
-  let srno = 0;
 
   return (
     <Modal show={show} onHide={onClose} size="xl">
@@ -49,14 +47,6 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
                       <ListGroup.Item>
                         <FaTicketAlt className="me-2" />
                         <strong>Type:</strong> {event?.type}
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <FaUsers className="me-2" />
-                        <strong>Max Participants:</strong> {event?.maxParticipants}
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <FaUsers className="me-2" />
-                        <strong>Min Participants:</strong> {event?.minParticipants}
                       </ListGroup.Item>
                     </ListGroup>
                   </div>
@@ -87,16 +77,16 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
                       })}
                     </ListGroup> */}
                     <ListGroup>
-                    {event?.eventRules.map((rule, index) => {
-                      if (rule.eventRuleTemplate.name.toLowerCase() === "note") {
-                        return (
-                          <ListGroup.Item key={index}>
-                            <span dangerouslySetInnerHTML={{ __html: rule.value }} />
-                          </ListGroup.Item>
-                        );
-                      }
-                    })}
-                  </ListGroup>
+                      {event?.eventRules.map((rule, index) => {
+                        if (rule.eventRuleTemplate.name.toLowerCase() === "note") {
+                          return (
+                            <ListGroup.Item key={index}>
+                              <span dangerouslySetInnerHTML={{ __html: rule.value }} />
+                            </ListGroup.Item>
+                          );
+                        }
+                      })}
+                    </ListGroup>
                   </div>
                   <hr />
                   <div>
@@ -121,8 +111,8 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
                                   <div>
                                     <p>
                                       <FaCalendarAlt className="me-2" />
-                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.startDate}T${round?.startTime}` : round.startTime)} -{" "}
-                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.endDate}T${round?.endTime}` : round?.endTime)}
+                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.startTime}` : round.startTime)} -{" "}
+                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.endTime}` : round?.endTime)}
                                     </p>
                                   </div>
                                 </ListGroup.Item>

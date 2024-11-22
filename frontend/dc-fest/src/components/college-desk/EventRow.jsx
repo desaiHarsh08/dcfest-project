@@ -4,19 +4,24 @@ import { fetchAvailableEventsById } from "../../services/available-events-apis";
 import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import CategoryName from "./CategoryName";
+import { fetchEventById } from "../../services/event-apis";
 
 const EventRow = ({ index, eventId, onRemove }) => {
   const [event, setEvent] = useState();
   const [availableEvent, setAvailableEvent] = useState();
 
   useEffect(() => {
-    fetchAvailableEventsById(eventId)
+    fetchEventById(eventId)
       .then((data) => {
-        console.log("available event: ", data);
         setEvent(data);
-        setAvailableEvent(data);
+        fetchAvailableEventsById(data.availableEventId)
+          .then((data) => {
+            console.log("available event: ", data);
+            setAvailableEvent(data);
+          })
+          .catch((err) => console.log(err));
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log("Unable to fetch the event data", err));
   }, [eventId]);
 
   return (
