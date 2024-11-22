@@ -37,10 +37,10 @@ jobs:
             # Deploy Backend
             cd $BACKEND_PATH
             echo "Cleaning old backend files..."
-            rm -rf target/
+            sudo rm -rf target/
 
             echo "Building backend..."
-            mvn clean package -DskipTests
+            sudo mvn clean package -DskipTests
             if [ $? -ne 0 ]; then
               echo "Error: Backend build failed!"
               exit 1
@@ -78,14 +78,14 @@ jobs:
             # Deploy Frontend
             cd $FRONTEND_PATH
             echo "Cleaning old frontend files..."
-            rm -rf dist/
+            sudo rm -rf dist/
 
             echo "Creating frontend .env file..."
             echo "VITE_APP_BACKEND_URL=${{ secrets.VITE_APP_BACKEND_URL }}" > .env
 
             echo "Building frontend..."
-            npm install
-            npm run build
+            sudo npm install
+            sudo npm run build
             if [ $? -ne 0 ]; then
               echo "Error: Frontend build failed!"
               exit 1
