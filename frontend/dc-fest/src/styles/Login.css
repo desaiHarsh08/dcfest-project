@@ -1,12 +1,12 @@
 .login-page {
-    background: url("dc-fest/public/background.jpg");
+    background: url("dc-fest/public/fest.jpg");
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
 }
 .card {
     border-radius: 10px;
-    background-color: rgb(193, 168, 216);
+    background-color: rgb(225, 146, 146);
 }
 
 .card-body {
