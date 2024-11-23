@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Table, Button, Badge, Modal, Form } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Container, Row, Col, Table, Button, Badge, Modal } from "react-bootstrap";
 import Navbar from "../components/Navbar/Navbar";
 import "../styles/CollegeEvent.css"; // Import custom CSS for additional styling
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ParticipationForm from "../components/participant-form/ParticipationForm";
-import { fetchParticipationEvents } from "../services/college-participation-apis";
 import { fetchParticipantsByEventId } from "../services/participants-api";
-import { fetchAvailableEvents, fetchAvailableEventsById } from "../services/available-events-apis";
-import { fetchEventById, fetchEventBySlug } from "../services/event-apis";
+import { fetchAvailableEventsById } from "../services/available-events-apis";
+import { fetchEventById } from "../services/event-apis";
 
 const CollegeEvent = () => {
   const { iccode, eventId } = useParams();
@@ -95,13 +94,6 @@ const CollegeEvent = () => {
                     <p>
                       <strong>Round:</strong> {round?.roundType}
                     </p>
-                    {round.venues.map((venue) => (
-                      <div key={`venue-${venue.id}`}>
-                        <p>Venue: {venue?.name}</p>
-                        <p>From: {venue?.start}</p>
-                        <p>Till: {venue?.end}</p>
-                      </div>
-                    ))}
                   </div>
                 );
               })}
