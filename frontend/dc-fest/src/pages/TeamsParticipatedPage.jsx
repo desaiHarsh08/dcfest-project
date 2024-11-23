@@ -3,12 +3,13 @@ import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import * as XLSX from "xlsx";
 import { createCollege, fetchColleges } from "../services/college-apis";
 import CollegeList from "../components/teams-participated/CollegeList";
+import { useNavigate } from "react-router-dom";
 
 const TeamsParticipatedPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [colleges, setColleges] = useState([]);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate(); 
   useEffect(() => {
     fetchColleges()
       .then((data) => {
@@ -95,6 +96,22 @@ const TeamsParticipatedPage = () => {
 
   return (
     <Container className="mt-5">
+      <button
+        className="back-button"
+        onClick={() => navigate(-1)} // Navigates to the previous page
+        style={{
+          margin: "10px",
+          padding: "10px 20px",
+          marginBottom: "30px",
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Back
+      </button>
       <Row className="justify-content-center">
         <Col md={6}>
           <h1 className="text-center mb-4">Upload College List</h1>

@@ -1,5 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap CSS is imported
+import { useNavigate } from 'react-router-dom';
 
 const CollegeRankingPage = () => {
     // Sample data for demonstration with ranking
@@ -9,8 +10,26 @@ const CollegeRankingPage = () => {
         { rank: 3, name: "LMN Institute", icCode: "IC789", points: 75, participants: 8 },
     ];
 
+    const navigate = useNavigate();
+
     return (
         <div className="container mt-4">
+            <button
+                className="back-button"
+                onClick={() => navigate(-1)} // Navigates to the previous page
+                style={{
+                    margin: "10px",
+                    padding: "10px 20px",
+                    marginBottom: "30px",
+                    backgroundColor: "#007BFF",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                }}
+            >
+                Back
+            </button>
             <h2 className="text-center">College Ranking</h2>
             <table className="table table-bordered mt-4">
                 <thead className="table-success">

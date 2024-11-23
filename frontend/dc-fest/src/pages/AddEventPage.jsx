@@ -7,6 +7,7 @@ import { fetchEventTemplateRules } from "../services/event-rule-templates-api";
 import { motion } from "framer-motion";
 import PreviewModal from "../components/event-details-form/PreviewModal";
 import { fetchAvailableEventsBySlug } from "../services/available-events-apis";
+import { useNavigate } from "react-router-dom";
 
 const RULE_SEQ_NAME = [
   "REGISTERED_SLOTS_AVAILABLE",
@@ -21,6 +22,7 @@ const RULE_SEQ_NAME = [
   "LANGUAGE",
   "NOTE",
 ];
+
 
 const roundType = ["PRELIMINARY", "QUARTER", "SEMI_FINAL", "FINAL"];
 const rounds = [];
@@ -76,6 +78,8 @@ const AddEventPage = () => {
       setEvent((prev) => ({ ...prev, eventRules: handleDefaultEventRules(data), rounds }));
     });
   }, []);
+
+  const navigate = useNavigate(); 
 
   const handleDefaultEventRules = (ruleTemplates) => {
     const eventRules = [];
@@ -316,6 +320,22 @@ const AddEventPage = () => {
 
   return (
     <motion.div className="container mt-5 pb-5 mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+      <button
+        className="back-button"
+        onClick={() => navigate(-1)} // Navigates to the previous page
+        style={{
+          margin: "10px",
+          padding: "10px 20px",
+          marginBottom: "30px",
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Back
+      </button>
       <h1 className="text-center text-primary mb-4">Add New Event</h1>
       <form onSubmit={handleSubmit}>
         <div className="row g-4">

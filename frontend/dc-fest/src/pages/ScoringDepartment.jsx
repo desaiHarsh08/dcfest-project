@@ -15,9 +15,11 @@ import {
     Card,
 } from 'react-bootstrap';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { useNavigate } from 'react-router-dom';
 
 const ScoringDepartment = () => {
     // State for Events
+    const navigate = useNavigate();
     const [events, setEvents] = useState([
         {
             id: 1,
@@ -280,6 +282,22 @@ const ScoringDepartment = () => {
 
     return (
         <Container fluid className="my-4">
+            <button
+                className="back-button"
+                onClick={() => navigate(-1)} // Navigates to the previous page
+                style={{
+                    margin: "10px",
+                    padding: "10px 20px",
+                    marginBottom: "30px",
+                    backgroundColor: "#007BFF",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                }}
+            >
+                Back
+            </button>
             <Row className="justify-content-center">
                 <Col xs={12} lg={10}>
                     <Card className="shadow-sm">
