@@ -1,7 +1,17 @@
 /* eslint-disable react/prop-types */
 import { Form } from "react-bootstrap";
 
-const SelectFields = ({ selectedCategory, setSelectedCategory, onSetDefaultParticipants, categories, selectedAvailableEvent, setSelectedAvailableEvent, colleges, selectedCollege, setSelectedCollege }) => {
+const SelectFields = ({
+  selectedCategory,
+  setSelectedCategory,
+  onSetDefaultParticipants,
+  categories,
+  selectedAvailableEvent,
+  setSelectedAvailableEvent,
+  colleges,
+  selectedCollege,
+  setSelectedCollege,
+}) => {
   return (
     <div id="event-participant-main-field" className="d-flex gap-3 w-100">
       <Form.Group className="field-card mb-4">
@@ -13,6 +23,7 @@ const SelectFields = ({ selectedCategory, setSelectedCategory, onSetDefaultParti
             setSelectedCategory(category);
             const availableEvent = category.availableEvents[0];
             setSelectedAvailableEvent(availableEvent?.id);
+            onSetDefaultParticipants(availableEvent);
             onSetDefaultParticipants(availableEvent);
           }}
         >

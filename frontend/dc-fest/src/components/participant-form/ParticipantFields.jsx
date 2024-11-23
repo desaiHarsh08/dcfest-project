@@ -31,6 +31,12 @@ const ParticipantFields = ({ participant, participantIndex, onChange }) => {
           onChange={(e) => onChange({ target: { name: "male", value: false } }, participantIndex)}
         />
       </Form.Group>
+      {/* <Form.Group>
+        <Form.Select aria-label="Default select example" name="type" value={participant.type} onChange={(e) => onChange(e, participantIndex)}>
+          <option value={"ACCOMPANIST"}>ACCOMPANIST</option>
+          <option value={"PERFORMER"}>PERFORMER</option>
+        </Form.Select>
+      </Form.Group> */}
     </div>
   );
 };

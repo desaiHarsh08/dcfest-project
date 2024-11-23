@@ -16,6 +16,7 @@ const participantObj = {
   whatsappNumber: "",
   male: true,
   collegeId: null,
+  type: "PERFORMER",
   eventIds: [],
 };
 
@@ -80,7 +81,7 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
       const updatedParticipants = [...prevParticipants];
       updatedParticipants[participantIndex] = {
         ...updatedParticipants[participantIndex],
-        [name]: type === "checkbox" ? checked : value,
+        [name]: type == "checkbox" ? checked : value,
       };
       return updatedParticipants;
     });
@@ -98,6 +99,7 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
 
   const handleSetDefaultParticipants = (selectedAvailableEvent) => {
     const newParticipants = [];
+    console.log("in default, ", selectedAvailableEvent);
     for (let i = 0; i < selectedAvailableEvent?.eventRules?.length; i++) {
       console.log(selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name);
 
@@ -115,6 +117,11 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
   };
 
   const isValidDetails = () => {
+    console.log("in valid details, selectedAvailableEvent:", selectedAvailableEvent);
+    if (!selectedAvailableEvent || !selectedAvailableEvent.eventRules) {
+      return false;
+    }
+    console.log("passed if");
     // Check for empty participant details
     for (let i = 0; i < participants.length; i++) {
       if ([participants[i].name.trim(), participants[i].email.trim(), participants[i].whatsappNumber.trim()].some((ele) => ele === "")) {
@@ -127,6 +134,8 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
       const eventRule = selectedAvailableEvent.eventRules[i];
       const ruleValue = Number(eventRule.value);
       console.log(eventRule, ruleValue);
+      console.log("selectedAvailableEvent:", selectedAvailableEvent);
+
       switch (eventRule.name) {
         case "MIN_PARTICIPANTS":
           if (participants.length < ruleValue) return false;
@@ -137,11 +146,19 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
           break;
 
         case "MALE_PARTICIPANTS":
-          if (participants.filter((p) => p.male).length !== ruleValue) return false;
+          if (participants.filter((p) => p.male).length != ruleValue) {
+            return false;
+          }
+
           break;
 
         case "FEMALE_PARTICIPANTS":
-          if (participants.filter((p) => !p.male).length !== ruleValue) return false;
+          if (participants.filter((p) => !p.male).length != ruleValue) return false;
+          break;
+
+        case "COLLEGE_ACCOMPANIST":
+          console.log("here");
+          if (participants.filter((p) => p.type == "ACCOMPANIST").length != ruleValue) return false;
           break;
 
         default:
