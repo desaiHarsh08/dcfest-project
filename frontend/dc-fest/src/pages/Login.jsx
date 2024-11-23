@@ -59,8 +59,8 @@ const Login = () => {
                 <Form.Group controlId="formBasicusername" className="mb-3">
                   <Form.Label>
                     <FiUser />
-                    Enter your IC Code :-
-                    </Form.Label>
+                    Enter Username :-
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={credentials.username}
@@ -70,18 +70,19 @@ const Login = () => {
                         username: e.target.value,
                       }))
                     }
-                    placeholder="Enter IC Code"
+                    placeholder="Enter Username"
+                    className="border"
                   />
                 </Form.Group>
 
                 <Form.Group controlId="formBasicPassword" className="mb-3">
                   <Form.Label>
                     <FiLock />
-                     Enter your Password :-
-                    </Form.Label>
+                    Enter Password :-
+                  </Form.Label>
                   <Form.Control
                     type="password"
-                    placeholder="Enter password"
+                    placeholder="Enter Password"
                     value={credentials.password}
                     onChange={(e) =>
                       setCredentials((prev) => ({
@@ -89,6 +90,7 @@ const Login = () => {
                         password: e.target.value,
                       }))
                     }
+                    className="border"
                   />
                 </Form.Group>
 
