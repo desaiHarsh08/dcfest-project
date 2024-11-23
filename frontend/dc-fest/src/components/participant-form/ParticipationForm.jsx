@@ -44,14 +44,33 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
   }, []);
 
   useEffect(() => {
-    fetchColleges()
-      .then((data) => {
-        console.log(data);
-        setColleges(data);
-        setSelectedCollege(data[0]?.id);
-      })
-      .catch((err) => console.log(err));
-  }, []);
+    if (!selectedCollege) {
+      fetchColleges()
+        .then((data) => {
+          console.log(data);
+          setColleges(data);
+          setSelectedCollege(data[0]?.id);
+          handleSetDefaultParticipants(selectedAvailableEvent);
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [selectedCollege]);
+
+  useEffect(() => {
+    if (selectedCollege && selectedAvailableEvent) {
+      handleSetDefaultParticipants(selectedAvailableEvent);
+    }
+  }, [selectedAvailableEvent, selectedAvailableEvent]);
+
+  //   useEffect(() => {
+  //     if (participantObj.collegeId == null && selectedCollege) {
+  //       const newParticipants = [...participants];
+  //       for (let i = 0; i < newParticipants.length; i++) {
+  //         newParticipants[i] = { ...newParticipants[i], collegeId: selectedCollege?.id };
+  //       }
+  //       setParticipants(newParticipants);
+  //     }
+  //   }, [participants, selectedCollege]);
 
   // Updated handleChange function
   const handleChange = (e, participantIndex) => {
@@ -81,13 +100,11 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
     const newParticipants = [];
     for (let i = 0; i < selectedAvailableEvent?.eventRules?.length; i++) {
       console.log(selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name);
-      if (selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name == "NO_OF_PARTICIPANTS") {
-        newParticipants.push(participantObj);
-        break;
-      }
+
       if (selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name == "MIN_PARTICIPANTS") {
         console.log("value for min:", selectedAvailableEvent?.eventRules[i].value);
         for (let j = 0; j < Number(selectedAvailableEvent?.eventRules[i].value); j++) {
+          console.log(selectedAvailableEvent?.eventRules[i].value);
           newParticipants?.push(participantObj);
         }
         break;
@@ -109,12 +126,8 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
     for (let i = 0; i < selectedAvailableEvent?.eventRules.length; i++) {
       const eventRule = selectedAvailableEvent.eventRules[i];
       const ruleValue = Number(eventRule.value);
-
+      console.log(eventRule, ruleValue);
       switch (eventRule.name) {
-        case "NO_OF_PARTICIPANTS":
-          if (participants.length !== ruleValue) return false;
-          break;
-
         case "MIN_PARTICIPANTS":
           if (participants.length < ruleValue) return false;
           break;
@@ -142,6 +155,11 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("submitting participant,");
+    if (!selectedCollege) {
+      alert("Select college");
+      return;
+    }
     console.log("selectedCategory:", selectedCategory);
     console.log("selectedCollege:", selectedCollege);
     console.log("selected available event:", selectedAvailableEvent);
@@ -158,9 +176,9 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
     const tmpParticipants = [...participants];
     let count = 0;
     for (let i = 0; i < tmpParticipants.length; i++) {
-      tmpParticipants[i].collegeId = selectedCollege.id;
+      tmpParticipants[i].collegeId = selectedCollege;
       tmpParticipants[i].eventIds = [event.id];
-console.log(tmpParticipants[i], selectedCollege.id)
+      console.log(tmpParticipants[i], selectedCollege.id);
       try {
         const response = await createParticipants(tmpParticipants[i]);
         console.log("created participant:", response);

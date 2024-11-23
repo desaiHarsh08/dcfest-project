@@ -1,22 +1,17 @@
 // src/pages/EventParticipationPage.jsx
-import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Container,
-  Spinner,
-  Alert,
-  Button,
-  Modal,
-  Form,
-  Pagination,
-} from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import "../styles/EventParticipationPage.css"; // Import custom CSS
 import { fetchCategories } from "../services/categories-api";
+import { fetchParticipantsByEventId } from "../services/participants-api";
+import { fetchEventByAvailableEventId } from "../services/event-apis";
+import { fetchAvailableEventsById } from "../services/available-events-apis";
+import ParticipantRow from "../components/event-participation/ParticipantRow";
 
 const EventParticipationPage = () => {
   const [participants, setParticipants] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -25,81 +20,44 @@ const EventParticipationPage = () => {
 
   const [categories, setCategories] = useState([]);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2; // Number of items to display per page
-
-  // Dummy data for participants
-  const dummyData = [
-    {
-      id: 1,
-      name: "John Doe",
-      college: "ABC University",
-      email: "john.doe@example.com",
-      event: "Tech Conference 2024",
-      eventCategory: "Technology",
-      status: "Attended",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      college: "XYZ College",
-      email: "jane.smith@example.com",
-      event: "Health Awareness Seminar",
-      eventCategory: "Health",
-      status: "Attended",
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      college: "LMN Institute",
-      email: "mike.johnson@example.com",
-      event: "Art Exhibition",
-      eventCategory: "Arts",
-      status: "Absent",
-    },
-    {
-      id: 4,
-      name: "Emily Davis",
-      college: "DEF Academy",
-      email: "emily.davis@example.com",
-      event: "Science Fair 2024",
-      eventCategory: "Science",
-      status: "Attended",
-    },
-    {
-      id: 5,
-      name: "Chris Brown",
-      college: "GHI College",
-      email: "chris.brown@example.com",
-      event: "Music Fest",
-      eventCategory: "Music",
-      status: "Attended",
-    },
-  ];
+  const [availableEvent, setAvailableEvent] = useState();
 
   // Simulate data fetching
   useEffect(() => {
     const fetchParticipants = () => {
-      setTimeout(() => {
-        setParticipants(dummyData); // Set dummy data after 1 second
-        setLoading(false); // Set loading to false
-      }, 1000);
+      fetchEventByAvailableEventId(eventFilter)
+        .then((data) => {
+          console.log("event is:", data);
+          fetchParticipantsByEventId(data.id)
+            .then((data) => {
+              console.log("participants:", data);
+              setParticipants(data);
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log("unable to fetch the event", err));
     };
 
     fetchParticipants();
-  }, []);
+  }, [eventFilter]);
+
+  useEffect(() => {
+    fetchAvailableEventsById(eventFilter)
+      .then((data) => setAvailableEvent(data))
+      .catch((err) => console.log(err));
+  }, [eventFilter]);
 
   useEffect(() => {
     fetchCategories()
       .then((data) => {
         console.log(data);
         setCategories(data);
-  
+
         // Check if data is not empty and has a valid structure before setting filters
         if (data.length > 0) {
           const firstCategory = data[0];
           setCategoryFilter(firstCategory.id);
-  
+
           // Check if availableEvents exists and has at least one event
           if (firstCategory.availableEvents && firstCategory.availableEvents.length > 0) {
             setEventFilter(firstCategory.availableEvents[0].id);
@@ -108,22 +66,15 @@ const EventParticipationPage = () => {
       })
       .catch((err) => console.log("Unable to fetch the categories", err));
   }, []);
-  
 
   // Filtered participants based on selected event and category
-  const filteredParticipants = participants.filter((participant) => {
-    return (
-      (eventFilter ? participant.event === eventFilter : true) &&
-      (categoryFilter ? participant.eventCategory === categoryFilter : true)
-    );
-  });
+  //   const filteredParticipants = participants.filter((participant) => {
+  //     return (eventFilter ? participant.event === eventFilter : true) && (categoryFilter ? participant.eventCategory === categoryFilter : true);
+  //   });
 
   // Calculate total pages and current participants
-  const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage);
-  const currentParticipants = filteredParticipants.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  //   const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage);
+  //   const currentParticipants = filteredParticipants.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleEdit = (participant) => {
     setSelectedParticipant(participant);
@@ -131,9 +82,7 @@ const EventParticipationPage = () => {
   };
 
   const handleRemove = (id) => {
-    setParticipants(
-      participants.filter((participant) => participant.id !== id)
-    );
+    setParticipants(participants.filter((participant) => participant.id !== id));
   };
 
   const handleModalClose = () => {
@@ -142,23 +91,14 @@ const EventParticipationPage = () => {
   };
 
   const handleSaveChanges = () => {
-    setParticipants(
-      participants.map((participant) =>
-        participant.id === selectedParticipant.id
-          ? selectedParticipant
-          : participant
-      )
-    );
+    setParticipants(participants.map((participant) => (participant.id === selectedParticipant.id ? selectedParticipant : participant)));
+    
     handleModalClose();
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedParticipant({ ...selectedParticipant, [name]: value });
-  };
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
   };
 
   if (loading) {
@@ -193,11 +133,9 @@ const EventParticipationPage = () => {
           className="category-dropdown"
           value={categoryFilter}
           onChange={(e) => {
-            const selectedCategory = categories?.map(
-              (c) => c?.name == e.target.value
-            );
+            const selectedCategory = categories?.find((c) => c?.name == e.target.value);
             setCategoryFilter(e.target.value);
-            setEventFilter(selectedCategory?.availableEvents[0].id);
+            setEventFilter(selectedCategory.availableEvents[0].id);
           }}
         >
           {categories?.map((category, categoryIndex) => (
@@ -209,26 +147,24 @@ const EventParticipationPage = () => {
         <Form.Select
           className="event-dropdown me-2"
           value={eventFilter}
-          onChange={(e) => setEventFilter(e.target.value)}
+          onChange={(e) => {
+            console.log("on available event change:", e.target.value);
+            setEventFilter(e.target.value);
+          }}
         >
           {categories?.map((category) => {
-            if (category?.availableEvents?.some((e) => e?.id == eventFilter)) {
-              return category?.availableEvents?.map(
-                (availableEvent, availableEventIndex) => (
-                  <option
-                    key={`availableEvent-${availableEventIndex}`}
-                    value={eventFilter}
-                  >
-                    {availableEvent?.title}
-                  </option>
-                )
-              );
+            if (category.id == categoryFilter) {
+              return category?.availableEvents?.map((availableEvent, availableEventIndex) => (
+                <option key={`availableEvent-${availableEventIndex}`} value={availableEvent.id}>
+                  {availableEvent?.title}
+                </option>
+              ));
             }
           })}
         </Form.Select>
       </div>
 
-      {currentParticipants.length > 0 ? (
+      {participants.length > 0 ? (
         <>
           <Table striped bordered hover responsive>
             <thead>
@@ -237,71 +173,25 @@ const EventParticipationPage = () => {
                 <th>Participant Name</th>
                 <th>College</th>
                 <th>Email</th>
+                <th>Category</th>
                 <th>Event</th>
-                <th>Event Category</th>
-                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {currentParticipants.map((participant, index) => (
-                <tr key={participant.id}>
-                  <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>{" "}
-                  {/* Use index for numbering */}
-                  <td>{participant.name}</td>
-                  <td>{participant.college}</td>
-                  <td>{participant.email}</td>
-                  <td>{participant.event}</td>
-                  <td>{participant.eventCategory}</td>
-                  <td>{participant.status}</td>
-                  <td className="d-flex">
-                    <Button
-                      variant="info"
-                      size="sm"
-                      className="me-2"
-                      onClick={() => handleEdit(participant)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleRemove(participant.id)}
-                    >
-                      Remove
-                    </Button>
-                  </td>
-                </tr>
+              {participants.map((participant, index) => (
+                <ParticipantRow
+                  key={participant.id}
+                  category={categories.find((cat) => cat.id == availableEvent?.eventCategoryId)}
+                  index={index}
+                  availableEvent={availableEvent}
+                  handleEdit={handleEdit}
+                  handleRemove={handleRemove}
+                  participant={participant}
+                />
               ))}
             </tbody>
           </Table>
-
-          {/* Pagination Component */}
-          <Pagination className="justify-content-center mt-4">
-            <Pagination.Prev
-              onClick={() =>
-                handlePageChange(currentPage > 1 ? currentPage - 1 : 1)
-              }
-              disabled={currentPage === 1}
-            />
-            {[...Array(totalPages)].map((_, index) => (
-              <Pagination.Item
-                key={index + 1}
-                active={index + 1 === currentPage}
-                onClick={() => handlePageChange(index + 1)}
-              >
-                {index + 1}
-              </Pagination.Item>
-            ))}
-            <Pagination.Next
-              onClick={() =>
-                handlePageChange(
-                  currentPage < totalPages ? currentPage + 1 : totalPages
-                )
-              }
-              disabled={currentPage === totalPages}
-            />
-          </Pagination>
         </>
       ) : (
         <Alert variant="info">No participants found.</Alert>
@@ -317,57 +207,19 @@ const EventParticipationPage = () => {
             <Form>
               <Form.Group controlId="formName">
                 <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="name"
-                  value={selectedParticipant.name}
-                  onChange={handleInputChange}
-                />
+                <Form.Control type="text" name="name" value={selectedParticipant.name} onChange={handleInputChange} />
               </Form.Group>
               <Form.Group controlId="formCollege">
                 <Form.Label>College</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="college"
-                  value={selectedParticipant.college}
-                  onChange={handleInputChange}
-                />
+                <Form.Control type="text" name="college" value={selectedParticipant.college} onChange={handleInputChange} />
               </Form.Group>
               <Form.Group controlId="formEmail">
                 <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  value={selectedParticipant.email}
-                  onChange={handleInputChange}
-                />
+                <Form.Control type="email" name="email" value={selectedParticipant.email} onChange={handleInputChange} />
               </Form.Group>
               <Form.Group controlId="formEvent">
                 <Form.Label>Event</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="event"
-                  value={selectedParticipant.event}
-                  onChange={handleInputChange}
-                />
-              </Form.Group>
-              <Form.Group controlId="formCategory">
-                <Form.Label>Event Category</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="eventCategory"
-                  value={selectedParticipant.eventCategory}
-                  onChange={handleInputChange}
-                />
-              </Form.Group>
-              <Form.Group controlId="formStatus">
-                <Form.Label>Status</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="status"
-                  value={selectedParticipant.status}
-                  onChange={handleInputChange}
-                />
+                <Form.Control type="text" name="event" value={selectedParticipant.event} onChange={handleInputChange} />
               </Form.Group>
             </Form>
           )}
