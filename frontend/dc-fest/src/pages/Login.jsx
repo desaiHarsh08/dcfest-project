@@ -51,10 +51,10 @@ const Login = () => {
   return (
     <Container fluid className="login-page">
       <Row className="justify-content-center align-items-center min-vh-100">
-        <Col md={4}>
+        <Col md={5}>
           <Card className="shadow-lg p-4">
             <Card.Body>
-              <h3 className="text-center mb-4">Sign In</h3>
+              <h3 className="text-center mb-4">Welcome to UMANG 2024</h3>
               <Form onSubmit={handleLogin}>
                 <Form.Group controlId="formBasicusername" className="mb-3">
                   <Form.Label>
