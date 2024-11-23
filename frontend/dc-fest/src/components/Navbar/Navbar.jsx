@@ -108,7 +108,7 @@ const Navbar = () => {
                 <FaBook className="me-1" /> Registration Rules
               </Button>
               {!authContext?.user ? (
-                <Link to="/login" className="nav-link-custom text-decoration-none d-flex align-items-center" style={{fontSize:"1.36rem" , background:"cornflowerblue", borderRadius:"12px", color:"white"}} >
+                <Link to="/login" className="nav-link-custom text-decoration-none d-flex align-items-center" style={{fontSize:"1.36rem", borderRadius:"12px", color:"blue"}} >
                   <FaSignInAlt className="me-1" /> Login
                 </Link>
               ) : (
