@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
 import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt } from "react-icons/fa";
 import { fetchEventBySlug } from "../services/event-apis";
-
+import "../styles/RootEvents.css"
 const RootEvent = () => {
   const { eventSlug } = useParams();
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate(); // Initialize navigate
   useEffect(() => {
     fetchEventBySlug(eventSlug)
       .then((data) => setEvent(data))
@@ -39,6 +39,23 @@ const RootEvent = () => {
 
   return (
     <Container className="py-5">
+      {/* Back Button */}
+      <button
+        className="back-button"
+        onClick={() => navigate(-1)} // Navigates to the previous page
+        style={{
+          margin: "10px",
+          padding: "10px 20px",
+          marginBottom:"30px",
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Back
+      </button>
       {event && (
         <Row>
           {/* Event Image */}
