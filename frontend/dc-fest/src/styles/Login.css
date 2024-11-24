@@ -1,17 +1,16 @@
 .login-page {
-    background-color: #f7f9fc;
+    background: url("dc-fest/public/fest.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 }
-
 .card {
     border-radius: 10px;
+    background-color: rgb(196, 146, 225);
 }
 
 .card-body {
     padding: 30px;
-}
-
-h3 {
-    font-weight: bold;
 }
 
 button {
