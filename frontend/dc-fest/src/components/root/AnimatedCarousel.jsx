@@ -62,6 +62,7 @@ const AnimatedCarousel = () => {
         indicators={true}
         fade
         wrap={true}
+        style={{margin:"25px"}}
       >
         {items.map((item) => (
           <Carousel.Item key={item.imgSlug}>

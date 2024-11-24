@@ -2,11 +2,43 @@ import React from "react";
 import "../../styles/WelcomeSection.css";
 
 const WelcomeSection = () => {
+  const images = [
+    "/E1.jpg",
+    "/E2.jpg",
+    "/E3.jpg",
+    "/E4.jpg",
+    "/E5.jpg",
+    "/E6.jpg",
+    "/E7.jpg",
+    "/E8.jpg",
+    "/E9.jpg",
+  ];
+
   return (
     <div className="welcome-section">
       <div className="main-header text-center">
-        <div className="welcome-title">WELCOME TO "UMANG 2024"</div>
-        <img src="/cover-img-3.jpg" alt="" className="welcome-img-fluid" />
+        <div className="welcome-title">WELCOME TO UMANG 2024</div>
+        <div className="slider">
+          <div className="slider-track">
+            {images.map((src, index) => (
+              <img
+                key={`large-${index}`}
+                src={src}
+                alt={`Slide ${index + 1}`}
+                className="slider-image"
+              />
+            ))}
+            {/* Repeat the images for infinite scroll */}
+            {images.map((src, index) => (
+              <img
+                key={`small-${index}`}
+                src={src}
+                alt={`Slide ${index + 1}`}
+                className="slider-image"
+              />
+            ))}
+          </div>
+        </div>
         <p className="welcome-description">
           Dive into an extraordinary celebration of culture, art, and
           excitement. Join us for "UMANG 2024" — where creativity meets

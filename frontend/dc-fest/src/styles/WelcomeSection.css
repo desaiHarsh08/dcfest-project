@@ -1,4 +1,4 @@
-/* Background styling */
+/* 
 .welcome-section {
     background: linear-gradient(135deg, rgba(0, 102, 255, 0.8), rgba(255, 105, 180, 0.8));
     padding: 50px 0;
@@ -9,7 +9,7 @@
     overflow: hidden;
 }
 
-/* Adding some creative background visuals */
+
 .welcome-section:before {
     content: "";
     position: absolute;
@@ -22,13 +22,13 @@
     z-index: -1;
 }
 
-/* Main header and title */
+
 .main-header {
     position: relative;
     z-index: 1;
 }
 
-/* Title styling */
+
 .welcome-title {
     font-size: 3rem;
     font-family: 'Roboto', sans-serif;
@@ -39,7 +39,7 @@
     animation: slideIn 1.5s ease-out;
 }
 
-/* Description text styling */
+
 .welcome-description {
     font-size: 1.2rem;
     font-family: 'Arial', sans-serif;
@@ -50,7 +50,7 @@
     color: #fff;
 }
 
-/* Animation for the title */
+
 @keyframes slideIn {
     0% {
         transform: translateX(-100%);
@@ -63,7 +63,7 @@
     }
 }
 
-/* Animation for the description */
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
@@ -74,7 +74,7 @@
     }
 }
 
-/* Mobile responsiveness */
+
 @media (max-width: 768px) {
     .welcome-title {
         font-size: 2rem;
@@ -85,7 +85,7 @@
     }
 }
 
-/* Background styling */
+
 .welcome-section {
     background: linear-gradient(135deg, rgba(0, 102, 255, 0.8), rgba(255, 105, 180, 0.8));
     padding: 50px 0;
@@ -96,7 +96,7 @@
     overflow: hidden;
 }
 
-/* Adding some creative background visuals */
+
 .welcome-section:before {
     content: "";
     position: absolute;
@@ -109,13 +109,12 @@
     z-index: -1;
 }
 
-/* Main header and title */
+
 .main-header {
     position: relative;
     z-index: 1;
 }
 
-/* Title styling */
 .welcome-title {
     font-size: 3rem;
     font-family: 'Roboto', sans-serif;
@@ -126,7 +125,7 @@
     animation: slideIn 1.5s ease-out;
 }
 
-/* Description text styling */
+
 .welcome-description {
     font-size: 1.2rem;
     font-family: 'Arial', sans-serif;
@@ -137,7 +136,7 @@
     color: #fff;
 }
 
-/* Image styling */
+
 .welcome-img-fluid {
     width: 100%;
     max-width: 600px;
@@ -153,7 +152,7 @@
     transform: scale(1.05);
 }
 
-/* Animation for the title */
+
 @keyframes slideIn {
     0% {
         transform: translateX(-100%);
@@ -166,7 +165,7 @@
     }
 }
 
-/* Animation for the description */
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
@@ -177,7 +176,7 @@
     }
 }
 
-/* Mobile responsiveness */
+
 @media (max-width: 768px) {
     .welcome-title {
         font-size: 2rem;
@@ -190,4 +189,109 @@
     .img-fluid {
         max-width: 90%;
     }
-}
+} */
+ .welcome-section {
+     position: relative;
+     background-color: #f8f9fa;
+     padding: 20px;
+ }
+
+ .main-header {
+     margin: 0 auto;
+     max-width: 1200px;
+ }
+
+ .welcome-title {
+     font-size: 2.5rem;
+     font-weight: bold;
+     margin-bottom: 20px;
+     color: #333;
+ }
+
+ .slider {
+     overflow: hidden;
+     width: 100%;
+     position: relative;
+     margin: 20px 0;
+ }
+
+ .slider-track {
+     display: flex;
+     animation: scroll 10s linear infinite;
+     gap: 20px;
+ }
+
+ .slider-image {
+     width: 25%;
+     /* Default size for large screens */
+     max-width: 400px;
+     height: auto;
+     border-radius: 10px;
+     object-fit: cover;
+     transition: transform 0.3s ease-in-out;
+ }
+
+ .slider-image:hover {
+     transform: scale(1.05);
+ }
+
+ .welcome-description {
+     font-size: 1.2rem;
+     color: #555;
+     margin-top: 20px;
+     line-height: 1.6;
+     text-align: center;
+ }
+
+ @keyframes scroll {
+     0% {
+         transform: translateX(0);
+     }
+
+     100% {
+         transform: translateX(-100%);
+     }
+ }
+
+ /* Responsive adjustments */
+ @media (max-width: 1024px) {
+     .slider-image {
+         width: 35%;
+     }
+
+     .welcome-title {
+         font-size: 2rem;
+     }
+
+     .welcome-description {
+         font-size: 1rem;
+     }
+ }
+
+ @media (max-width: 768px) {
+     .slider-image {
+         width: 45%;
+     }
+
+     .welcome-title {
+         font-size: 1.8rem;
+     }
+
+     .welcome-description {
+         font-size: 0.9rem;
+     }
+ }
+
+ @media (max-width: 480px) {
+     .slider-image {
+         width: 60%;
+     }
+
+     .welcome-title {
+         font-size: 1.5rem;
+     }
+
+     .welcome-description {
+         font-size: 0.8rem;
+     }
+ }
