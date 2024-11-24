@@ -5,10 +5,14 @@ import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import CategoryName from "./CategoryName";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
+import { fetchParticipantsByEventId } from "../../services/participants-api";
 
 const EventRow = ({ index, availableEventId, onRemove }) => {
   const [event, setEvent] = useState();
   const [availableEvent, setAvailableEvent] = useState();
+
+  const [participants, setParticipants] = useState([]);
+  const [otseEntry, setOtseEntry] = useState([]);
 
   useEffect(() => {
     console.log("availableEventId:", availableEventId);
@@ -26,21 +30,33 @@ const EventRow = ({ index, availableEventId, onRemove }) => {
       .catch((err) => console.log("Unable to fetch the event data", err));
   }, [availableEventId]);
 
+  useEffect(() => {
+    if (event) {
+      fetchParticipantsByEventId(event?.id)
+        .then((data) => {
+          console.log(data);
+          setParticipants(data);
+          setOtseEntry(data.filter((ele) => ele.entryType.toLowerCase() == "otse").length);
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [event]);
+
   return (
     <tr>
       <td>{index + 1}</td>
       <CategoryName categoryId={availableEvent?.eventCategoryId} />
-      <td>{event?.title}</td>
-      <td>{0}</td>
-      <td>{0}</td>
-      <td>{0}</td>
+      <td>{availableEvent?.title}</td>
+      <td>{participants.length}</td>
+      <td>{participants.length - otseEntry}</td>
+      <td>{otseEntry}</td>
       <td className="d-flex justify-content-center align-items-center">
         <Link to={`${event?.id}`} className="btn btn-primary text-decoration-none">
           View
         </Link>
-        <Button variant="danger" onClick={() => onRemove(index)}>
+        {/* <Button variant="danger" onClick={() => onRemove(index)}>
           Remove
-        </Button>
+        </Button> */}
       </td>
     </tr>
   );

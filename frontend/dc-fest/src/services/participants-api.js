@@ -18,3 +18,19 @@ export const fetchParticipantsByEventId = async (eventId) => {
     console.log(response)
     return response.data;
 };
+
+export const updateParticipant = async (participant) => {
+    const response = await API.put(`/api/participants/${participant?.id}`, participant, {
+        withCredentials: true,
+    });
+    console.log(response)
+    return response.data;
+};
+
+export const deleteParticipant = async (id) => {
+    const response = await API.delete(`/api/participants/${id}`, {
+        withCredentials: true,
+    });
+    console.log(response)
+    return response.data;
+};

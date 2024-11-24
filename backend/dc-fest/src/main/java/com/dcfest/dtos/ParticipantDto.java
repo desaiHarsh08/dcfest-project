@@ -1,5 +1,7 @@
 package com.dcfest.dtos;
 
+import com.dcfest.constants.EntryType;
+import com.dcfest.constants.ParticipantType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,4 +22,6 @@ public class ParticipantDto {
     private String qrcode;
     private Long collegeId;         // College ID as a simple field
     private List<Long> eventIds;    // Event IDs as a list of Longs (no JPA annotations)
+    private ParticipantType type = ParticipantType.PERFORMER;
+    private EntryType entryType = EntryType.NORMAL;
 }

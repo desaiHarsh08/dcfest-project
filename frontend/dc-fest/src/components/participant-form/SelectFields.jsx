@@ -11,7 +11,9 @@ const SelectFields = ({
   colleges,
   selectedCollege,
   setSelectedCollege,
+  iccode,
 }) => {
+  console.log("in selects-field, iccode:", iccode);
   return (
     <div id="event-participant-main-field" className="d-flex gap-3 w-100">
       <Form.Group className="field-card mb-4">
@@ -22,8 +24,7 @@ const SelectFields = ({
             const category = categories?.find((c) => c?.id == e.target.value);
             setSelectedCategory(category);
             const availableEvent = category.availableEvents[0];
-            setSelectedAvailableEvent(availableEvent?.id);
-            onSetDefaultParticipants(availableEvent);
+            setSelectedAvailableEvent(availableEvent);
             onSetDefaultParticipants(availableEvent);
           }}
         >
@@ -55,11 +56,18 @@ const SelectFields = ({
       <Form.Group className="mb-4 field-card">
         <Form.Label>{colleges?.length > 0 ? "College" : "No Colleges Available"}</Form.Label>
         <Form.Select
+          style={{ backgroundColor: iccode ? "aliceblue" : "" }}
           value={selectedCollege?.id}
           onChange={(e) => {
-            const college = colleges?.find((c) => c.id == e.target.value);
-            setSelectedCollege(college);
+            if (!iccode) {
+              // Only allow change if iccode is undefined or falsy
+              const college = colleges?.find((c) => c.id == e.target.value);
+              setSelectedCollege(college);
+            } else {
+              console.log("College cannot be changed because iccode is provided:", iccode);
+            }
           }}
+          disabled={!!iccode}
         >
           {colleges?.map((college, collegeIndex) => (
             <option key={`college-${collegeIndex}`} value={college?.id}>

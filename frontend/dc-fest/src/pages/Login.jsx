@@ -1,14 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 import "../styles/Login.css"; // Custom styles for any additional styling
 import { useNavigate } from "react-router-dom";
 import { doLogin } from "../services/auth-apis";
-import {
-  fetchCollegeByIcCode,
-  fetchCollegeById,
-} from "../services/college-apis";
+import { fetchCollegeById } from "../services/college-apis";
 import { FiLock, FiUser } from "react-icons/fi";
-import { h1 } from "framer-motion/client";
 const Login = () => {
   const navigate = useNavigate();
 
@@ -20,10 +16,7 @@ const Login = () => {
     e.preventDefault();
     console.log(credentials);
 
-    if (
-      credentials.username.trim() === "" ||
-      credentials.password.trim() === ""
-    ) {
+    if (credentials.username.trim() === "" || credentials.password.trim() === "") {
       return;
     }
 
@@ -52,7 +45,7 @@ const Login = () => {
     <Container fluid className="login-page">
       <Row className="justify-content-center align-items-center min-vh-100">
         <Col md={5}>
-          <Card className="shadow-lg p-4">
+          <Card className="shadow-lg p-4 card-login">
             <Card.Body>
               <h3 className="text-center mb-4">Welcome to UMANG 2024</h3>
               <Form onSubmit={handleLogin}>

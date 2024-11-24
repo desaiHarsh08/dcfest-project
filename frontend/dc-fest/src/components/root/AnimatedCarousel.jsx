@@ -1,4 +1,3 @@
-import React from "react";
 import { Carousel } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap CSS is imported
 import "../../styles/AnimatedCarousel.css"; // Import your custom CSS for carousel styling
@@ -62,7 +61,7 @@ const AnimatedCarousel = () => {
         indicators={true}
         fade
         wrap={true}
-        style={{margin:"25px"}}
+        // style={{margin:"25px"}}
       >
         {items.map((item) => (
           <Carousel.Item key={item.imgSlug}>
@@ -74,9 +73,7 @@ const AnimatedCarousel = () => {
               <Carousel.Caption className="text-center">
                 <h3 className="py-2">{item.category}</h3>
               </Carousel.Caption>
-              <div className="carousel-welcome">
-                {/* <h1 className='text-white'>WELCOME TO "UMANG 2024"</h1> */}
-              </div>
+              <div className="carousel-welcome">{/* <h1 className='text-white'>WELCOME TO "UMANG 2024"</h1> */}</div>
             </div>
           </Carousel.Item>
         ))}

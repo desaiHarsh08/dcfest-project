@@ -1,10 +1,12 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
+// /* eslint-disable no-unused-vars */
+// /* eslint-disable react/prop-types */
+
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { useEffect, useState } from "react";
 import FormHeading from "./FormHeading";
 import SelectFields from "./SelectFields";
 import ParticipantFields from "./ParticipantFields";
-import { useEffect, useState } from "react";
 import { fetchCategories } from "../../services/categories-api";
 import { fetchColleges } from "../../services/college-apis";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
@@ -17,22 +19,23 @@ const participantObj = {
   male: true,
   collegeId: null,
   type: "PERFORMER",
+  entryType: "NORMAL",
   eventIds: [],
 };
 
-const ParticipationForm = ({ formType = "REGISTRATION" }) => {
+const ParticipationForm = ({ formType = "REGISTRATION", iccode }) => {
   const [categories, setCategories] = useState([]);
   const [colleges, setColleges] = useState([]);
-
   const [selectedCategory, setSelectedCategory] = useState();
   const [selectedCollege, setSelectedCollege] = useState();
   const [selectedAvailableEvent, setSelectedAvailableEvent] = useState();
-
   const [participants, setParticipants] = useState([participantObj]);
-
+  const [isValid, setIsValid] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [validated, setValidated] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // Fetch categories on initial load
   useEffect(() => {
     fetchCategories()
       .then((data) => {
@@ -41,39 +44,48 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
         setSelectedAvailableEvent(data[0]?.availableEvents[0]);
         handleSetDefaultParticipants(data[0]?.availableEvents[0]);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Error fetching categories:", err));
   }, []);
 
+  // Fetch colleges if not already set
   useEffect(() => {
     if (!selectedCollege) {
       fetchColleges()
         .then((data) => {
-          console.log(data);
           setColleges(data);
-          setSelectedCollege(data[0]?.id);
-          handleSetDefaultParticipants(selectedAvailableEvent);
+          if (iccode) {
+            console.log("in if of college load, iccode:", iccode);
+            const tmpSelectedCollege = data.find((ele) => ele.icCode == iccode);
+            console.log(tmpSelectedCollege);
+            setSelectedCollege(tmpSelectedCollege?.id);
+          } else {
+            setSelectedCollege(data[0]?.id);
+          }
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.error("Error fetching colleges:", err));
     }
-  }, [selectedCollege]);
+  }, []);
 
   useEffect(() => {
-    if (selectedCollege && selectedAvailableEvent) {
-      handleSetDefaultParticipants(selectedAvailableEvent);
+    if (selectedCategory) {
+      setSelectedAvailableEvent(selectedCategory?.availableEvents[0]);
+      handleSetDefaultParticipants(selectedCategory?.availableEvents[0]);
     }
-  }, [selectedAvailableEvent, selectedAvailableEvent]);
+  }, [selectedCategory]);
 
+  // Set default participants based on the selected event rules
   //   useEffect(() => {
-  //     if (participantObj.collegeId == null && selectedCollege) {
-  //       const newParticipants = [...participants];
-  //       for (let i = 0; i < newParticipants.length; i++) {
-  //         newParticipants[i] = { ...newParticipants[i], collegeId: selectedCollege?.id };
-  //       }
-  //       setParticipants(newParticipants);
+  //     if (selectedAvailableEvent) {
+  //       handleSetDefaultParticipants(selectedAvailableEvent);
   //     }
-  //   }, [participants, selectedCollege]);
+  //   }, [selectedAvailableEvent]);
 
-  // Updated handleChange function
+  // Revalidate details whenever participants change
+  useEffect(() => {
+    isValidDetails();
+  }, [participants]);
+
+  // Function to handle form input changes
   const handleChange = (e, participantIndex) => {
     const { name, value, type, checked } = e.target;
 
@@ -81,130 +93,145 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
       const updatedParticipants = [...prevParticipants];
       updatedParticipants[participantIndex] = {
         ...updatedParticipants[participantIndex],
-        [name]: type == "checkbox" ? checked : value,
+        [name]: type === "checkbox" ? checked : value,
       };
       return updatedParticipants;
     });
   };
 
+  // Function to get event details by availableEventId
   const getEvent = async (availableEventId) => {
     try {
       const response = await fetchEventByAvailableEventId(availableEventId);
       return response;
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching event:", error);
       return null;
     }
   };
 
+  // Function to initialize participants based on event rules
   const handleSetDefaultParticipants = (selectedAvailableEvent) => {
+    console.log("in default set, selectedAvailableEvent:", selectedAvailableEvent);
     const newParticipants = [];
-    console.log("in default, ", selectedAvailableEvent);
-    for (let i = 0; i < selectedAvailableEvent?.eventRules?.length; i++) {
-      console.log(selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name);
+    const minParticipantsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "MIN_PARTICIPANTS");
 
-      if (selectedAvailableEvent?.eventRules[i].eventRuleTemplate.name == "MIN_PARTICIPANTS") {
-        console.log("value for min:", selectedAvailableEvent?.eventRules[i].value);
-        for (let j = 0; j < Number(selectedAvailableEvent?.eventRules[i].value); j++) {
-          console.log(selectedAvailableEvent?.eventRules[i].value);
-          newParticipants?.push(participantObj);
-        }
-        break;
+    if (minParticipantsRule) {
+      for (let i = 0; i < Number(minParticipantsRule.value); i++) {
+        newParticipants.push(participantObj);
       }
     }
-    console.log(newParticipants);
     setParticipants(newParticipants);
   };
 
-  const isValidDetails = () => {
-    console.log("in valid details, selectedAvailableEvent:", selectedAvailableEvent);
+  // Function to validate participant details
+  const isValidDetails = (isSubmitting) => {
     if (!selectedAvailableEvent || !selectedAvailableEvent.eventRules) {
+      setIsValid(false);
       return false;
     }
-    console.log("passed if");
-    // Check for empty participant details
-    for (let i = 0; i < participants.length; i++) {
-      if ([participants[i].name.trim(), participants[i].email.trim(), participants[i].whatsappNumber.trim()].some((ele) => ele === "")) {
+
+    for (const participant of participants) {
+      if (!participant.name.trim() || !participant.email.trim() || !participant.whatsappNumber.trim()) {
+        setIsValid(false);
         return false;
       }
     }
 
-    // Loop through each event rule and validate against the participants array
-    for (let i = 0; i < selectedAvailableEvent?.eventRules.length; i++) {
-      const eventRule = selectedAvailableEvent.eventRules[i];
-      const ruleValue = Number(eventRule.value);
-      console.log(eventRule, ruleValue);
-      console.log("selectedAvailableEvent:", selectedAvailableEvent);
-
-      switch (eventRule.name) {
+    for (const rule of selectedAvailableEvent.eventRules) {
+      const ruleValue = Number(rule.value);
+      switch (rule.eventRuleTemplate.name) {
         case "MIN_PARTICIPANTS":
-          if (participants.length < ruleValue) return false;
+          if (participants.length < ruleValue) {
+            if (isSubmitting) {
+              alert(`Oops... There should be minimum ${ruleValue} participants!`);
+            }
+            setIsValid(false);
+            return false;
+          }
           break;
 
         case "MAX_PARTICIPANTS":
-          if (participants.length > ruleValue) return false;
+          if (participants.length > ruleValue) {
+            if (isSubmitting) {
+              alert(`Oops... There should be maximum ${ruleValue} participants!`);
+            }
+            setIsValid(false);
+            return false;
+          }
           break;
 
         case "MALE_PARTICIPANTS":
-          if (participants.filter((p) => p.male).length != ruleValue) {
+          if (participants.filter((p) => p.male).length !== ruleValue) {
+            if (isSubmitting) {
+              alert(`Oops... There should be ${ruleValue} MALE participants!`);
+            }
+            setIsValid(false);
             return false;
           }
-
           break;
 
         case "FEMALE_PARTICIPANTS":
-          if (participants.filter((p) => !p.male).length != ruleValue) return false;
-          break;
-
-        case "COLLEGE_ACCOMPANIST":
-          console.log("here");
-          if (participants.filter((p) => p.type == "ACCOMPANIST").length != ruleValue) return false;
+          if (participants.filter((p) => !p.male).length !== ruleValue) {
+            if (isSubmitting) {
+              alert(`Oops... There should be female ${ruleValue} participants!`);
+            }
+            setIsValid(false);
+            return false;
+          }
           break;
 
         default:
           break;
       }
     }
-
-    // Return true if all rules are passed
-    return true;
+    setIsValid(true);
   };
 
+  // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("submitting participant,");
+
     if (!selectedCollege) {
-      alert("Select college");
+      alert("Please select a college.");
       return;
     }
-    console.log("selectedCategory:", selectedCategory);
-    console.log("selectedCollege:", selectedCollege);
-    console.log("selected available event:", selectedAvailableEvent);
 
-    console.log("participants:", participants);
+    isValidDetails(true);
+    if (!isValid) {
+      alert("Invalid participant details. Please review.");
+      return;
+    }
 
     const event = await getEvent(selectedAvailableEvent?.id);
-    if (event == null) {
-      alert("Some error occured while adding participants!");
+    if (!event) {
+      alert("Error retrieving event details.");
       return;
     }
-    console.log("event:", event);
 
-    const tmpParticipants = [...participants];
-    let count = 0;
-    for (let i = 0; i < tmpParticipants.length; i++) {
-      tmpParticipants[i].collegeId = selectedCollege;
-      tmpParticipants[i].eventIds = [event.id];
-      console.log(tmpParticipants[i], selectedCollege.id);
+    setLoading(true);
+    let successCount = 0;
+    for (const participant of participants) {
       try {
-        const response = await createParticipants(tmpParticipants[i]);
-        console.log("created participant:", response);
-        count++;
+        const participantData = {
+          ...participant,
+          collegeId: selectedCollege,
+          eventIds: [event.id],
+        };
+        await createParticipants(participantData);
+        successCount++;
       } catch (error) {
-        console.log(error);
+        console.error("Error creating participant:", error);
       }
     }
-    alert(`Participants added: ${count}`);
+    if (successCount > 0) {
+      handleSetDefaultParticipants(selectedAvailableEvent);
+      alert(`Participants successfully added: ${successCount}`);
+    } else {
+      alert("Some erro occured... Please try again");
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -217,6 +244,7 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
               <div className="form-scroll-container flex-grow-1">
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
                   <SelectFields
+                    iccode={iccode}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                     onSetDefaultParticipants={handleSetDefaultParticipants}
@@ -230,17 +258,22 @@ const ParticipationForm = ({ formType = "REGISTRATION" }) => {
                   <div id="participants-wrapper">
                     <h2>Participants Details</h2>
                     <div id="participants-container" className="d-flex flex-column gap-2">
-                      {participants?.map((participant, participantIndex) => (
-                        <ParticipantFields key={`participant-${participantIndex}`} participant={participant} participantIndex={participantIndex} onChange={handleChange} />
+                      {participants.map((participant, index) => (
+                        <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} />
                       ))}
                     </div>
                   </div>
-                  <div className=" d-flex justify-content-center">
-                    <p>
-                      <Button disabled={!(isValidDetails() && colleges.length > 0)} variant="primary" type="submit" size="lg" className="w-100">
-                        Register
-                      </Button>
-                    </p>
+                  <div className="d-flex flex-column  justify-content-center">
+                    <Button
+                      disabled={!isValid || loading == true}
+                      variant="primary"
+                      type="submit"
+                      size="lg"
+                      //   className="w-100"
+                    >
+                      {loading ? "Please wait..." : "Register"}
+                    </Button>
+                    {loading && <p>This may take few seconds...</p>}
                   </div>
                 </Form>
               </div>

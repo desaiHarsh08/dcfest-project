@@ -3,7 +3,6 @@ import { Alert } from "react-bootstrap";
 import { FaRegCalendarAlt } from "react-icons/fa";
 
 const FormHeading = ({ type = "REGISTRATION", showAlert, setShowAlert }) => {
-  console.log(type);
 
   return (
     <div className="text-center mb-4">

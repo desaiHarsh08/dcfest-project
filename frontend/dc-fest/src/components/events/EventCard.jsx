@@ -1,10 +1,11 @@
 /* eslint-disable react/prop-types */
 import { useContext, useEffect, useState } from "react";
-import { Button, Card, Col } from "react-bootstrap";
+import { Button, Card, Col, Badge } from "react-bootstrap";
 import styles from "../../styles/EventCard.module.css"; // Import your custom styles
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import { doParticipate, fetchParticipationEventsByCollegeId } from "../../services/college-participation-apis";
+import { FaCheckCircle, FaSpinner, FaEye } from "react-icons/fa";
 
 const EventCard = ({ event, college }) => {
   const { user } = useContext(AuthContext);
@@ -12,13 +13,10 @@ const EventCard = ({ event, college }) => {
   const [participation, setParticipation] = useState([]);
   const [flag, setFlag] = useState(false);
 
-  console.log(college);
-
   useEffect(() => {
     if (college?.id) {
       fetchParticipationEventsByCollegeId(college.id)
         .then((data) => {
-          console.log(data);
           setParticipation(data);
         })
         .catch((err) => console.log(err));
@@ -34,11 +32,10 @@ const EventCard = ({ event, college }) => {
   const handleCollegeRegister = async () => {
     setIsLoading(true);
     try {
-      const response = await doParticipate({
+      await doParticipate({
         collegeId: user?.id,
         availableEventId: event?.id,
       });
-      console.log(response);
       setFlag((prev) => !prev);
     } catch (error) {
       console.log(error);
@@ -49,29 +46,59 @@ const EventCard = ({ event, college }) => {
 
   return (
     event && (
-      <Col key={event.id} xs={12} sm={6} md={4} lg={3} className="mb-4">
-        <Card className={`h-100 shadow-sm ${styles.eventCard}`}>
-          <div className={styles.imageContainer}>
-            <Card.Img variant="top" src={`/${event.slug}.jpg`} alt={event.title} className={`img-fluid ${styles.cardImage}`} style={{ height: "200px" }} />
+      <Col xs={12} sm={6} md={4} lg={3} className="mb-4">
+        <Card className={`h-100 shadow-sm ${styles.eventCard} border-0`}>
+          <div className={`${styles.imageContainer} overflow-hidden`}>
+            <Card.Img
+              variant="top"
+              src={`/${event.slug}.jpg`}
+              alt={event.title}
+              className={`img-fluid rounded-top ${styles.cardImage}`}
+              style={{ height: "200px", objectFit: "cover" }}
+            />
           </div>
           <Card.Body className="d-flex flex-column p-4">
-            <Card.Title className={`${styles.cardTitle} fs-5 text-center`}>{event.title}</Card.Title>
-            <Card.Text className={`text-muted ${styles.cardOneLiner}`}>
-              <i className="text-center">{event.oneLiner}</i>
+            <Card.Title className={`fs-5 text-center fw-bold ${styles.cardTitle}`}>
+              {event.title}
+            </Card.Title>
+            <Card.Text className={`text-muted text-center mb-2 ${styles.cardOneLiner}`}>
+              <i>{event.oneLiner}</i>
             </Card.Text>
-            <Card.Text className={`${styles.cardDescription} text-center`}>{truncateDescription(event.description, 10)}</Card.Text>
-            <div className="mt-auto d-flex justify-content-center align-items-center">
+            <Card.Text className={`text-center ${styles.cardDescription}`}>
+              {truncateDescription(event.description, 10)}
+            </Card.Text>
+            <Badge bg="info" className="mb-3 align-self-center">
+              {event.category}
+            </Badge>
+            <div className="mt-auto d-flex justify-content-center">
               {user.type === "ADMIN" ? (
-                <Link to={event.slug} className={`text-center text-white text-decoration-none ${styles.registerButton}`}>
+                <Link
+                  to={event.slug}
+                  className="btn btn-primary d-flex align-items-center text-white text-decoration-none"
+                >
+                  <FaEye className="me-2" />
                   View
                 </Link>
               ) : participation.some((p) => p?.availableEventId === event.id) ? (
-                <Button disabled variant="success">
+                <Button variant="success" disabled className="d-flex align-items-center">
+                  <FaCheckCircle className="me-2" />
                   Enrolled
                 </Button>
               ) : (
-                <Button onClick={handleCollegeRegister} disabled={isLoading}>
-                  {isLoading ? "Registering..." : "Register"}
+                <Button
+                  variant="primary"
+                  onClick={handleCollegeRegister}
+                  disabled={isLoading}
+                  className="d-flex align-items-center"
+                >
+                  {isLoading ? (
+                    <>
+                      <FaSpinner className="me-2 spinner-border-sm" />
+                      Registering...
+                    </>
+                  ) : (
+                    "Register"
+                  )}
                 </Button>
               )}
             </div>

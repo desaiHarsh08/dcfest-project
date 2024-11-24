@@ -66,7 +66,7 @@ const EventsPage = () => {
       <Row className="mb-4">
         <Col>
           <h1 className="text-center mt-5">
-            List of Star Events for UMANG 2024
+            List of Events for UMANG 2024
           </h1>
         </Col>
       </Row>

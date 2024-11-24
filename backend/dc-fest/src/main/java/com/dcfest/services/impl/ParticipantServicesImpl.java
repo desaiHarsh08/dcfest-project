@@ -101,6 +101,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
         participantModel.setCollege(collegeModel);
+        participantModel.setEntryType(participantModel.getEntryType());
         participantModel.getEvents().add(eventModel);
         String group;
         if (availableEventModel.getType().equals(EventType.TEAM)) {
@@ -427,6 +428,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         ParticipantDto participantDto = this.modelMapper.map(participantModel, ParticipantDto.class);
         participantDto.setCollegeId(participantModel.getCollege().getId());
         // participantDto.setEvents(new ArrayList<>());
+        participantDto.setEntryType(participantModel.getEntryType());
 
         // Convert the list of EventModel to a list of event IDs
         List<Long> eventIds = participantModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());

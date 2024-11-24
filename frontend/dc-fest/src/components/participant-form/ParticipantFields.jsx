@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Form } from "react-bootstrap";
 
-const ParticipantFields = ({ participant, participantIndex, onChange }) => {
+const ParticipantFields = ({ participant, participantIndex, onChange, }) => {
   console.log(participant);
   return (
     <div className="card p-3 rounded-0">

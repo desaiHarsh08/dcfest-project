@@ -1,2 +1,6 @@
-package com.dcfest.constants;public enum ParticipantType {
+package com.dcfest.constants;
+
+public enum ParticipantType {
+    ACCOMPANIST,
+    PERFORMER
 }

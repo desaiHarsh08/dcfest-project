@@ -1,0 +1,53 @@
+.event-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+  }
+  
+  .event-card img {
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .participants-section {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+
+  .event-card {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .banner {
+    height: 200px;
+    background: linear-gradient(135deg, #007bff, #004080);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .event-image {
+    max-width: 100%;
+    max-height: 150px;
+    border-radius: 12px;
+  }
+  
+  .participants-section {
+    background: #f8f9fa;
+  }
+  
+  .badge-gradient {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+  }
+  
+  .table-striped tbody tr:hover {
+    background-color: #e9ecef;
+    cursor: pointer;
+  }
+  

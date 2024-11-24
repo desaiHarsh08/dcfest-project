@@ -1,202 +1,175 @@
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Table, Button, Badge, Modal } from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Badge } from "react-bootstrap";
 import Navbar from "../components/Navbar/Navbar";
-import "../styles/CollegeEvent.css"; // Import custom CSS for additional styling
 import { Link, useParams } from "react-router-dom";
-import ParticipationForm from "../components/participant-form/ParticipationForm";
-import { fetchParticipantsByEventId } from "../services/participants-api";
+import { deleteParticipant, fetchParticipantsByEventId } from "../services/participants-api";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
+import styles from "../styles/CollegeEvent.module.css";
 
 const CollegeEvent = () => {
   const { iccode, eventId } = useParams();
-  // Sample data for participants
   const [participants, setParticipants] = useState([]);
   const [availableEvent, setAvailableEvent] = useState();
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
-    fetchParticipantsByEventId(eventId).then((data) => {
-      console.log(data);
-      setParticipants(data);
-    });
-  }, []);
-
-  useEffect(() => {
+    fetchParticipantsByEventId(eventId).then((data) => setParticipants(data));
     fetchEventById(eventId)
       .then((data) => {
-        console.log(data);
-        fetchAvailableEventsById(data.availableEventId)
-          .then((data) => {
-            console.log("availableEvent:", data);
-            setAvailableEvent(data);
-          })
-          .catch((err) => console.log(err));
+        fetchAvailableEventsById(data.availableEventId).then(setAvailableEvent);
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [eventId]);
 
-  // State for modal
-  const [showModal, setShowModal] = useState(false);
-  const [newParticipant, setNewParticipant] = useState({ name: "", email: "", phone: "", type: "NORMAL", ranking: "" });
-
-  // Handle delete functionality
-  const handleDelete = (id) => {
-    const updatedParticipants = participants.filter((participant) => participant.id !== id);
-    setParticipants(updatedParticipants);
-  };
-
-  // Handle modal show/hide
-  const handleShow = () => setShowModal(true);
-  const handleClose = () => {
-    setShowModal(false);
-    setNewParticipant({ name: "", email: "", phone: "", type: "NORMAL", ranking: "" }); // Reset form
-  };
-
-  // Handle adding a new participant
-  const handleAddParticipant = () => {
-    const newId = participants.length ? participants[participants.length - 1].id + 1 : 1; // Generate a new ID
-    const participantToAdd = { id: newId, ...newParticipant, ranking: parseInt(newParticipant.ranking) };
-    setParticipants([...participants, participantToAdd]);
-    handleClose(); // Close modal after adding
+  const handleDelete = async (id) => {
+    setLoading(true);
+    setDeletingId(id);
+    try {
+      await deleteParticipant(id);
+      alert("Participant Deleted Successfully!");
+      setParticipants(participants.filter((participant) => participant.id !== id));
+    } catch (error) {
+      alert("Unable to delete the participant. Please try again later.");
+    } finally {
+      setLoading(false);
+      setDeletingId(null);
+    }
   };
 
   return (
     <div>
       <Navbar />
-      {console.log(iccode)}
-      {iccode && (
-        <div className="container">
-          <Link to={`/${iccode}`}>Home</Link>
-        </div>
-      )}
       <Container className="mt-4">
-        <Row className="align-items-center">
-          <Col md={4} className="event-details">
-            <img
-              src={`/${availableEvent?.slug}.jpg`} // Replace with your event image URL
-              alt="Event"
-              className="event-image img-fluid"
-            />
-          </Col>
-          <Col md={8} className="event-info">
-            <h2 className="event-name">{availableEvent?.title}</h2>
-            <p>
-              <strong>Type: </strong>
-              <Badge pill variant="success">
-                {availableEvent?.type}
-              </Badge>
-            </p>
-            {console.log(availableEvent?.rounds)}
-            <div className="d-flex gap-3">
-              {availableEvent?.rounds?.map((round) => {
-                return (
-                  <div key={`round-${round.id}`}>
-                    <p>
-                      <strong>Round:</strong> {round?.roundType}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </Col>
-        </Row>
-        <Row className="mt-4">
+        {/* Back to Home Button */}
+        <Row className="mb-4">
           <Col>
-            <Button variant="primary" onClick={handleShow} className="mb-3">
-              Add Participant
-            </Button>
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Sr. No</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone Number</th>
-                  <th>Type</th>
-                  <th>Ranking</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {participants.map((participant, index) => (
-                  <tr key={participant.id}>
-                    <td>{index + 1}</td>
-                    <td>{participant.name}</td>
-                    <td>{participant.email}</td>
-                    <td>{participant.phone}</td>
-                    <td>
-                      <Badge className={`bg-${participant.type === "OTSE" ? "warning" : "secondary"}`}>{participant.type}</Badge>
-                    </td>
-                    <td>{participant.ranking}</td>
-                    <td>
-                      <Button variant="danger" onClick={() => handleDelete(participant.id)}>
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+            <Link to={`/${iccode}`} className="btn btn-outline-primary" style={{textDecoration:"none"}}>
+              &larr; Back to Home
+            </Link>
           </Col>
         </Row>
 
-        {/* Modal for adding participant */}
-        <Modal show={showModal} onHide={handleClose} size="xl">
-          <Modal.Header closeButton>
-            <Modal.Title>Add Participant</Modal.Title>
-          </Modal.Header>
-          <Modal.Body style={{ height: "700px", overflow: "auto" }}>
-            {/* <Form>
-              <Form.Group controlId="formParticipantName">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter participant name"
-                  value={newParticipant.name}
-                  onChange={(e) => setNewParticipant({ ...newParticipant, name: e.target.value })}
+        {/* Event Details Section */}
+        <Row>
+          <Col md={4}>
+            <div className={`${styles["event-card"]} shadow rounded`}>
+              <div className={`${styles["banner"]}`}>
+                <img
+                  src={`/${availableEvent?.slug}.jpg`}
+                  alt="Event"
+                  className={`${styles["event-image"]} rounded`}
                 />
-              </Form.Group>
-              <Form.Group controlId="formParticipantEmail">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Enter participant email"
-                  value={newParticipant.email}
-                  onChange={(e) => setNewParticipant({ ...newParticipant, email: e.target.value })}
-                />
-              </Form.Group>
-              <Form.Group controlId="formParticipantPhone">
-                <Form.Label>Phone Number</Form.Label>
-                <Form.Control
-                  type="tel"
-                  placeholder="Enter participant phone number"
-                  value={newParticipant.phone}
-                  onChange={(e) => setNewParticipant({ ...newParticipant, phone: e.target.value })}
-                />
-              </Form.Group>
-              <Form.Group controlId="formParticipantType">
-                <Form.Label>Type</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={newParticipant.type}
-                  onChange={(e) => setNewParticipant({ ...newParticipant, type: e.target.value })}
+              </div>
+              <div className="p-4">
+                <h4 className="fw-bold text-primary">{availableEvent?.title}</h4>
+                <Badge
+                  bg="primary"
+                  className={`${styles["badge-gradient"]} mb-3`}
                 >
-                  <option value="NORMAL">Normal</option>
-                  <option value="OTSE">OTSE</option>
-                </Form.Control>
-              </Form.Group>
-            </Form> */}
-            <ParticipationForm formType="REGISTRATION" />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleAddParticipant}>
-              Add Participant
-            </Button>
-          </Modal.Footer>
-        </Modal>
+                  {availableEvent?.type}
+                </Badge>
+                <p className="text-muted">
+                  <i>{availableEvent?.oneLiner}</i>
+                </p>
+                <p>{availableEvent?.description}</p>
+
+                {/* Event Rounds */}
+                {availableEvent?.rounds?.map((round) => (
+                  <div key={round.id} className="mb-3">
+                    <p>
+                      <strong>Round:</strong> {round.roundType}
+                    </p>
+                    <p>
+                      <strong>Venue:</strong> {round.venue}
+                    </p>
+                    <p>
+                      <strong>Start:</strong>{" "}
+                      {new Date(round.startTime).toLocaleString()}
+                    </p>
+                    <p>
+                      <strong>End:</strong>{" "}
+                      {new Date(round.endTime).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Col>
+
+          {/* Participants Section */}
+          <Col md={8}>
+            <div className={`${styles["participants-section"]} shadow p-4 rounded`}>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="text-secondary">Participants</h4>
+                <Link
+                  to={"add"}
+                  className="btn btn-success shadow-sm"
+                  style={{textDecoration:"none"}}
+                >
+                  + Add Participant
+                </Link>
+              </div>
+
+              {/* Participants Table */}
+              <Table bordered hover responsive className="table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Entry Type</th>
+                    <th>Ranking</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {participants.length > 0 ? (
+                    participants.map((participant, index) => (
+                      <tr key={participant.id}>
+                        <td>{index + 1}</td>
+                        <td>{participant.name}</td>
+                        <td>{participant.email}</td>
+                        <td>{participant.phone}</td>
+                        <td>
+                          <Badge
+                            bg={
+                              participant.type === "OTSE" ? "warning" : "info"
+                            }
+                          >
+                            {participant.type}
+                          </Badge>
+                        </td>
+                        <td>{participant.ranking || "-"}</td>
+                        <td>
+                          <Button
+                            variant={
+                              deletingId === participant.id ? "secondary" : "danger"
+                            }
+                            onClick={() => handleDelete(participant.id)}
+                            disabled={loading && deletingId === participant.id}
+                          >
+                            {loading && deletingId === participant.id
+                              ? "Deleting..."
+                              : "Delete"}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center text-muted">
+                        No participants yet. Add the first one!
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </div>
+          </Col>
+        </Row>
       </Container>
     </div>
   );
