@@ -12,8 +12,10 @@ const SelectFields = ({
   selectedCollege,
   setSelectedCollege,
   iccode,
+  availableEvent,
 }) => {
   console.log("in selects-field, iccode:", iccode);
+  console.log("in selects-field, iccode:", availableEvent);
   return (
     <div id="event-participant-main-field" className="d-flex gap-3 w-100">
       <Form.Group className="field-card mb-4">
@@ -27,6 +29,8 @@ const SelectFields = ({
             setSelectedAvailableEvent(availableEvent);
             onSetDefaultParticipants(availableEvent);
           }}
+          disabled={!!availableEvent}
+          style={{ backgroundColor: availableEvent ? "aliceblue" : "" }}
         >
           {categories?.map((category, categoryIndex) => (
             <option key={`category-${categoryIndex}`} value={category.id}>
@@ -45,6 +49,8 @@ const SelectFields = ({
             setSelectedAvailableEvent(availableEvent);
             onSetDefaultParticipants(availableEvent);
           }}
+          disabled={!!availableEvent}
+          style={{ backgroundColor: availableEvent ? "aliceblue" : "" }}
         >
           {selectedCategory?.availableEvents?.map((availableEvent, availableEventIndex) => (
             <option key={`available-event-${availableEventIndex}`} value={availableEvent?.id}>

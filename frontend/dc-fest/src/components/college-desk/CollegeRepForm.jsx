@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Col, Form, Row } from "react-bootstrap";
 import EmailModal from "./EmailModal";
 import PhoneModal from "./PhoneModal";

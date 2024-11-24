@@ -1,4 +1,4 @@
-/* Container for the event list */
+Container for the event list
 .event-list-container-horizontal {
     display: flex;
     overflow-x: auto; /* Enables horizontal scrolling */

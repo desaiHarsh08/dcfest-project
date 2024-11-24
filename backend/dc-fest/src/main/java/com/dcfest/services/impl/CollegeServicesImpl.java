@@ -69,7 +69,7 @@ public class CollegeServicesImpl implements CollegeServices {
 
         // Send email to the college
         if (collegeDto.getEmail() != null) {
-            this.emailServices.sendCollegeRegistrationEmail(collegeDto.getEmail(), collegeDto.getName());
+//            this.emailServices.sendCollegeRegistrationEmail(collegeDto.getEmail(), collegeDto.getName());
         }
 
         return this.collegeModelToDto(collegeModel);

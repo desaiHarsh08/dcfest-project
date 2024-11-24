@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // import { useParams } from "react-router-dom";
 // import ParticipationForm from "../components/participant-form/ParticipationForm";
 // import { useEffect, useState } from "react";
@@ -34,10 +35,10 @@
 //   );
 // }
 
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ParticipationForm from "../components/participant-form/ParticipationForm";
 import { useEffect, useState } from "react";
-import { fetchEventByAvailableEventId, fetchEventById } from "../services/event-apis";
+import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 
 export default function AddParticipantByCollege() {
@@ -104,7 +105,12 @@ export default function AddParticipantByCollege() {
   }
 
   return (
-    <div className="container vh-100 d-flex justify-content-center align-items-center">
+    <div className="container vh-100 d-flex flex-column justify-content-center ">
+      <div>
+        <Link to={`../`} className="btn btn-outline-primary" style={{ textDecoration: "none" }}>
+          &larr; Back
+        </Link>
+      </div>
       <ParticipationForm formType="REGISTRATION" iccode={iccode} availableEvent={availableEvent} />
     </div>
   );

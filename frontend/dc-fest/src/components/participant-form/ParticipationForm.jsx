@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 // /* eslint-disable no-unused-vars */
 // /* eslint-disable react/prop-types */
@@ -23,7 +24,7 @@ const participantObj = {
   eventIds: [],
 };
 
-const ParticipationForm = ({ formType = "REGISTRATION", iccode }) => {
+const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent }) => {
   const [categories, setCategories] = useState([]);
   const [colleges, setColleges] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState();
@@ -40,9 +41,14 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode }) => {
     fetchCategories()
       .then((data) => {
         setCategories(data);
-        setSelectedCategory(data[0]);
-        setSelectedAvailableEvent(data[0]?.availableEvents[0]);
-        handleSetDefaultParticipants(data[0]?.availableEvents[0]);
+        if (availableEvent) {
+          const tmpCategory = data.find((ele) => ele.id == availableEvent.eventCategoryId);
+          setSelectedCategory(tmpCategory);
+          setSelectedAvailableEvent(tmpCategory?.availableEvents[0]);
+        } else {
+          setSelectedCategory(data[0]);
+          handleSetDefaultParticipants(data[0]?.availableEvents[0]);
+        }
       })
       .catch((err) => console.error("Error fetching categories:", err));
   }, []);
@@ -138,6 +144,11 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode }) => {
       }
     }
 
+    if (participants.some((p) => p.whatsappNumber.length > 11 || p.whatsappNumber.length < 10)) {
+      setIsValid(false);
+      return false;
+    }
+
     for (const rule of selectedAvailableEvent.eventRules) {
       const ruleValue = Number(rule.value);
       switch (rule.eventRuleTemplate.name) {
@@ -180,6 +191,16 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode }) => {
             return false;
           }
           break;
+
+        // case "COLLEGE_ACOMPANIST":
+        //   if (participants.filter((p) => !p.type == "ACCOMPANIST").length !== ruleValue) {
+        //     if (isSubmitting) {
+        //       alert(`Oops... There should be ${ruleValue} accompanist!`);
+        //     }
+        //     setIsValid(false);
+        //     return false;
+        //   }
+        //   break;
 
         default:
           break;
@@ -254,12 +275,13 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode }) => {
                     colleges={colleges}
                     selectedCollege={selectedCollege}
                     setSelectedCollege={setSelectedCollege}
+                    availableEvent={availableEvent}
                   />
                   <div id="participants-wrapper">
                     <h2>Participants Details</h2>
                     <div id="participants-container" className="d-flex flex-column gap-2">
                       {participants.map((participant, index) => (
-                        <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} />
+                        <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} selectedAvailableEvent={selectedAvailableEvent} />
                       ))}
                     </div>
                   </div>

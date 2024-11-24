@@ -16,6 +16,14 @@ export const fetchCollegeById = async (id) => {
     return response.data;
 };
 
+export const deleteCollege = async (id) => {
+    const response = await API.delete(`/api/colleges/${id}`, {
+        withCredentials: true
+    });
+    console.log(response)
+    return response.data;
+};
+
 export const fetchCollegeByIcCode = async (icCode) => {
     const response = await API.get(`/api/colleges/ic-code/${icCode}`, {
         withCredentials: true

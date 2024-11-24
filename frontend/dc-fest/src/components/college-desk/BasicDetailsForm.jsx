@@ -9,7 +9,7 @@ import { createCollegeRep } from "../../services/college-rep-apis";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { selectResetPasswordFlag, setFlag } from "../../app/slices/resetPasswordOneTimeSlice";
-import { setCollege as reduxSetCollege } from '../../app/slices/collegeSlice'
+import { setCollege as reduxSetCollege } from "../../app/slices/collegeSlice";
 
 const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswordForm }) => {
   const navigate = useNavigate();
@@ -105,34 +105,6 @@ const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswor
 
       return;
     }
-    // Check from db
-    // for (let i = 0; i < users.length; i++) {
-    //   let email = users[i].email;
-    // //   try {
-    // //     const response = await fetchUserByEmail(email);
-    // //     console.log(response);
-    // //     uniqueUserEmails = false;
-    // //     setUsers(
-    // //       users.map((user) => {
-    // //         if (user.email === email) {
-    // //           return { ...user, emailVerified: false };
-    // //         }
-    // //         return user;
-    // //       })
-    // //     );
-    // //     alert(`Email already exist: ${email}`);
-    // //     break;
-    // //   } catch (error) {
-    // //     console.log(error);
-    // //     if (error.response.status === 404) {
-    // //       uniqueUserEmails = true;
-    // //       console.log(email);
-    // //     }
-    // //   }
-    // }
-    // if (!uniqueUserEmails) {
-    //   return;
-    // }
 
     try {
       await updateCollegeDetails();
@@ -146,29 +118,15 @@ const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswor
         };
         await createCollegeRepresentative(collegeRepObj);
       }
-      //   for (let i = 0; i < users.length; i++) {
-      //     const tmpUser = {
-      //       name: users[i]?.name,
-      //       email: users[i]?.email,
-      //       password: college?.rp,
-      //       phone: users[i]?.phone,
-      //       type: "COLLEGE_REPRESENTATIVE",
-      //       collegeId: college?.id,
-      //       whatsappNumber: users[i]?.whatsappNumber,
-      //     };
-      //     await createCollegeRepresentative(tmpUser);
-      //   }
       alert("Details saved successfully...!");
-      dispatch(reduxSetCollege(college))
+      dispatch(reduxSetCollege(college));
       dispatch(setFlag());
       dispatch(setCollege(college));
       setFlag(true);
-      ;
     } catch (error) {
       console.log(error);
-    //   alert("Unable to save the college");
     }
-    navigate("/reset-password")
+    navigate("/reset-password");
     setLoading(false);
   };
 

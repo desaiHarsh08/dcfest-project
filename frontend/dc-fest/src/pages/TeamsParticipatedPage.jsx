@@ -8,9 +8,11 @@ import { useNavigate } from "react-router-dom";
 const TeamsParticipatedPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [colleges, setColleges] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   useEffect(() => {
+    setLoading(true)
     fetchColleges()
       .then((data) => {
         setColleges(data);
@@ -19,6 +21,7 @@ const TeamsParticipatedPage = () => {
         console.log(err);
         setError(err);
       });
+      setLoading(false)
   }, [error]);
 
   const handleFileChange = (event) => {
@@ -53,21 +56,22 @@ const TeamsParticipatedPage = () => {
       return; // Stop execution if no file is selected
     }
 
+    setLoading(true);
     try {
       const collegeList = await readExcel();
       console.log(collegeList);
 
-      for(let i=0; i<collegeList.length;i++){
-        const collegeObj= {
-            name: collegeList[i].college,
-            icCode: collegeList[i].iccode,
-            password: collegeList[i].password,
-        }
+      for (let i = 0; i < collegeList.length; i++) {
+        const collegeObj = {
+          name: collegeList[i].college,
+          icCode: collegeList[i].iccode,
+          password: collegeList[i].password,
+        };
         try {
-            const response  = await createCollege(collegeObj)
-            console.log(response)
+          const response = await createCollege(collegeObj);
+          console.log(response);
         } catch (err) {
-            console.log(err)
+          console.log(err);
         }
       }
 
@@ -79,10 +83,11 @@ const TeamsParticipatedPage = () => {
           console.log(err);
           setError(err);
         });
-
     } catch (error) {
       console.log(error);
       alert("Unable to read the excel sheet!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,11 +96,11 @@ const TeamsParticipatedPage = () => {
   if (error) {
     content = <p>Unable to fetch the participated colleges!</p>;
   } else {
-    content = <CollegeList colleges={colleges} setColleges={setColleges} />;
+    content = <CollegeList colleges={colleges} setColleges={setColleges} loading={loading} />;
   }
 
   return (
-    <Container className="mt-5">
+    <Container className="my-5 pb-5">
       <button
         className="back-button"
         onClick={() => navigate(-1)} // Navigates to the previous page
@@ -115,10 +120,7 @@ const TeamsParticipatedPage = () => {
       <Row className="justify-content-center">
         <Col md={6}>
           <h1 className="text-center mb-4">Upload College List</h1>
-          <p className="text-center">
-            This is where you can upload event participation files for the
-            college.
-          </p>
+          <p className="text-center">This is where you can upload event participation files for the college.</p>
           <Form className="mt-4">
             <div className="d-flex justify-content-between align-items-center gap-3">
               <Form.Group controlId="formFile" className="mb-3 flex-grow-1">
@@ -126,7 +128,7 @@ const TeamsParticipatedPage = () => {
               </Form.Group>
               <div className="mb-3">
                 <Button variant="primary" onClick={handleUpload}>
-                  Upload
+                  {loading ? "Please wait..." : "Upload"}
                 </Button>
               </div>
             </div>
