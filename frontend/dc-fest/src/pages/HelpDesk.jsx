@@ -15,12 +15,13 @@ import {
 } from 'react-bootstrap';
 import * as XLSX from 'xlsx';
 import { v4 as uuidv4 } from 'uuid'; // For unique ID generation
+import { useNavigate } from 'react-router-dom';
 
 const HelpDesk = () => {
     // Refs for file inputs
     const fileInputParticipants = useRef(null);
     const fileInputRepresentatives = useRef(null);
-
+    const navigate = useNavigate();
     // State for Participants and Representatives (initialized as empty arrays)
     const [participants, setParticipants] = useState([]);
     const [representatives, setRepresentatives] = useState([]);
@@ -232,6 +233,22 @@ const HelpDesk = () => {
 
     return (
         <Container>
+            <button
+                className="back-button"
+                onClick={() => navigate(-1)} // Navigates to the previous page
+                style={{
+                    margin: "10px",
+                    padding: "10px 20px",
+                    marginBottom: "30px",
+                    backgroundColor: "#007BFF",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                }}
+            >
+                Back
+            </button>
             <h2 className="text-center mt-4">HelpDesk - Event Management</h2>
             <Tabs defaultActiveKey="participants" id="helpdesk-tabs" className="mt-4">
                 {/* Participants Tab */}
