@@ -40,6 +40,7 @@ import ParticipationForm from "../components/participant-form/ParticipationForm"
 import { useEffect, useState } from "react";
 import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
+import { fetchCollegeByIcCode } from "../services/college-apis";
 
 export default function AddParticipantByCollege() {
   const { iccode, eventId } = useParams();
@@ -47,8 +48,15 @@ export default function AddParticipantByCollege() {
 
   const [event, setEvent] = useState(null);
   const [availableEvent, setAvailableEvent] = useState(null);
+  const [college, setCollege] = useState(null);
   const [loading, setLoading] = useState(true); // Track loading state
   const [error, setError] = useState(null); // Track error state
+
+  useEffect(() => {
+    fetchCollegeByIcCode(iccode)
+      .then((data) => setCollege(data))
+      .catch((err) => console.log(err));
+  }, []);
 
   useEffect(() => {
     if (!eventId) {
@@ -111,7 +119,8 @@ export default function AddParticipantByCollege() {
           &larr; Back
         </Link>
       </div>
-      <ParticipationForm formType="REGISTRATION" iccode={iccode} availableEvent={availableEvent} />
+      {iccode} {availableEvent?.title} {college?.name}
+      {iccode && availableEvent && college && <ParticipationForm formType="REGISTRATION" iccode={iccode} availableEvent={availableEvent} college={college} />}
     </div>
   );
 }
