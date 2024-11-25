@@ -163,6 +163,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent }
           break;
 
         case "MAX_PARTICIPANTS":
+          console.log(ruleValue)
           if (participants.length > ruleValue) {
             if (isSubmitting) {
               alert(`Oops... There should be maximum ${ruleValue} participants!`);
@@ -207,6 +208,20 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent }
       }
     }
     setIsValid(true);
+  };
+
+  const handleAddParticipant = () => {
+    // Grab the event_rule for `MAX_PARTICIPANTS`
+    console.log("Selected events are as: ", selectedAvailableEvent);
+    const eventRule = selectedAvailableEvent.eventRules.find(rule => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS");
+    console.log("eventRule:", eventRule);
+    // Check if the number of participants are <= event_rule's value
+    const MAX_PARTICIPANTS = Number(eventRule.value)
+    console.log(MAX_PARTICIPANTS)
+
+    if (participants.length + 1 <= MAX_PARTICIPANTS) {
+      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
+    }
   };
 
   // Function to handle form submission
@@ -255,6 +270,12 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent }
     setLoading(false);
   };
 
+  const handleDelete = (participantIndex) => {
+    let newParticipants = [...participants]
+    newParticipants = newParticipants.filter((p, idx) => idx != participantIndex);
+    setParticipants(newParticipants);
+  }
+
   return (
     <Container fluid className="d-flex align-items-center justify-content-center bg-light" id="event-participant-container">
       <Row className="w-100 h-100 py-2">
@@ -281,9 +302,17 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent }
                     <h2>Participants Details</h2>
                     <div id="participants-container" className="d-flex flex-column gap-2">
                       {participants.map((participant, index) => (
-                        <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} selectedAvailableEvent={selectedAvailableEvent} />
+                        <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} selectedAvailableEvent={selectedAvailableEvent} onDelete={handleDelete} totalParticipants={participants.length} />
                       ))}
                     </div>
+
+
+                    <button type="button" disabled={(selectedAvailableEvent?.eventRules.find(rule => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value <= participants.length)} className="btn btn-success" onClick={handleAddParticipant}>
+                      Add Participant
+                    </button>
+
+
+
                   </div>
                   <div className="d-flex flex-column  justify-content-center">
                     <Button
@@ -291,7 +320,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent }
                       variant="primary"
                       type="submit"
                       size="lg"
-                      //   className="w-100"
+                    //   className="w-100"
                     >
                       {loading ? "Please wait..." : "Register"}
                     </Button>

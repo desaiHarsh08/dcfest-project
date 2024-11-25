@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 import { Form } from "react-bootstrap";
 
-const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent }) => {
+const ParticipantFields = ({ participant, participantIndex, onChange, onDelete, selectedAvailableEvent, totalParticipants }) => {
   console.log(participant);
   return (
     <div className="card p-3 rounded-0">
@@ -32,6 +32,12 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
           onChange={(e) => onChange({ target: { name: "male", value: false } }, participantIndex)}
         />
       </Form.Group>
+      {/* {!selectedAvailableEvent?.eventRules.find(rule => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value == totalParticipants && (
+        <div>
+          <button className="btn btn-danger" type="button" onClick={() => { onDelete(participantIndex) }} disabled={(selectedAvailableEvent?.eventRules.find(rule => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value == totalParticipants)}>Delete</button>
+        </div>
+
+      )} */}
       {/* <Form.Group className="mb-5">
         <Form.Select
           aria-label="Default select example"
