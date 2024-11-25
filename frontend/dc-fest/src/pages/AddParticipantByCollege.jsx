@@ -119,7 +119,6 @@ export default function AddParticipantByCollege() {
           &larr; Back
         </Link>
       </div>
-      {iccode} {availableEvent?.title} {college?.name}
       {iccode && availableEvent && college && <ParticipationForm formType="REGISTRATION" iccode={iccode} availableEvent={availableEvent} college={college} />}
     </div>
   );
