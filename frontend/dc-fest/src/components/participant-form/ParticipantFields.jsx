@@ -32,6 +32,7 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
           onChange={(e) => onChange({ target: { name: "male", value: false } }, participantIndex)}
         />
       </Form.Group>
+     
       {/* <Form.Group className="mb-5">
         <Form.Select
           aria-label="Default select example"

@@ -50,6 +50,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           handleSetDefaultParticipants(availableEvent);
         } else {
           setSelectedCategory(data[0]);
+          setSelectedAvailableEvent(data[0]?.availableEvents[0]);
           handleSetDefaultParticipants(data[0]?.availableEvents[0]);
         }
       })
@@ -108,19 +109,20 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     }
   }, [iccode, selectedCollege]);
 
-  //   useEffect(() => {
-  //     if (selectedCategory) {
-  //       setSelectedAvailableEvent(selectedCategory?.availableEvents[0]);
-  //       handleSetDefaultParticipants(selectedCategory?.availableEvents[0]);
-  //     }
-  //   }, [selectedCategory]);
+//   useEffect(() => {
+//     if (selectedCategory) {
+//       setSelectedAvailableEvent(selectedCategory?.availableEvents[0]);
+//       handleSetDefaultParticipants(selectedCategory?.availableEvents[0]);
+//     }
+//   }, [selectedCategory]);
 
   // Set default participants based on the selected event rules
-  //   useEffect(() => {
-  //     if (selectedAvailableEvent) {
-  //       handleSetDefaultParticipants(selectedAvailableEvent);
-  //     }
-  //   }, [selectedAvailableEvent]);
+  useEffect(() => {
+    console.log("selectedAvailableEvent:", selectedAvailableEvent);
+    if (selectedAvailableEvent) {
+      handleSetDefaultParticipants(selectedAvailableEvent);
+    }
+  }, [selectedAvailableEvent]);
 
   // Revalidate details whenever participants change
   useEffect(() => {
@@ -290,6 +292,25 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     setLoading(false);
   };
 
+  const handleAddParticipant = () => {
+    // Grab the event_rule for `MAX_PARTICIPANTS`
+    console.log("Selected events are as: ", selectedAvailableEvent);
+    const eventRule = selectedAvailableEvent.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS");
+    console.log("eventRule:", eventRule);
+    // Check if the number of participants are <= event_rule's value
+    const MAX_PARTICIPANTS = Number(eventRule.value);
+    console.log(MAX_PARTICIPANTS);
+    if (participants.length + 1 <= MAX_PARTICIPANTS) {
+      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
+    }
+  };
+
+  const handleDelete = (participantIndex) => {
+    let newParticipants = [...participants];
+    newParticipants = newParticipants.filter((p, idx) => idx != participantIndex);
+    setParticipants(newParticipants);
+  };
+
   return (
     <Container fluid className="d-flex align-items-center justify-content-center bg-light" id="event-participant-container">
       <Row className="w-100 h-100 py-2">
@@ -318,6 +339,18 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                       {participants.map((participant, index) => (
                         <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} selectedAvailableEvent={selectedAvailableEvent} />
                       ))}
+                    </div>
+                    <div>
+                      {selectedAvailableEvent && (
+                        <button
+                          type="button"
+                          disabled={selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value <= participants.length}
+                          className="btn btn-success"
+                          onClick={handleAddParticipant}
+                        >
+                          Add Participant
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div className="d-flex flex-column  justify-content-center">
