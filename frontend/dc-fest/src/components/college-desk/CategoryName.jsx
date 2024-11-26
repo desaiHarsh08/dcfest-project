@@ -6,7 +6,9 @@ const CategoryName = ({ categoryId }) => {
   const [category, setCategory] = useState();
 
   useEffect(() => {
-    getCategoryById(categoryId);
+    if (categoryId) {
+      getCategoryById(categoryId);
+    }
   }, [categoryId]);
 
   const getCategoryById = async (id) => {

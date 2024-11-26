@@ -22,7 +22,7 @@ const EventsTable = ({ events, onView, onRemove }) => {
         {events &&
           events?.map((event, index) => (
             <>
-              <EventRow index={index} key={`event-${index}`} availableEventId={event.availableEventId} onRemove={() => {}} />
+              <EventRow index={index} key={`event-${index}`} availableEventId={event.availableEventId} collegeId={event?.collegeId} onRemove={() => {}} />
             </>
           ))}
       </tbody>

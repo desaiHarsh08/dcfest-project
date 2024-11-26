@@ -2,12 +2,11 @@
 import { useEffect, useState } from "react";
 import { fetchAvailableEventsById } from "../../services/available-events-apis";
 import { Link } from "react-router-dom";
-import { Button } from "react-bootstrap";
 import CategoryName from "./CategoryName";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
-import { fetchParticipantsByEventId } from "../../services/participants-api";
+import { fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
 
-const EventRow = ({ index, availableEventId, onRemove }) => {
+const EventRow = ({ index, availableEventId, collegeId, onRemove }) => {
   const [event, setEvent] = useState();
   const [availableEvent, setAvailableEvent] = useState();
 
@@ -15,14 +14,11 @@ const EventRow = ({ index, availableEventId, onRemove }) => {
   const [otseEntry, setOtseEntry] = useState([]);
 
   useEffect(() => {
-    console.log("availableEventId:", availableEventId);
     fetchEventByAvailableEventId(availableEventId)
       .then((data) => {
         setEvent(data);
-        console.log(data);
         fetchAvailableEventsById(data.availableEventId)
           .then((data) => {
-            console.log("available event: ", data);
             setAvailableEvent(data);
           })
           .catch((err) => console.log(err));
@@ -32,15 +28,14 @@ const EventRow = ({ index, availableEventId, onRemove }) => {
 
   useEffect(() => {
     if (event) {
-      fetchParticipantsByEventId(event?.id)
+      fetchParticipantsByEventIdAndCollegeId(event?.id, collegeId)
         .then((data) => {
-          console.log(data);
           setParticipants(data);
           setOtseEntry(data.filter((ele) => ele.entryType.toLowerCase() == "otse").length);
         })
         .catch((err) => console.log(err));
     }
-  }, [event]);
+  }, [event, collegeId]);
 
   return (
     <tr>

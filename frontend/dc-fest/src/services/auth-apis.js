@@ -8,7 +8,7 @@ export const doLogin = async ({ username, password }) => {
         },
         withCredentials: true
     });
-    console.log(response)
+    
     return response.data;
 };
 
@@ -16,7 +16,7 @@ export const fetchUsers = async (page) => {
     const response = await API.get(`/api/users?page=${page}`, {
         withCredentials: true
     });
-    console.log(response)
+    
     return response.data;
 };
 
@@ -28,7 +28,7 @@ export const createUser = async (user) => {
         withCredentials: true,
         
     });
-    console.log(response)
+    
     return response.data;
 };
 export const generateOTP = async (otpObj) => {
@@ -39,7 +39,7 @@ export const generateOTP = async (otpObj) => {
         withCredentials: true,
         
     });
-    console.log(response)
+    
     return response.data;
 };
 export const verifyOTP = async (verifyObj) => {
@@ -50,6 +50,6 @@ export const verifyOTP = async (verifyObj) => {
         withCredentials: true,
         
     });
-    console.log(response)
+    
     return response.data;
 };

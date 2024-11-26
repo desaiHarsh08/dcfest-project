@@ -13,7 +13,7 @@ public interface ParticipantServices {
 
     ParticipantDto getParticipantById(Long id);
 
-    PageResponse<ParticipantDto> getParticipantByCollegeId(int pageNumber, Long collegeId);
+    List<ParticipantDto> getParticipantByCollegeId(Long collegeId);
 
     PageResponse<ParticipantDto> getParticipantByIsPresent(int pageNumber, boolean isPresent);
 
@@ -28,5 +28,7 @@ public interface ParticipantServices {
     void deleteParticipantsByEventId(Long eventId);
 
     void deleteParticipantsByCollegesId(Long collegeId);
+
+    List<ParticipantDto> getParticipantsByEventIdandCollegeId(Long eventId, Long collegeId);
 
 }

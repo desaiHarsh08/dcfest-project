@@ -4,7 +4,7 @@ export const fetchCategories = async () => {
     const response = await API.get('/api/categories', {
         withCredentials: true
     });
-    console.log(response)
+    
     return response.data;
 };
 
@@ -12,7 +12,7 @@ export const fetchCategoryById = async (id) => {
     const response = await API.get(`/api/categories/${id}`, {
         withCredentials: true
     });
-    console.log(response)
+    
     return response.data;
 };
 
@@ -21,6 +21,6 @@ export const addAvailableEvent = async (availableEvent) => {
     const response = await API.post(`/api/available-events`, availableEvent, {
         withCredentials: true
     });
-    console.log(response)
+    
     return response.data;
 };

@@ -174,13 +174,8 @@ public class CollegeServicesImpl implements CollegeServices {
     public boolean deleteCollege(Long id) {
         this.getCollegeById(id);
         // Delete the participants
-        PageResponse<ParticipantDto> participantDtoResponse = this.participantServices.getParticipantByCollegeId(1, id);
-        this.deleteParticipants(participantDtoResponse.getContent());
-        int totalPages = participantDtoResponse.getTotalPages();
-        for (int i = 2; i <= totalPages; i++) {
-            participantDtoResponse = this.participantServices.getParticipantByCollegeId(i, id);
-            this.deleteParticipants(participantDtoResponse.getContent());
-        }
+        List<ParticipantDto> participantDtoResponse = this.participantServices.getParticipantByCollegeId(id);
+        this.deleteParticipants(participantDtoResponse);
         // Delete the colleges participated
         List<CollegeParticipationDto> collegeParticipationDtos = this.collegeParticipationService.getByCollege(id);
         for (CollegeParticipationDto collegeParticipationDto : collegeParticipationDtos) {

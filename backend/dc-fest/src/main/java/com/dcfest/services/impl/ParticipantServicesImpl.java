@@ -283,27 +283,16 @@ public class ParticipantServicesImpl implements ParticipantServices {
     }
 
     @Override
-    public PageResponse<ParticipantDto> getParticipantByCollegeId(int pageNumber, Long collegeId) {
-        if (pageNumber < 1) {
-            throw new IllegalArgumentException("Page no. should always be greater than 0.");
-        }
-
-        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE);
+    public List<ParticipantDto> getParticipantByCollegeId(Long collegeId) {
         CollegeModel collegeModel = new CollegeModel();
         collegeModel.setId(collegeId);
-        Page<ParticipantModel> pageParticipant = this.participantRepository.findByCollege(pageable, collegeModel);
+        List<ParticipantModel> participantModels = this.participantRepository.findByCollege(collegeModel);
 
-        List<ParticipantModel> participantModels = pageParticipant.getContent();
+       if (participantModels.isEmpty()) {
+           return new ArrayList<>();
+       }
 
-        List<ParticipantDto> participantDtos = participantModels.stream().map(this::participantModelToDto)
-                .collect(Collectors.toList());
-
-        return new PageResponse<>(
-                pageNumber,
-                PAGE_SIZE,
-                pageParticipant.getTotalPages(),
-                pageParticipant.getTotalElements(),
-                participantDtos);
+        return participantModels.stream().map(this::participantModelToDto).collect(Collectors.toList());
     }
 
     @Override
@@ -339,6 +328,18 @@ public class ParticipantServicesImpl implements ParticipantServices {
              return new ArrayList<>();
          }
          return participants.stream().map(this::participantModelToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ParticipantDto> getParticipantsByEventIdandCollegeId(Long eventId, Long collegeId) {
+        EventModel eventModel = new EventModel();
+        eventModel.setId(eventId);
+        System.out.println(eventId);
+        List<ParticipantModel> participants = this.participantRepository.findByEvent_IdAndCollegeId(eventId, collegeId);
+        if (participants.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return participants.stream().map(this::participantModelToDto).collect(Collectors.toList());
     }
 
     @Override
@@ -405,19 +406,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Override
     public void deleteParticipantsByCollegesId(Long collegeId) {
-        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
-        Page<ParticipantModel> pageParticipant = this.participantRepository.findByCollege(pageable, new CollegeModel(collegeId));
-        List<ParticipantModel> participantModels = pageParticipant.getContent();
+        List<ParticipantModel> participantModels = this.participantRepository.findByCollege(new CollegeModel(collegeId));
         for (ParticipantModel participantModel: participantModels) {
             this.deleteParticipant(participantModel.getId());
-        }
-        for (int i = 1; i < participantModels.size(); i++) {
-            pageable = PageRequest.of(i, PAGE_SIZE);
-            pageParticipant = this.participantRepository.findByCollege(pageable, new CollegeModel(collegeId));
-            participantModels = pageParticipant.getContent();
-            for (ParticipantModel participantModel: participantModels) {
-                this.deleteParticipant(participantModel.getId());
-            }
         }
     }
 

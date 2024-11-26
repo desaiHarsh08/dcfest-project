@@ -41,7 +41,7 @@ import { useEffect, useState } from "react";
 import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
-import { fetchParticipantsByEventId } from "../services/participants-api";
+import { fetchParticipantsByEventId, fetchParticipantsByEventIdAndCollegeId } from "../services/participants-api";
 
 export default function AddParticipantByCollege() {
   const navigate = useNavigate();
@@ -90,14 +90,16 @@ export default function AddParticipantByCollege() {
   }, [eventId]);
 
   useEffect(() => {
-    fetchParticipantsByEventId(eventId).then((data) => {
-      console.log(data);
-      setParticipants(data);
-      if (data.length > 0) {
-        navigate(-1);
-      }
-    });
-  }, []);
+    if (event && college) {
+      fetchParticipantsByEventIdAndCollegeId(eventId, college.id).then((data) => {
+        console.log(data);
+        setParticipants(data);
+        if (data.length > 0) {
+          navigate(-1);
+        }
+      });
+    }
+  }, [eventId, college]);
 
   if (loading) {
     return (

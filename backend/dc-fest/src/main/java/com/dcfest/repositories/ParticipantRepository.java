@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import com.dcfest.models.CollegeModel;
@@ -18,11 +19,14 @@ import com.dcfest.models.UserModel;
 @Repository
 public interface ParticipantRepository extends JpaRepository<ParticipantModel, Long> {
 
-    Page<ParticipantModel> findByCollege(Pageable pageable, CollegeModel college);
+    List<ParticipantModel> findByCollege(CollegeModel college);
 
     Page<ParticipantModel> findByIsPresent(Pageable pageable, boolean isPresent);
 
     List<ParticipantModel> findByGroup(String group);
+
+    @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId AND p.college.id = :collegeId")
+    List<ParticipantModel> findByEvent_IdAndCollegeId(@Param("eventId") Long eventId, @Param("collegeId") Long collegeId);
 
     @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId")
     List<ParticipantModel> findByEvents_Id(@Param("eventId") Long eventId);

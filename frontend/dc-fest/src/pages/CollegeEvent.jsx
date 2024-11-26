@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Badge, Card, ListGroup, Modal, Form } from "react-bootstrap";
 import Navbar from "../components/Navbar/Navbar";
 import { Link, useParams } from "react-router-dom";
-import { createParticipants, deleteParticipant, fetchParticipantsByEventId, updateParticipant } from "../services/participants-api";
+import { createParticipants, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, updateParticipant } from "../services/participants-api";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
-import { FaMapMarkerAlt, FaRegClock, FaTicketAlt, } from "react-icons/fa";
+import { FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
+import { fetchCollegeByIcCode } from "../services/college-apis";
 
 const CollegeEvent = () => {
   const { iccode, eventId } = useParams();
@@ -19,31 +20,48 @@ const CollegeEvent = () => {
   const [addFlag, setAddFlag] = useState(false);
   const [isValid, setIsValid] = useState(false);
 
+  const [college, setCollege] = useState();
+
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const [selectedParticipant, setSelectedParticipant] = useState()
+  const [selectedParticipant, setSelectedParticipant] = useState();
 
   useEffect(() => {
-    getParticipants()
-
     fetchEventById(eventId)
       .then((data) => {
-        fetchAvailableEventsById(data.availableEventId).then(data => setAvailableEvent(data));
+        fetchAvailableEventsById(data.availableEventId).then((data) => setAvailableEvent(data));
       })
       .catch((err) => console.log(err));
   }, [eventId]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetchCollegeByIcCode(iccode);
+        console.log("college:", response);
+        setCollege(response);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (college) {
+      getParticipants();
+    }
+  }, [college]);
+
   const getParticipants = async () => {
     try {
-      const response = await fetchParticipantsByEventId(eventId)
-      setParticipants(response)
-      console.log(response)
+      const response = await fetchParticipantsByEventIdAndCollegeId(eventId, college.id);
+      setParticipants(response);
+      console.log(response);
     } catch (error) {
-      console.error(err)
+      console.error(error);
     }
-
-  }
+  };
   const handleDelete = async (id) => {
     setLoading(true);
     setDeletingId(id);
@@ -51,7 +69,7 @@ const CollegeEvent = () => {
       await deleteParticipant(id);
       alert("Participant Deleted Successfully!");
       setParticipants(participants.filter((participant) => participant.id !== id));
-      getParticipants()
+      getParticipants();
     } catch (error) {
       alert("Unable to delete the participant. Please try again later.");
       console.log(error);
@@ -59,7 +77,6 @@ const CollegeEvent = () => {
       setLoading(false);
       setDeletingId(null);
     }
-
   };
 
   const formatDateTime = (dateTime) => {
@@ -76,24 +93,28 @@ const CollegeEvent = () => {
     });
   };
 
-
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
-    setSelectedParticipant(prev => ({ ...prev, [name]: value }))
-    isValidDetails()
-  }
+    setSelectedParticipant((prev) => ({ ...prev, [name]: value }));
+    isValidDetails();
+  };
 
   // Function to validate participant details
 
   const isValidDetails = (isSubmitting) => {
-    console.log("I m in is validdetails", availableEvent)
+    console.log("I m in is validdetails", availableEvent);
     if (!availableEvent || !availableEvent.eventRules) {
       setIsValid(false);
       return false;
-
     }
 
-    const newParticipants = [...participants, selectedParticipant];
+    let newParticipants = [...participants];
+    if (addFlag) {
+      newParticipants.push(selectedParticipant);
+    } else {
+      newParticipants = [selectedParticipant];
+    }
+
     for (const participant of newParticipants) {
       if (!participant.name.trim() || !participant.email.trim() || !participant.whatsappNumber.trim()) {
         console.log("in loop, empty field");
@@ -112,7 +133,7 @@ const CollegeEvent = () => {
 
     for (const rule of availableEvent.eventRules) {
       const ruleValue = Number(rule.value);
-      console.log(rule.eventRuleTemplate.name, ruleValue)
+      console.log(rule.eventRuleTemplate.name, ruleValue);
       switch (rule.eventRuleTemplate.name) {
         case "MIN_PARTICIPANTS":
           if (newParticipants.filter((p) => p.type == "PERFORMER").length < ruleValue) {
@@ -134,8 +155,6 @@ const CollegeEvent = () => {
             return false;
           }
           break;
-
-
 
         case "MALE_PARTICIPANTS":
           if (newParticipants.filter((p) => p.male).length !== ruleValue) {
@@ -175,57 +194,58 @@ const CollegeEvent = () => {
     return true;
   };
 
-
   const handleSave = async (e) => {
-    e.preventDefault()
-    console.log("Im in handle Save", isValid)
+    e.preventDefault();
+    console.log("Im in handle Save", isValid);
     if (!isValidDetails(true)) {
       return;
     }
 
-    console.log("here in after if")
+    console.log("here in after if");
 
     try {
       const response = await updateParticipant(selectedParticipant);
-      console.log(response)
-      getParticipants()
-      setParticipants(participants.map(p => {
-        if (p.id == selectedParticipant.id) {
-          return selectedParticipant;
-        }
-        return p;
-      }))
-      handleClose()
+      console.log(response);
+      getParticipants();
+      setParticipants(
+        participants.map((p) => {
+          if (p.id == selectedParticipant.id) {
+            return selectedParticipant;
+          }
+          return p;
+        })
+      );
+      handleClose();
     } catch (error) {
-      console.log(error)
-      alert('Unable to save the changes... please try again later!');
+      console.log(error);
+      alert("Unable to save the changes... please try again later!");
     }
-  }
+  };
 
   const handleAdd = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!isValidDetails(true)) {
       alert("pleaseprovide the correct participant entries... check the rules");
       return;
     }
 
-    console.log(selectedParticipant)
+    console.log(selectedParticipant);
 
-    const newParticipant = { ...selectedParticipant, collegeId: participants[0].collegeId }
-    console.log(newParticipant)
+    const newParticipant = { ...selectedParticipant, collegeId: participants[0].collegeId };
+    console.log(newParticipant);
     try {
       const response = await createParticipants(newParticipant);
-      console.log(response)
+      console.log(response);
 
-      setParticipants(prev => ([...participants, newParticipant]))
-      getParticipants()
-      handleClose()
+      setParticipants((prev) => [...participants, newParticipant]);
+      getParticipants();
+      handleClose();
     } catch (error) {
-      console.log(error)
-      alert('Unable to save the changes... please try again later!');
+      console.log(error);
+      alert("Unable to save the changes... please try again later!");
     }
-  }
+  };
   return (
     <div>
       <Navbar />
@@ -377,43 +397,55 @@ const CollegeEvent = () => {
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="d-flex align-items-center gap-2">
                   <h4 className="text-secondary">Participants</h4>
-                  {availableEvent && availableEvent?.eventRules.find(rule => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter(p => p.type == "PERFORMER").length && (
-                    <button type="button" className="btn border btn-primary" onClick={() => {
-                      handleShow()
-                      console.log('fired')
-                      setAddFlag(true);
-                      setSelectedParticipant({
-                        name: "",
-                        email: "",
-                        whatsappNumber: "",
-                        male: true,
-                        collegeId: null,
-                        type: "PERFORMER",
-                        entryType: "NORMAL",
-                        eventIds: [eventId],
-                      })
-                    }}>Add Participant</button>
+                  {participants.length > 0 && availableEvent && availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
+                    <button
+                      type="button"
+                      className="btn border btn-primary"
+                      onClick={() => {
+                        handleShow();
+                        console.log("fired");
+                        setAddFlag(true);
+                        setSelectedParticipant({
+                          name: "",
+                          email: "",
+                          whatsappNumber: "",
+                          male: true,
+                          collegeId: null,
+                          type: "PERFORMER",
+                          entryType: "NORMAL",
+                          eventIds: [eventId],
+                        });
+                      }}
+                    >
+                      Add Participant
+                    </button>
                   )}
-                  {availableEvent && availableEvent?.eventRules.find(rule => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter(p => p.type == "ACCOMPANIST").length && (
-                    <button type="button" className="btn border btn-primary" onClick={() => {
-                      handleShow()
-                      console.log('fired')
-                      setAddFlag(true);
-                      setSelectedParticipant({
-                        name: "",
-                        email: "",
-                        whatsappNumber: "",
-                        male: true,
-                        collegeId: null,
-                        type: "ACCOMPANIST",
-                        entryType: "NORMAL",
-                        eventIds: [eventId],
-                      })
-                    }}>Add Accompanist</button>
-                  )}
-
+                  {participants.length > 0 && availableEvent &&
+                    availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter((p) => p.type == "ACCOMPANIST").length && (
+                      <button
+                        type="button"
+                        className="btn border btn-primary"
+                        onClick={() => {
+                          handleShow();
+                          console.log("fired");
+                          setAddFlag(true);
+                          setSelectedParticipant({
+                            name: "",
+                            email: "",
+                            whatsappNumber: "",
+                            male: true,
+                            collegeId: null,
+                            type: "ACCOMPANIST",
+                            entryType: "NORMAL",
+                            eventIds: [eventId],
+                          });
+                        }}
+                      >
+                        Add Accompanist
+                      </button>
+                    )}
                 </div>
-                {participants.length == 0 && (
+                {college && participants.length == 0 && (
                   <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
                     + Add Participant
                   </Link>
@@ -453,22 +485,22 @@ const CollegeEvent = () => {
                         <td>{participant.ranking || "-"}</td>
                         <td>
                           {availableEvent &&
-                            availableEvent.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value <
-                            participants.filter((p) => p.type === "PERFORMER").length && (
-                              <Button
-                                variant={deletingId === participant.id ? "secondary" : "danger"}
-                                onClick={() => handleDelete(participant.id)}
-                                disabled={loading && deletingId === participant.id}
-                              >
+                            availableEvent.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length && (
+                              <Button variant={deletingId === participant.id ? "secondary" : "danger"} onClick={() => handleDelete(participant.id)} disabled={loading && deletingId === participant.id}>
                                 {loading && deletingId === participant.id ? "Deleting..." : "Delete"}
                               </Button>
                             )}
 
-                          <button className="btn btn-success" onClick={() => {
-                            handleShow()
-                            setSelectedParticipant(participant)
-                            setAddFlag(false);
-                          }}>Edit</button>
+                          <button
+                            className="btn btn-success"
+                            onClick={() => {
+                              handleShow();
+                              setSelectedParticipant(participant);
+                              setAddFlag(false);
+                            }}
+                          >
+                            Edit
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -494,34 +526,15 @@ const CollegeEvent = () => {
           <Form className="w-100">
             <Form.Group className="mb-3">
               <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={selectedParticipant?.name}
-                onChange={handleEditFormChange}
-                required
-                className="w-100"
-              />
+              <Form.Control type="text" name="name" value={selectedParticipant?.name} onChange={handleEditFormChange} required className="w-100" />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={selectedParticipant?.email}
-                onChange={handleEditFormChange}
-                required
-              />
+              <Form.Control type="email" name="email" value={selectedParticipant?.email} onChange={handleEditFormChange} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Phone</Form.Label>
-              <Form.Control
-                type="text"
-                name="whatsappNumber"
-                value={selectedParticipant?.whatsappNumber}
-                onChange={handleEditFormChange}
-                required
-              />
+              <Form.Control type="text" name="whatsappNumber" value={selectedParticipant?.whatsappNumber} onChange={handleEditFormChange} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Check
@@ -563,18 +576,21 @@ const CollegeEvent = () => {
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={(e) => {
-            if (!addFlag) {
-              handleSave(e)
-            } else {
-              handleAdd(e)
-            }
-          }}>
+          <Button
+            variant="primary"
+            onClick={(e) => {
+              if (!addFlag) {
+                handleSave(e);
+              } else {
+                handleAdd(e);
+              }
+            }}
+          >
             Save Changes
           </Button>
         </Modal.Footer>
       </Modal>
-    </div >
+    </div>
   );
 };
 

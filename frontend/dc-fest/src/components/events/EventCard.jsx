@@ -13,6 +13,8 @@ const EventCard = ({ event, college }) => {
   const [participation, setParticipation] = useState([]);
   const [flag, setFlag] = useState(false);
 
+  console.log(event);
+
   useEffect(() => {
     if (college?.id) {
       fetchParticipationEventsByCollegeId(college.id)
@@ -49,33 +51,20 @@ const EventCard = ({ event, college }) => {
       <Col xs={12} sm={6} md={4} lg={3} className="mb-4">
         <Card className={`h-100 shadow-sm ${styles.eventCard} border-0`}>
           <div className={`${styles.imageContainer} overflow-hidden`}>
-            <Card.Img
-              variant="top"
-              src={`/${event.slug}.jpg`}
-              alt={event.title}
-              className={`img-fluid rounded-top ${styles.cardImage}`}
-              style={{ height: "200px", objectFit: "cover" }}
-            />
+            <Card.Img variant="top" src={`/${event.slug}.jpg`} alt={event.title} className={`img-fluid rounded-top ${styles.cardImage}`} style={{ height: "200px", objectFit: "cover" }} />
           </div>
           <Card.Body className="d-flex flex-column p-4">
-            <Card.Title className={`fs-5 text-center fw-bold ${styles.cardTitle}`}>
-              {event.title}
-            </Card.Title>
+            <Card.Title className={`fs-5 text-center fw-bold ${styles.cardTitle}`}>{event.title}</Card.Title>
             <Card.Text className={`text-muted text-center mb-2 ${styles.cardOneLiner}`}>
               <i>{event.oneLiner}</i>
             </Card.Text>
-            <Card.Text className={`text-center ${styles.cardDescription}`}>
-              {truncateDescription(event.description, 10)}
-            </Card.Text>
+            <Card.Text className={`text-center ${styles.cardDescription}`}>{truncateDescription(event.description, 10)}</Card.Text>
             <Badge bg="info" className="mb-3 align-self-center">
               {event.category}
             </Badge>
             <div className="mt-auto d-flex justify-content-center">
               {user.type === "ADMIN" ? (
-                <Link
-                  to={event.slug}
-                  className="btn btn-primary d-flex align-items-center text-white text-decoration-none"
-                >
+                <Link to={event.slug} className="btn btn-primary d-flex align-items-center text-white text-decoration-none">
                   <FaEye className="me-2" />
                   View
                 </Link>
@@ -85,21 +74,18 @@ const EventCard = ({ event, college }) => {
                   Enrolled
                 </Button>
               ) : (
-                <Button
-                  variant="primary"
-                  onClick={handleCollegeRegister}
-                  disabled={isLoading}
-                  className="d-flex align-items-center"
-                >
-                  {isLoading ? (
-                    <>
-                      <FaSpinner className="me-2 spinner-border-sm" />
-                      Registering...
-                    </>
-                  ) : (
-                    "Register"
-                  )}
-                </Button>
+                !event?.closeRegistration && (
+                  <Button variant="primary" onClick={handleCollegeRegister} disabled={isLoading} className="d-flex align-items-center">
+                    {isLoading ? (
+                      <>
+                        <FaSpinner className="me-2 spinner-border-sm" />
+                        Registering...
+                      </>
+                    ) : (
+                      "Register"
+                    )}
+                  </Button>
+                )
               )}
             </div>
           </Card.Body>

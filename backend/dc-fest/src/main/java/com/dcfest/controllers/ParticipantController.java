@@ -37,8 +37,13 @@ public class ParticipantController {
     }
 
     @GetMapping("/college/{collegeId}")
-    public ResponseEntity<PageResponse<ParticipantDto>> getParticipantByCollegeId(@RequestParam int pageNumber, @PathVariable Long collegeId) {
-        PageResponse<ParticipantDto> participants = participantServices.getParticipantByCollegeId(pageNumber, collegeId);
+    public ResponseEntity<List<ParticipantDto>> getParticipantByCollegeId(@PathVariable Long collegeId) {
+        List<ParticipantDto> participants = participantServices.getParticipantByCollegeId(collegeId);
+        return new ResponseEntity<>(participants, HttpStatus.OK);
+    }
+    @GetMapping("/college-event")
+    public ResponseEntity<List<ParticipantDto>> getParticipantByEventIdAndCollegeId(@RequestParam Long eventId, @RequestParam Long collegeId) {
+        List<ParticipantDto> participants = participantServices.getParticipantsByEventIdandCollegeId(eventId, collegeId);
         return new ResponseEntity<>(participants, HttpStatus.OK);
     }
 
@@ -54,8 +59,8 @@ public class ParticipantController {
         return new ResponseEntity<>(participants, HttpStatus.OK);
     }
 
-    @PutMapping
-    public ResponseEntity<ParticipantDto> updateParticipant(@RequestBody ParticipantDto participantDto) {
+    @PutMapping("/{id}")
+    public ResponseEntity<ParticipantDto> updateParticipant(@RequestBody ParticipantDto participantDto, @PathVariable Long id) {
         ParticipantDto updatedParticipant = participantServices.updateParticipant(participantDto);
         return new ResponseEntity<>(updatedParticipant, HttpStatus.OK);
     }
