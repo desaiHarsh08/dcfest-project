@@ -21,7 +21,6 @@ const ParticipantRow = ({ participant, index, category, availableEvent, handleRe
         <td>{index + 1}</td>
         <td>{participant?.name}</td>
         <td>{college?.icCode}</td>
-        <td>{participant?.group}</td>
         <td>{participant?.email}</td>
         <td>{category?.name}</td>
         <td>{availableEvent?.title}</td>

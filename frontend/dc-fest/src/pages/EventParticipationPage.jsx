@@ -248,7 +248,7 @@ import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import "../styles/EventParticipationPage.css"; // Import custom CSS
 import { fetchCategories } from "../services/categories-api";
-import { fetchParticipantsByEventId } from "../services/participants-api";
+import { deleteParticipant, fetchParticipantsByEventId } from "../services/participants-api";
 import { fetchEventByAvailableEventId } from "../services/event-apis";
 import ParticipantRow from "../components/event-participation/ParticipantRow";
 
@@ -266,26 +266,25 @@ const EventParticipationPage = () => {
 
   const [categories, setCategories] = useState([]);
 
+  const getParticipants = async()=>{
+    try {
+      setLoading(true);
+      const event = await fetchEventByAvailableEventId(eventFilter);
+      const participantsData = await fetchParticipantsByEventId(event.id);
+      setParticipants(participantsData);
+    } catch (err) {
+      console.error("Error fetching participants:", err);
+      setError("Failed to load participants.");
+    } finally {
+      setLoading(false);
+    }
+  }
   // Fetch participants when eventFilter changes
   useEffect(() => {
     if (eventFilter) {
-      const fetchParticipants = async () => {
-        try {
-          setLoading(true);
-          const event = await fetchEventByAvailableEventId(eventFilter);
-          const participantsData = await fetchParticipantsByEventId(event.id);
-          setParticipants(participantsData);
-        } catch (err) {
-          console.error("Error fetching participants:", err);
-          setError("Failed to load participants.");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchParticipants();
+      getParticipants()
     }
-  }, [eventFilter]);
+  }, [eventFilter,]);
 
   // Fetch categories and initialize filters
   useEffect(() => {
@@ -323,8 +322,18 @@ const EventParticipationPage = () => {
     setShowEditModal(true);
   };
 
-  const handleRemove = (id) => {
-    setParticipants(participants.filter((participant) => participant.id !== id));
+  const handleRemove = async (id) => {
+    const isConfirm = confirm("Are you sure you want to delete this participant.")
+    if (!isConfirm) {
+      return
+    }
+    try {
+      const response = await deleteParticipant(id)
+      console.log(response)
+      getParticipants()
+    } catch (error) {
+      console.error("Something error", err)
+    }
   };
 
   const handleModalClose = () => {
@@ -418,7 +427,7 @@ const EventParticipationPage = () => {
                 <th>#</th>
                 <th>Participant Name</th>
                 <th>ICCODE</th>
-                <th>Group/Participant Id</th>
+                {/* <th>Group/Participant Id</th> */}
                 <th>Email</th>
                 <th>Category</th>
                 <th>Event</th>
@@ -434,6 +443,7 @@ const EventParticipationPage = () => {
                   availableEvent={selectedAvailableEvent}
                   participant={participant}
                   handleEdit={handleEdit}
+                  handleRemove={handleRemove}
                 />
               ))}
             </tbody>
