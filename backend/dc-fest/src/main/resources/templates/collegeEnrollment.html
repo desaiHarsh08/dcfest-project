@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+          font-family: 'Arial', sans-serif;
+          background-color: #f4f7fc;
+          margin: 0;
+          padding: 0;
+        }
+        .email-container {
+          max-width: 650px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .email-header {
+          background: linear-gradient(135deg, #0078d7, #4caf50);
+          color: #ffffff;
+          text-align: center;
+          padding: 40px 20px;
+          border-top-left-radius: 12px;
+          border-top-right-radius: 12px;
+        }
+        .email-header h1 {
+          font-size: 28px;
+          margin: 0;
+          font-weight: 700;
+        }
+        .email-header p {
+          font-size: 16px;
+          margin-top: 10px;
+          font-weight: 300;
+        }
+        .email-body {
+          padding: 30px 25px;
+          color: #333333;
+          line-height: 1.6;
+        }
+        .email-body h2 {
+          color: #4caf50;
+          font-size: 24px;
+          margin-bottom: 15px;
+          font-weight: 600;
+        }
+        .event-details {
+          background-color: #f8f9fa;
+          border: 1px solid #dde2e6;
+          border-radius: 8px;
+          padding: 20px;
+          margin-top: 20px;
+          font-size: 16px;
+        }
+        .event-details p {
+          margin: 8px 0;
+        }
+        .action-btn {
+          display: block;
+          width: max-content;
+          margin: 30px auto;
+          padding: 12px 25px;
+          background-color: #0078d7;
+          color: #ffffff;
+          font-size: 16px;
+          text-decoration: none;
+          text-align: center;
+          border-radius: 8px;
+          font-weight: 600;
+          transition: background-color 0.3s ease;
+        }
+        .action-btn:hover {
+          background-color: #005bb5;
+        }
+        .email-footer {
+          background-color: #f4f7fc;
+          text-align: center;
+          padding: 20px;
+          font-size: 14px;
+          color: #777777;
+          border-bottom-left-radius: 12px;
+          border-bottom-right-radius: 12px;
+        }
+        .email-footer a {
+          color: #0078d7;
+          font-weight: bold;
+          text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <!-- Header -->
+    <div class="email-header">
+        <h1>Enrollment Successful</h1>
+        <p>Your College Has Been Successfully Enrolled for the Event</p>
+    </div>
+
+    <!-- Body -->
+    <div class="email-body">
+        <h2>Event Enrollment Confirmation</h2>
+        <p>Dear <span th:text="${collegeName}">[College Name]</span>,</p>
+        <p>
+            We are excited to inform you that your college has successfully
+            enrolled for the upcoming event. Below are the details of the event
+            that your team will be participating in:
+        </p>
+
+        <div class="event-details">
+            <p><strong>Event Name:</strong> <span th:text="${eventName}">[Event Name]</span></p>
+            <p><strong>Event Date:</strong> <span th:text="${eventDate}">[Event Date]</span></p>
+            <p><strong>Event Location:</strong> <span th:text="${eventLocation}">[Event Location]</span></p>
+            <p><strong>Team Leader:</strong> <span th:text="${teamLeader}">[Team Leader's Name]</span></p>
+        </div>
+
+        <p>
+            Your team will now be a part of an exciting experience, competing with
+            other colleges in a dynamic and engaging environment.
+        </p>
+
+        <a href="http://yourwebsite.com/event-details" class="action-btn">View Event Details</a>
+        <p>
+            If you have any further questions or need assistance, feel free to
+            <a href="http://yourwebsite.com/contact">contact us</a>.
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="email-footer">
+        <p>
+            Best Regards,<br />
+            The [Event Name] Team
+        </p>
+        <p>
+            Visit our website: <a href="http://yourwebsite.com/">[Your Company/Organization]</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

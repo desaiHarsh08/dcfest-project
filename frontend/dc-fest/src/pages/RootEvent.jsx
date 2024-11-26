@@ -133,7 +133,7 @@ const RootEvent = () => {
                       <Card key={index} className="mb-3 shadow-sm">
                         <Card.Body>
                           <h6>
-                            Round {index + 1}: {round.roundType}
+                            Round {index + 1}: {round.roundType == "SEMI_FINAL" ? "PRELIMS" : round.roundType}
                           </h6>
                           <Badge pill bg="info" className="me-2">
                             {round.roundType}

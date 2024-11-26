@@ -102,7 +102,11 @@ const BasicDetailsForm = ({ college, setCollege, getCollege, setShowResetPasswor
     if (users[0].email.trim().toLowerCase() == users[1].email.trim().toLowerCase()) {
       uniqueUserEmails = true;
       alert("College representative should have unique email addresses");
-
+      const newUsers = users.map((user) => {
+        const newUser = { ...user, emailVerified: false };
+        return newUser;
+      });
+      setUsers(newUsers);
       return;
     }
 

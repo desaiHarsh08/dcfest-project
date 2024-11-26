@@ -11,9 +11,8 @@ import ParticipantFields from "./ParticipantFields";
 import { fetchCategories } from "../../services/categories-api";
 import { fetchColleges } from "../../services/college-apis";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
-import { createParticipants } from "../../services/participants-api";
+import { createParticipants, fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
 import { useNavigate } from "react-router-dom";
-
 
 const participantObj = {
   name: "",
@@ -284,6 +283,19 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       return;
     }
 
+    // Check participants if already registered
+    try {
+      const res = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
+      console.log("Checked from db, participants:", res);
+      if (res.length > 0) {
+        alert("Your college had already added the participants, you may edit the details now!");
+        navigate(-1);
+        return;
+      }
+    } catch (error) {
+      console.log("error in fetchParticipantsByEventIdAndCollegeId() - ", error);
+    }
+
     setLoading(true);
     let successCount = 0;
     for (const participant of participants) {
@@ -405,9 +417,11 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                             <button type="button" disabled={handleDisabled()} className="btn btn-success btn-sm" onClick={handleAddParticipant}>
                               Add Participant
                             </button>
-                            {selectedAvailableEvent?.eventRules.find(rule => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST") && <button type="button" disabled={handleDisabledAccompanist()} className="btn btn-info btn-sm" onClick={handleAddAccompanist}>
-                              Add Accompanist
-                            </button>}
+                            {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST") && (
+                              <button type="button" disabled={handleDisabledAccompanist()} className="btn btn-info btn-sm" onClick={handleAddAccompanist}>
+                                Add Accompanist
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
@@ -418,7 +432,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                         variant="primary"
                         type="submit"
                         size="lg"
-                      //   className="w-100"
+                        //   className="w-100"
                       >
                         {loading ? "Please wait..." : "Register"}
                       </Button>
@@ -431,7 +445,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           </Col>
         </Row>
       </Container>
-    
+
       <div className="container position-absolute bottom-0 border">
         <ul className="d-flex justify-content-between align-items-center p-0 m-0 py-2 " style={{ listStyle: "none", backgroundColor: "aliceblue" }}>
           <li>Min. Participants: {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value}</li>
@@ -439,17 +453,21 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
             Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS").value}
           </li>
           <li>
-            Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value || 0}
+            Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} /{" "}
+            {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value || 0}
           </li>
-          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS") && (<li>
-            Male: {participants.filter((p) => p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS")?.value}
-          </li>)}
-          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS") && (<li>
-            Female: {participants.filter((p) => !p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS")?.value}
-          </li>)}
+          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS") && (
+            <li>
+              Male: {participants.filter((p) => p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS")?.value}
+            </li>
+          )}
+          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS") && (
+            <li>
+              Female: {participants.filter((p) => !p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS")?.value}
+            </li>
+          )}
         </ul>
-      </div> 
-
+      </div>
     </>
   );
 };

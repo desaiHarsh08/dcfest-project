@@ -15,6 +15,7 @@ const CollegeEvent = () => {
   const [availableEvent, setAvailableEvent] = useState();
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [loadingSave, setLoadingSave] = useState(false);
 
   const [show, setShow] = useState(false);
   const [addFlag, setAddFlag] = useState(false);
@@ -108,12 +109,36 @@ const CollegeEvent = () => {
       return false;
     }
 
-    let newParticipants = [...participants];
-    if (addFlag) {
-      newParticipants.push(selectedParticipant);
+    let newParticipants = [];
+    // if (availableEvent.type.toUpperCase() == "INDIVIDUAL") {
+    //   newParticipants = [selectedParticipant];
+    // } else {
+    //   const minParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS").value;
+    //   const maxParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS").value;
+    //   if (minParticipants == maxParticipants) {
+    //     newParticipants = participants.map((p) => {
+    //       if (p.id == selectedParticipant.id && p.type == "PERFORMER") {
+    //         return selectedParticipant;
+    //       }
+    //       return p;
+    //     });
+    //   } else {
+    //     newParticipants = [...participants, selectedParticipant];
+    //   }
+    // }
+    if (selectedParticipant.id) {
+      newParticipants = participants.map((p) => {
+        if (p.id == selectedParticipant.id) {
+          return selectedParticipant;
+        }
+        return p;
+      });
     } else {
-      newParticipants = [selectedParticipant];
+      newParticipants = [...participants, selectedParticipant];
     }
+
+    console.log("newParticipants:", newParticipants);
+    console.log("selectedParticipant:", selectedParticipant);
 
     for (const participant of newParticipants) {
       if (!participant.name.trim() || !participant.email.trim() || !participant.whatsappNumber.trim()) {
@@ -202,7 +227,7 @@ const CollegeEvent = () => {
     }
 
     console.log("here in after if");
-
+    setLoadingSave(true);
     try {
       const response = await updateParticipant(selectedParticipant);
       console.log(response);
@@ -219,6 +244,9 @@ const CollegeEvent = () => {
     } catch (error) {
       console.log(error);
       alert("Unable to save the changes... please try again later!");
+    } finally {
+      setAddFlag(false);
+      setLoadingSave(false);
     }
   };
 
@@ -226,7 +254,7 @@ const CollegeEvent = () => {
     e.preventDefault();
 
     if (!isValidDetails(true)) {
-      alert("pleaseprovide the correct participant entries... check the rules");
+      alert("Please provide the correct participant entries... check the rules");
       return;
     }
 
@@ -234,18 +262,23 @@ const CollegeEvent = () => {
 
     const newParticipant = { ...selectedParticipant, collegeId: participants[0].collegeId };
     console.log(newParticipant);
+    setLoadingSave(true);
     try {
       const response = await createParticipants(newParticipant);
       console.log(response);
 
-      setParticipants((prev) => [...participants, newParticipant]);
+      setParticipants([...participants, newParticipant]);
       getParticipants();
       handleClose();
     } catch (error) {
       console.log(error);
       alert("Unable to save the changes... please try again later!");
+    } finally {
+      setAddFlag(false);
+      setLoadingSave(false);
     }
   };
+
   return (
     <div>
       <Navbar />
@@ -360,7 +393,7 @@ const CollegeEvent = () => {
                     <Card key={index} className="mb-3 shadow-sm">
                       <Card.Body>
                         <h6>
-                          Round {index + 1}: {round.roundType}
+                          Round {index + 1}: {round.roundType == "SEMI_FINAL" ? "PRELIMS" : round.roundType}
                         </h6>
                         <Badge pill bg="info" className="me-2">
                           {round.roundType}
@@ -397,30 +430,33 @@ const CollegeEvent = () => {
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="d-flex align-items-center gap-2">
                   <h4 className="text-secondary">Participants</h4>
-                  {participants.length > 0 && availableEvent && availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
-                    <button
-                      type="button"
-                      className="btn border btn-primary"
-                      onClick={() => {
-                        handleShow();
-                        console.log("fired");
-                        setAddFlag(true);
-                        setSelectedParticipant({
-                          name: "",
-                          email: "",
-                          whatsappNumber: "",
-                          male: true,
-                          collegeId: null,
-                          type: "PERFORMER",
-                          entryType: "NORMAL",
-                          eventIds: [eventId],
-                        });
-                      }}
-                    >
-                      Add Participant
-                    </button>
-                  )}
-                  {participants.length > 0 && availableEvent &&
+                  {participants.length > 0 &&
+                    availableEvent &&
+                    availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
+                      <button
+                        type="button"
+                        className="btn border btn-primary"
+                        onClick={() => {
+                          handleShow();
+                          console.log("fired");
+                          setAddFlag(true);
+                          setSelectedParticipant({
+                            name: "",
+                            email: "",
+                            whatsappNumber: "",
+                            male: true,
+                            collegeId: null,
+                            type: "PERFORMER",
+                            entryType: "NORMAL",
+                            eventIds: [eventId],
+                          });
+                        }}
+                      >
+                        Add Participant
+                      </button>
+                    )}
+                  {participants.length > 0 &&
+                    availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter((p) => p.type == "ACCOMPANIST").length && (
                       <button
                         type="button"
@@ -484,15 +520,20 @@ const CollegeEvent = () => {
                         </td>
                         <td>{participant.ranking || "-"}</td>
                         <td>
-                          {availableEvent &&
-                            availableEvent.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length && (
-                              <Button variant={deletingId === participant.id ? "secondary" : "danger"} onClick={() => handleDelete(participant.id)} disabled={loading && deletingId === participant.id}>
-                                {loading && deletingId === participant.id ? "Deleting..." : "Delete"}
-                              </Button>
-                            )}
+                          {(availableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length ||
+                            participant.type === "ACCOMPANIST") && (
+                            <Button
+                              variant={deletingId === participant.id ? "secondary" : "danger"}
+                              onClick={() => handleDelete(participant.id)}
+                              size="sm"
+                              disabled={loading && deletingId === participant.id}
+                            >
+                              {loading && deletingId === participant.id ? "Deleting..." : "Delete"}
+                            </Button>
+                          )}
 
                           <button
-                            className="btn btn-success"
+                            className="btn btn-success btn-sm"
                             onClick={() => {
                               handleShow();
                               setSelectedParticipant(participant);
@@ -520,7 +561,7 @@ const CollegeEvent = () => {
 
       <Modal show={show} centered size="lg" onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Participants</Modal.Title>
+          <Modal.Title>{addFlag ? "Add" : "Edit"} Participants</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form className="w-100">
@@ -573,11 +614,12 @@ const CollegeEvent = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleClose} disabled={loadingSave}>
             Close
           </Button>
           <Button
             variant="primary"
+            disabled={loadingSave}
             onClick={(e) => {
               if (!addFlag) {
                 handleSave(e);
@@ -586,7 +628,7 @@ const CollegeEvent = () => {
               }
             }}
           >
-            Save Changes
+            {loadingSave ? "Please Wait..." : "Save Changes"}
           </Button>
         </Modal.Footer>
       </Modal>

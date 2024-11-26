@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { Navbar as RBNavbar, Nav, Container, Modal, Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { FaHome, FaCog, FaSignInAlt, FaSignOutAlt, FaBook } from "react-icons/fa";
 import "../../styles/Navbar.css";
 import "../../styles/GuidelinesModal.css"; // Import custom styles
@@ -20,7 +20,10 @@ const GuidelinesModal = ({ show, handleClose }) => (
         <li>Colleges are required to send in one team to represent their college in each of the events.</li>
         <li>No substitutions will be entertained. If the registered team for the preliminary round qualifies, it must perform in the finals.</li>
         <li>Cross-college or open teams will not be entertained.</li>
-        <li>Obscenity and vulgarity in any form will lead to disqualification. If the participant feels that any outfit or performance is vulgar, it is strongly advised to consult the organisers before the performance. In case of any dispute arising due to this, the organisers’ decision will be final and irrevocable.</li>
+        <li>
+          Obscenity and vulgarity in any form will lead to disqualification. If the participant feels that any outfit or performance is vulgar, it is strongly advised to consult the organisers before
+          the performance. In case of any dispute arising due to this, the organisers’ decision will be final and irrevocable.
+        </li>
         <li>The decision of the judges or moderators shall be final and binding for all the events.</li>
         <li>Chewing pan masala, smoking, drinking, or any other related activity is prohibited in the college premises and other event venues.</li>
         <li>No weapons are allowed on the college premises (including chains, knuckles, pen knives, lighters, etc.) Fire-producing and inflammable objects are strictly prohibited.</li>
@@ -34,7 +37,9 @@ const GuidelinesModal = ({ show, handleClose }) => (
       </ul>
     </Modal.Body>
     <Modal.Footer className="modal-footer-custom">
-      <Button variant="secondary" onClick={handleClose} className="modal-close-btn">Close</Button>
+      <Button variant="secondary" onClick={handleClose} className="modal-close-btn">
+        Close
+      </Button>
     </Modal.Footer>
   </Modal>
 );
@@ -56,12 +61,16 @@ const RegistrationRulesModal = ({ show, handleClose }) => (
       </ul>
     </Modal.Body>
     <Modal.Footer className="modal-footer-custom">
-      <Button variant="secondary" onClick={handleClose} className="modal-close-btn">Close</Button>
+      <Button variant="secondary" onClick={handleClose} className="modal-close-btn">
+        Close
+      </Button>
     </Modal.Footer>
   </Modal>
 );
 
 const Navbar = () => {
+  const { iccode } = useParams();
+
   const [expanded, setExpanded] = useState(false);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
   const [showRegistrationRulesModal, setShowRegistrationRulesModal] = useState(false);
@@ -93,7 +102,7 @@ const Navbar = () => {
             <Nav className="ms-auto text-decoration-none">
               {authContext?.user && authContext?.user?.type !== "COLLEGE_REPRESENTATIVE" && (
                 <>
-                  <Link to="/home" className="nav-link-custom text-decoration-none d-flex align-items-center">
+                  <Link to={iccode ? `/${iccode}` : "/home"} className="nav-link-custom text-decoration-none d-flex align-items-center">
                     <FaHome className="me-1" /> Home
                   </Link>
                   <Link to="settings" className="nav-link-custom text-decoration-none d-flex align-items-center">
@@ -108,7 +117,11 @@ const Navbar = () => {
                 <FaBook className="me-1" /> Registration Rules
               </Button>
               {!authContext?.user ? (
-                <Link to="/login" className="nav-link-custom text-decoration-none d-flex align-items-center" style={{fontSize:"1.36rem" , background:"cornflowerblue", borderRadius:"12px", color:"white"}} >
+                <Link
+                  to="/login"
+                  className="nav-link-custom text-decoration-none d-flex align-items-center"
+                  style={{ fontSize: "1.36rem", background: "cornflowerblue", borderRadius: "12px", color: "white" }}
+                >
                   <FaSignInAlt className="me-1" /> Login
                 </Link>
               ) : (
