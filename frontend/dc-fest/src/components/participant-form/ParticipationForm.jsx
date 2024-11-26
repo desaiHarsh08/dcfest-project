@@ -14,6 +14,7 @@ import { fetchEventByAvailableEventId } from "../../services/event-apis";
 import { createParticipants } from "../../services/participants-api";
 import { useNavigate } from "react-router-dom";
 
+
 const participantObj = {
   name: "",
   email: "",
@@ -170,12 +171,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       }
     }
 
-    if (accompanistRule) {
-      for (let i = 0; i < Number(accompanistRule.value); i++) {
-        newParticipants.push({...participantObj, type: "ACCOMPANIST"});
-      }
-    }
-
     setParticipants(newParticipants);
   };
   // Function to validate participant details
@@ -321,23 +316,23 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     const eventRule = selectedAvailableEvent.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS");
     console.log("eventRule:", eventRule);
     // Check if the number of participants are <= event_rule's value
-    const MAX_PARTICIPANTS = Number(eventRule.value);
-    console.log(MAX_PARTICIPANTS);
-
     const maxMarticipants = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
-    const accompanist = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value;
-    console.log("maxMarticipants:", maxMarticipants);
-    console.log("accompanist:", accompanist);
-    // if (accompanist && participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist) {
-    //   setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj, type: "ACCOMPANIST" }]);
-    // } else if (participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants) {
-    //   setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
-    // }
-
 
     if (participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants) {
-        setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
-      }
+      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
+    }
+  };
+
+  const handleAddAccompanist = () => {
+    // Grab the event_rule for `COLLEGE_ACCOMPANIST`
+    console.log("Selected events are as: ", selectedAvailableEvent);
+    const eventRule = selectedAvailableEvent.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST");
+    console.log("eventRule:", eventRule);
+    // Check if the number of participants are <= event_rule's value
+    const accompanist = eventRule?.value;
+    if (participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist) {
+      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj, type: "ACCOMPANIST" }]);
+    }
   };
 
   const handleDelete = (participantIndex) => {
@@ -358,6 +353,20 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     // }
 
     return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
+  };
+
+  const handleDisabledAccompanist = () => {
+    const maxMarticipants = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+    const accompanist = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value;
+    console.log("maxMarticipants:", maxMarticipants);
+    console.log("accompanist:", accompanist);
+    // if (accompanist) {
+    //   return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist && participants.length < maxMarticipants + accompanist);
+    // } else {
+    //   return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
+    // }
+
+    return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist);
   };
 
   return (
@@ -392,9 +401,14 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                       </div>
                       <div>
                         {selectedAvailableEvent && (
-                          <button type="button" disabled={handleDisabled()} className="btn btn-success" onClick={handleAddParticipant}>
-                            Add Participant
-                          </button>
+                          <>
+                            <button type="button" disabled={handleDisabled()} className="btn btn-success btn-sm" onClick={handleAddParticipant}>
+                              Add Participant
+                            </button>
+                            {selectedAvailableEvent?.eventRules.find(rule => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST") && <button type="button" disabled={handleDisabledAccompanist()} className="btn btn-info btn-sm" onClick={handleAddAccompanist}>
+                              Add Accompanist
+                            </button>}
+                          </>
                         )}
                       </div>
                     </div>
@@ -404,7 +418,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                         variant="primary"
                         type="submit"
                         size="lg"
-                        //   className="w-100"
+                      //   className="w-100"
                       >
                         {loading ? "Please wait..." : "Register"}
                       </Button>
@@ -417,6 +431,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           </Col>
         </Row>
       </Container>
+    
       <div className="container position-absolute bottom-0 border">
         <ul className="d-flex justify-content-between align-items-center p-0 m-0 py-2 " style={{ listStyle: "none", backgroundColor: "aliceblue" }}>
           <li>Min. Participants: {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value}</li>
@@ -424,11 +439,17 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
             Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS").value}
           </li>
           <li>
-            {console.log(selectedAvailableEvent)}
-            Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value}
+            Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value || 0}
           </li>
+          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS") && (<li>
+            Male: {participants.filter((p) => p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS")?.value}
+          </li>)}
+          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS") && (<li>
+            Female: {participants.filter((p) => !p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS")?.value}
+          </li>)}
         </ul>
-      </div>
+      </div> 
+
     </>
   );
 };
