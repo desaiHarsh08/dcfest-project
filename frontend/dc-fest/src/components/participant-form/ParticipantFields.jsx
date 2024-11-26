@@ -47,7 +47,8 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
           name="type"
           value={participant.type}
           onChange={(e) => onChange(e, participantIndex)}
-          disabled={!selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}
+        //   disabled={!selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}
+        disabled
         >
           <option value={"ACCOMPANIST"}>ACCOMPANIST</option>
           <option value={"PERFORMER"}>PERFORMER</option>

@@ -162,12 +162,20 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     console.log("in default set, selectedAvailableEvent:", selectedAvailableEvent);
     const newParticipants = [];
     const minParticipantsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "MIN_PARTICIPANTS");
+    const accompanistRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "COLLEGE_ACCOMPANIST");
 
     if (minParticipantsRule) {
       for (let i = 0; i < Number(minParticipantsRule.value); i++) {
         newParticipants.push(participantObj);
       }
     }
+
+    if (accompanistRule) {
+      for (let i = 0; i < Number(accompanistRule.value); i++) {
+        newParticipants.push({...participantObj, type: "ACCOMPANIST"});
+      }
+    }
+
     setParticipants(newParticipants);
   };
   // Function to validate participant details
@@ -320,11 +328,16 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     const accompanist = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value;
     console.log("maxMarticipants:", maxMarticipants);
     console.log("accompanist:", accompanist);
-    if (accompanist && participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist) {
-      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj, type: "ACCOMPANIST" }]);
-    } else if (participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants) {
-      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
-    }
+    // if (accompanist && participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist) {
+    //   setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj, type: "ACCOMPANIST" }]);
+    // } else if (participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants) {
+    //   setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
+    // }
+
+
+    if (participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants) {
+        setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
+      }
   };
 
   const handleDelete = (participantIndex) => {
@@ -338,11 +351,13 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     const accompanist = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value;
     console.log("maxMarticipants:", maxMarticipants);
     console.log("accompanist:", accompanist);
-    if (accompanist) {
-      return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist);
-    } else {
-      return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
-    }
+    // if (accompanist) {
+    //   return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist && participants.length < maxMarticipants + accompanist);
+    // } else {
+    //   return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
+    // }
+
+    return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
   };
 
   return (
