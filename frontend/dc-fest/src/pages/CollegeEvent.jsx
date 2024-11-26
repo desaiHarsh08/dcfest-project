@@ -6,7 +6,7 @@ import { deleteParticipant, fetchParticipantsByEventId } from "../services/parti
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
-import { FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaRegClock, FaTicketAlt, } from "react-icons/fa";
 
 const CollegeEvent = () => {
   const { iccode, eventId } = useParams();
