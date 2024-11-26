@@ -1,8 +1,12 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
+import { useEffect } from "react";
 import { Form } from "react-bootstrap";
 
 const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent }) => {
+  useEffect(() => {
+    console.log("in ue, selectedAvailableEvent:", selectedAvailableEvent);
+  }, [selectedAvailableEvent]);
   console.log(participant);
   return (
     <div className="card p-3 rounded-0">
@@ -32,19 +36,23 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
           onChange={(e) => onChange({ target: { name: "male", value: false } }, participantIndex)}
         />
       </Form.Group>
-     
-      {/* <Form.Group className="mb-5">
+
+      <Form.Group className="mb-5">
+        {console.log(
+          "college_accompanist: ",
+          selectedAvailableEvent?.eventRules.find((rule) => rule.name == "COLLEGE_ACCOMPANIST")
+        )}
         <Form.Select
           aria-label="Default select example"
           name="type"
           value={participant.type}
           onChange={(e) => onChange(e, participantIndex)}
-          disabled={!!selectedAvailableEvent?.eventRules.some((rule) => rule.eventRuleTemplate.name != "COLLEGE_ACCOMPANIST")}
+          disabled={!selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}
         >
           <option value={"ACCOMPANIST"}>ACCOMPANIST</option>
           <option value={"PERFORMER"}>PERFORMER</option>
         </Form.Select>
-      </Form.Group> */}
+      </Form.Group>
     </div>
   );
 };

@@ -35,14 +35,16 @@
 //   );
 // }
 
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ParticipationForm from "../components/participant-form/ParticipationForm";
 import { useEffect, useState } from "react";
 import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
+import { fetchParticipantsByEventId } from "../services/participants-api";
 
 export default function AddParticipantByCollege() {
+  const navigate = useNavigate();
   const { iccode, eventId } = useParams();
   console.log("IC Code:", iccode);
 
@@ -51,6 +53,7 @@ export default function AddParticipantByCollege() {
   const [college, setCollege] = useState(null);
   const [loading, setLoading] = useState(true); // Track loading state
   const [error, setError] = useState(null); // Track error state
+  const [participants, setParticipants] = useState([]);
 
   useEffect(() => {
     fetchCollegeByIcCode(iccode)
@@ -85,6 +88,16 @@ export default function AddParticipantByCollege() {
       })
       .finally(() => setLoading(false));
   }, [eventId]);
+
+  useEffect(() => {
+    fetchParticipantsByEventId(eventId).then((data) => {
+      console.log(data);
+      setParticipants(data);
+      if (data.length > 0) {
+        navigate(-1);
+      }
+    });
+  }, []);
 
   if (loading) {
     return (

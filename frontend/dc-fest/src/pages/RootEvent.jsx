@@ -91,14 +91,6 @@ const RootEvent = () => {
                         <FaTicketAlt className="me-2" />
                         <strong>Type:</strong> {event?.type}
                       </ListGroup.Item>
-                      <ListGroup.Item>
-                        <FaUsers className="me-2" />
-                        <strong>Max Participants:</strong> {event?.maxParticipants || 20}
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <FaUsers className="me-2" />
-                        <strong>Min Participants:</strong> {event?.minParticipants || 1}
-                      </ListGroup.Item>
                     </ListGroup>
                   </div>
                   <hr />

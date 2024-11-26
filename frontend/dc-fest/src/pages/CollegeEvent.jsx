@@ -6,7 +6,7 @@ import { deleteParticipant, fetchParticipantsByEventId } from "../services/parti
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
-import { FaMapMarkerAlt, FaRegClock, FaTicketAlt, FaUsers } from "react-icons/fa";
+import { FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
 
 const CollegeEvent = () => {
   const { iccode, eventId } = useParams();
@@ -117,7 +117,9 @@ const CollegeEvent = () => {
             <Card className="mb-4">
               <Card.Body>
                 <Card.Title className="h1">{availableEvent?.title}</Card.Title>
-                <Card.Subtitle className="my-3 text-muted" style={{fontStyle: "italic"}}>{availableEvent?.oneLiner}</Card.Subtitle>
+                <Card.Subtitle className="my-3 text-muted" style={{ fontStyle: "italic" }}>
+                  {availableEvent?.oneLiner}
+                </Card.Subtitle>
                 <Card.Text>{availableEvent?.description}</Card.Text>
                 <hr />
                 <div>
@@ -126,14 +128,6 @@ const CollegeEvent = () => {
                     <ListGroup.Item>
                       <FaTicketAlt className="me-2" />
                       <strong>Type:</strong> {availableEvent?.type}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <FaUsers className="me-2" />
-                      <strong>Max Participants:</strong> {availableEvent?.maxParticipants || 20}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <FaUsers className="me-2" />
-                      <strong>Min Participants:</strong> {availableEvent?.minParticipants || 1}
                     </ListGroup.Item>
                   </ListGroup>
                 </div>
@@ -213,9 +207,11 @@ const CollegeEvent = () => {
             <div className={`${styles["participants-section"]} shadow p-4 rounded`}>
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="text-secondary">Participants</h4>
-                <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
-                  + Add Participant
-                </Link>
+                {participants.length == 0 && (
+                  <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
+                    + Add Participant
+                  </Link>
+                )}
               </div>
 
               {/* Participants Table */}

@@ -12,6 +12,7 @@ import { fetchCategories } from "../../services/categories-api";
 import { fetchColleges } from "../../services/college-apis";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 import { createParticipants } from "../../services/participants-api";
+import { useNavigate } from "react-router-dom";
 
 const participantObj = {
   name: "",
@@ -25,6 +26,8 @@ const participantObj = {
 };
 
 const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, college }) => {
+  const navigate = useNavigate();
+
   console.log("availableEvent in participation form from add participant page:", availableEvent);
   const [categories, setCategories] = useState([]);
   const [colleges, setColleges] = useState([]);
@@ -109,12 +112,12 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     }
   }, [iccode, selectedCollege]);
 
-//   useEffect(() => {
-//     if (selectedCategory) {
-//       setSelectedAvailableEvent(selectedCategory?.availableEvents[0]);
-//       handleSetDefaultParticipants(selectedCategory?.availableEvents[0]);
-//     }
-//   }, [selectedCategory]);
+  //   useEffect(() => {
+  //     if (selectedCategory) {
+  //       setSelectedAvailableEvent(selectedCategory?.availableEvents[0]);
+  //       handleSetDefaultParticipants(selectedCategory?.availableEvents[0]);
+  //     }
+  //   }, [selectedCategory]);
 
   // Set default participants based on the selected event rules
   useEffect(() => {
@@ -190,7 +193,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       const ruleValue = Number(rule.value);
       switch (rule.eventRuleTemplate.name) {
         case "MIN_PARTICIPANTS":
-          if (participants.length < ruleValue) {
+          if (participants.filter((p) => p.type == "PERFORMER").length < ruleValue) {
             if (isSubmitting) {
               alert(`Oops... There should be minimum ${ruleValue} participants!`);
             }
@@ -200,9 +203,20 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           break;
 
         case "MAX_PARTICIPANTS":
-          if (participants.length > ruleValue) {
+          console.log("MAX_PARTICIPANTS:", participants.filter((p) => p.type == "PERFORMER").length);
+          if (participants.filter((p) => p.type == "PERFORMER").length > ruleValue) {
             if (isSubmitting) {
               alert(`Oops... There should be maximum ${ruleValue} participants!`);
+            }
+            setIsValid(false);
+            return false;
+          }
+          break;
+
+        case "COLLEGE_ACCOMPANIST":
+          if (participants.filter((p) => p.type == "ACCOMPANIST").length > ruleValue) {
+            if (isSubmitting) {
+              alert(`Oops... There should be maximum ${ruleValue} accompanist!`);
             }
             setIsValid(false);
             return false;
@@ -285,6 +299,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     if (successCount > 0) {
       handleSetDefaultParticipants(selectedAvailableEvent);
       alert(`Participants successfully added: ${successCount}`);
+      navigate(-1);
     } else {
       alert("Some erro occured... Please try again");
     }
@@ -311,67 +326,85 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     setParticipants(newParticipants);
   };
 
+  const handleDisabled = () => {
+    const maxMarticipants = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+    const accompanist = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value;
+    if (accompanist) {
+      return !(participants.length < maxMarticipants + accompanist);
+    } else {
+      return !(participants.length < maxMarticipants);
+    }
+  };
+
   return (
-    <Container fluid className="d-flex align-items-center justify-content-center bg-light" id="event-participant-container">
-      <Row className="w-100 h-100 py-2">
-        <Col xs={12} md={8} lg={8} className="mx-auto h-100">
-          <Card className="shadow-lg h-100">
-            <Card.Body className="d-flex flex-column" style={{ height: "700px" }}>
-              <FormHeading type={formType} showAlert={showAlert} setShowAlert={setShowAlert} />
-              <div className="form-scroll-container flex-grow-1">
-                <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                  <SelectFields
-                    iccode={iccode}
-                    selectedCategory={selectedCategory}
-                    setSelectedCategory={setSelectedCategory}
-                    onSetDefaultParticipants={handleSetDefaultParticipants}
-                    categories={categories}
-                    selectedAvailableEvent={selectedAvailableEvent}
-                    setSelectedAvailableEvent={setSelectedAvailableEvent}
-                    colleges={colleges}
-                    selectedCollege={selectedCollege}
-                    setSelectedCollege={setSelectedCollege}
-                    availableEvent={availableEvent}
-                  />
-                  <div id="participants-wrapper">
-                    <h2>Participants Details</h2>
-                    <div id="participants-container" className="d-flex flex-column gap-2">
-                      {participants.map((participant, index) => (
-                        <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} selectedAvailableEvent={selectedAvailableEvent} />
-                      ))}
+    <>
+      <Container fluid className="d-flex align-items-center justify-content-center bg-light" id="event-participant-container">
+        <Row className="w-100 h-100 py-2">
+          <Col xs={12} md={8} lg={8} className="mx-auto h-100">
+            <Card className="shadow-lg h-100">
+              <Card.Body className="d-flex flex-column" style={{ height: "700px" }}>
+                <FormHeading type={formType} showAlert={showAlert} setShowAlert={setShowAlert} />
+                <div className="form-scroll-container flex-grow-1">
+                  <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                    <SelectFields
+                      iccode={iccode}
+                      selectedCategory={selectedCategory}
+                      setSelectedCategory={setSelectedCategory}
+                      onSetDefaultParticipants={handleSetDefaultParticipants}
+                      categories={categories}
+                      selectedAvailableEvent={selectedAvailableEvent}
+                      setSelectedAvailableEvent={setSelectedAvailableEvent}
+                      colleges={colleges}
+                      selectedCollege={selectedCollege}
+                      setSelectedCollege={setSelectedCollege}
+                      availableEvent={availableEvent}
+                    />
+                    <div id="participants-wrapper">
+                      <h2>Participants Details</h2>
+                      <div id="participants-container" className="d-flex flex-column gap-2">
+                        {participants.map((participant, index) => (
+                          <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} selectedAvailableEvent={selectedAvailableEvent} />
+                        ))}
+                      </div>
+                      <div>
+                        {selectedAvailableEvent && (
+                          <button type="button" disabled={handleDisabled()} className="btn btn-success" onClick={handleAddParticipant}>
+                            Add Participant
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      {selectedAvailableEvent && (
-                        <button
-                          type="button"
-                          disabled={selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value <= participants.length}
-                          className="btn btn-success"
-                          onClick={handleAddParticipant}
-                        >
-                          Add Participant
-                        </button>
-                      )}
+                    <div className="d-flex flex-column  justify-content-center">
+                      <Button
+                        disabled={!isValid || loading == true}
+                        variant="primary"
+                        type="submit"
+                        size="lg"
+                        //   className="w-100"
+                      >
+                        {loading ? "Please wait..." : "Register"}
+                      </Button>
+                      {loading && <p>This may take few seconds...</p>}
                     </div>
-                  </div>
-                  <div className="d-flex flex-column  justify-content-center">
-                    <Button
-                      disabled={!isValid || loading == true}
-                      variant="primary"
-                      type="submit"
-                      size="lg"
-                      //   className="w-100"
-                    >
-                      {loading ? "Please wait..." : "Register"}
-                    </Button>
-                    {loading && <p>This may take few seconds...</p>}
-                  </div>
-                </Form>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+                  </Form>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+      <div className="container position-absolute bottom-0 border">
+        <ul className="d-flex justify-content-between align-items-center p-0 m-0 py-2 " style={{ listStyle: "none", backgroundColor: "aliceblue" }}>
+          <li>Min. Participants: {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value}</li>
+          <li>
+            Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS").value}
+          </li>
+          <li>
+            Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "ACCOMPANIST")?.value || 0}
+          </li>
+        </ul>
+      </div>
+    </>
   );
 };
 
