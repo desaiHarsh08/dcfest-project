@@ -345,7 +345,7 @@ public class AuthController {
                 + "<p>Thank you!</p>";
 
         if (otpRequest.getEmail() != null) { // Send email
-            emailServices.sendSimpleMessage(otpRequest.getEmail(), subject, body);
+            emailServices.senOTP(otpRequest.getEmail(), "User", otp);
         } else if (otpRequest.getPhone() != null) { // Send phone
             List<String> messageArr = new ArrayList<>();
             messageArr.add(otp.toString());

@@ -43,8 +43,6 @@ const EventRow = ({ index, availableEventId, collegeId, onRemove }) => {
       <CategoryName categoryId={availableEvent?.eventCategoryId} />
       <td>{availableEvent?.title}</td>
       <td>{participants.length}</td>
-      <td>{participants.length - otseEntry}</td>
-      <td>{otseEntry}</td>
       <td className="d-flex justify-content-center align-items-center">
         <Link to={`${event?.id}`} className="btn btn-primary text-decoration-none">
           View

@@ -124,6 +124,8 @@ public class CollegeServicesImpl implements CollegeServices {
         foundCollege.setIcCode(collegeDto.getIcCode());
         foundCollege.setPhone(collegeDto.getPhone());
         foundCollege.setPoints(collegeDto.getPoints());
+
+        foundCollege.setPassword(this.bCryptPasswordEncoder.encode(collegeDto.getPassword()));
         // Save the changes
         foundCollege = this.collegeRepository.save(foundCollege);
 
@@ -143,11 +145,11 @@ public class CollegeServicesImpl implements CollegeServices {
         foundCollegeModel = this.collegeRepository.save(foundCollegeModel);
 
         // Notify the college and their representative
-        List<CollegeRepresentativeModel> collegeRepresentativeModels = new ArrayList<>();
-        for (CollegeRepresentativeModel collegeRepresentativeModel: collegeRepresentativeModels) {
+        List<CollegeRepresentativeDto> collegeRepresentativeDtos = this.collegeRepresentativeService.getRepresentativesByCollege(collegeDto.getId());
+        for (CollegeRepresentativeDto collegeRepresentativeDto: collegeRepresentativeDtos) {
             this.emailServices.sendResetPasswordEmail(
-                    collegeRepresentativeModel.getEmail(),
-                    collegeRepresentativeModel.getName(),
+                    collegeRepresentativeDto.getEmail(),
+                    collegeRepresentativeDto.getName(),
                     foundCollegeModel.getIcCode(),
                     collegeDto.getPassword(),
                     foundCollegeModel.getName()
@@ -155,7 +157,7 @@ public class CollegeServicesImpl implements CollegeServices {
         }
         // Notify the college
         String collegeEmail = foundCollegeModel.getEmail();
-        if (!collegeRepresentativeModels.stream().anyMatch(c -> c.getEmail().equalsIgnoreCase(collegeEmail))) {
+        if (!collegeRepresentativeDtos.stream().anyMatch(c -> c.getEmail().equalsIgnoreCase(collegeEmail))) {
             this.emailServices.sendResetPasswordEmail(
                     collegeEmail,
                     foundCollegeModel.getName(),

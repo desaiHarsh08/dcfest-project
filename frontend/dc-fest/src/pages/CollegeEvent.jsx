@@ -496,7 +496,6 @@ const CollegeEvent = () => {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>#</th>
                     <th>Type</th>
                     <th>Entry</th>
                     <th>Ranking</th>
@@ -511,7 +510,6 @@ const CollegeEvent = () => {
                         <td>{participant.name}</td>
                         <td>{participant.email}</td>
                         <td style={{ minWidth: "147px" }}>{participant.whatsappNumber}</td>
-                        <td>{participant.group}</td>
                         <td>
                           <Badge bg={participant.type != "PERFORMER" ? "warning" : "info"}>{participant.type}</Badge>
                         </td>

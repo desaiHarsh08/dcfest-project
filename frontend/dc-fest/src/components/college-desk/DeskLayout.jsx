@@ -60,38 +60,34 @@ const DeskLayout = () => {
   return (
     <>
       {college && !college?.detailsUploaded ? (
-        <BasicDetailsForm college={college} setCollege={setCollege} setShowResetPasswordForm={setShowResetPasswordForm} getCollege={getCollege} />
+        <BasicDetailsForm
+          college={college}
+          setCollege={setCollege}
+          setShowResetPasswordForm={setShowResetPasswordForm}
+          getCollege={getCollege}
+        />
       ) : (
         <>
           <Navbar />
           <Container fluid className="py-3">
-            {iccode && !(pathname.endsWith(`/${iccode}`) || pathname.endsWith(`/${iccode}/`)) && (
-              <div className="mb-3">
-                <Link to={`/${iccode}`} className="btn btn-outline-primary">
-                  <FaHome className="me-2" /> Home
-                </Link>
-              </div>
-            )}
+            {iccode &&
+              !(
+                pathname.endsWith(`/${iccode}`) ||
+                pathname.endsWith(`/${iccode}/`)
+              ) && (
+                <div className="mb-3">
+                  <Link to={`/${iccode}`} className="btn btn-outline-primary">
+                    <FaHome className="me-2" /> Home
+                  </Link>
+                </div>
+              )}
 
-            <Card className="mb-4 shadow-sm">
-              <Card.Body>
-                <Card.Title className="text-primary">{college?.name}</Card.Title>
-                <Card.Subtitle className="mb-3 text-muted">Represented by:</Card.Subtitle>
-                <ul className="list-unstyled">
-                  {college?.representatives.map((rep) => (
-                    <li key={`rep-${rep.id}`} className="mb-2">
-                      <FaUserTie className="me-2 text-secondary" />
-                      <strong>{rep.name}</strong> - {rep.email}
-                    </li>
-                  ))}
-                </ul>
-              </Card.Body>
-            </Card>
+            <h1 className="my-3 text-center">{college?.name}</h1>
 
             {college && (
               <Row>
                 <Col xs={12} className="mb-4">
-                  <CollegeParticipation participations={participation}  />
+                  <CollegeParticipation participations={participation} />
                 </Col>
               </Row>
             )}
@@ -99,12 +95,20 @@ const DeskLayout = () => {
             <Card className="shadow-sm">
               <Card.Header className="d-flex justify-content-between align-items-center">
                 <h4 className="m-0">Events List</h4>
-                <Link to={"categories"} className="btn btn-success" style={{ textDecoration: "none" }}>
+                <Link
+                  to={"categories"}
+                  className="btn btn-success"
+                  style={{ textDecoration: "none" }}
+                >
                   <FaPlus className="me-2" /> Enroll Event
                 </Link>
               </Card.Header>
               <Card.Body>
-                <EventsTable events={events} onView={handleView} onRemove={handleRemove} />
+                <EventsTable
+                  events={events}
+                  onView={handleView}
+                  onRemove={handleRemove}
+                />
               </Card.Body>
             </Card>
           </Container>

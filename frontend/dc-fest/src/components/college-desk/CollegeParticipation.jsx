@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "../../styles/CollegeParticipation.module.css"; // Import custom styles
 
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
-import { fetchParticipantsByCollegeId, fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
+import { fetchParticipantsByCollegeId } from "../../services/participants-api";
 
 const CollegeParticipation = ({ participations }) => {
   console.log("in cp, participations:", participations);
@@ -40,7 +40,7 @@ const CollegeParticipation = ({ participations }) => {
                 <i className="fas fa-users"></i>
               </div>
               <h5 className="card-title" style={{ color: "white" }}>
-                Total Events Partcipated
+                Total Events Registered
               </h5>
               <p className={`card-text ${styles.statValue}`} style={{ color: "white" }}>
                 {participations.length}
@@ -56,26 +56,10 @@ const CollegeParticipation = ({ participations }) => {
                 <i className="fas fa-check-circle"></i>
               </div>
               <h5 className="card-title" style={{ color: "white" }}>
-                Student participation
+                Total Students Participated
               </h5>
               <p className={`card-text ${styles.statValue}`} style={{ color: "white" }}>
                 {participants.length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="col-12 col-md-4 mb-4">
-          <div className={`card ${styles["custom-card"]} ${styles.warningCard} h-100`} style={{ backgroundColor: "blue", color: "white" }}>
-            <div className="card-body text-center">
-              <div className={styles.icon}>
-                {/* Add a warning-related icon */}
-                <i className="fas fa-exclamation-circle"></i>
-              </div>
-              <h5 className="card-title" style={{ color: "white" }}>
-                College
-              </h5>
-              <p className={`card-text ${styles.statValue}`} style={{ color: "white" }}>
-                -
               </p>
             </div>
           </div>

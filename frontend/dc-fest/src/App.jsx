@@ -28,6 +28,7 @@ import RootEvent from "./pages/RootEvent";
 import AddEventPage from "./pages/AddEventPage";
 import { AuthProvider } from "./providers/AuthProvider";
 import AddParticipantByCollege from "./pages/AddParticipantByCollege";
+import CollegeSettings from "./pages/CollegeSettings";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
     element: <CollegeDeskLayout />,
     children: [
       { path: "", element: <CollegeDesk /> },
+      { path: "settings", element: <CollegeSettings /> },
       {
         path: ":eventId",
         element: <Outlet />,

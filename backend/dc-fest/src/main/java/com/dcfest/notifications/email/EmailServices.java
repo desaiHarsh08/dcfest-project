@@ -54,6 +54,30 @@ public class EmailServices {
         }
     }
 
+    @Async
+    public void senOTP(String to, String username, Long otp) {
+        String subject = "Verify your account for Umang DCFest 2024";
+
+        try {
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+
+            // Create the HTML content using Thymeleaf template
+            Context context = new Context();
+            context.setVariable("name", username);
+            context.setVariable("otp", otp);
+
+            String htmlContent = templateEngine.process("sendOtp", context);
+            helper.setText(htmlContent, true); // Enable HTML content
+
+            this.emailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
 //    @Async
 //    public void sendParticipantRegistrationEmail(String to, String name, List<VenueModel> venueModels, EventModel eventModel) {
 //        String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle() + " - Umang DCFest 2024";
