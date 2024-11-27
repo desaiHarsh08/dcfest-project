@@ -40,16 +40,22 @@ const EventRow = ({ index, availableEventId, collegeId, onRemove }) => {
   return (
     <tr>
       <td>{index + 1}</td>
-      <CategoryName categoryId={availableEvent?.eventCategoryId} />
-      <td>{availableEvent?.title}</td>
+      <td>
+        <CategoryName categoryId={availableEvent?.eventCategoryId} />
+      </td>
+      <td>
+        <div className="d-flex align-items-center gap-4 w-100">
+          <div className="w-25 d-flex justify-content-end">
+            <img src={`/${availableEvent?.slug}.jpg`} alt={""} style={{ height: "52px", width: "52px", objectFit: "contain" }} />
+          </div>
+          <p className="w-75 d-flex">{availableEvent?.title}</p>
+        </div>
+      </td>
       <td>{participants.length}</td>
       <td className="d-flex justify-content-center align-items-center">
         <Link to={`${event?.id}`} className="btn btn-primary text-decoration-none">
           View
         </Link>
-        {/* <Button variant="danger" onClick={() => onRemove(index)}>
-          Remove
-        </Button> */}
       </td>
     </tr>
   );

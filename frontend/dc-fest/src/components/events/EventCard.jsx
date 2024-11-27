@@ -4,7 +4,7 @@ import { Button, Card, Col, Badge } from "react-bootstrap";
 import styles from "../../styles/EventCard.module.css"; // Import your custom styles
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
-import { doParticipate, fetchParticipationEventsByCollegeId } from "../../services/college-participation-apis";
+import { deleteParticipation, doParticipate, fetchParticipationEventsByCollegeId } from "../../services/college-participation-apis";
 import { FaCheckCircle, FaSpinner, FaEye } from "react-icons/fa";
 
 const EventCard = ({ event, college }) => {
@@ -13,17 +13,21 @@ const EventCard = ({ event, college }) => {
   const [participation, setParticipation] = useState([]);
   const [flag, setFlag] = useState(false);
 
-  console.log(event);
-
   useEffect(() => {
     if (college?.id) {
-      fetchParticipationEventsByCollegeId(college.id)
-        .then((data) => {
-          setParticipation(data);
-        })
-        .catch((err) => console.log(err));
+      getParticipationByCollegeId(college.id);
     }
-  }, [college, flag]);
+  }, [college, flag, isLoading]);
+
+  const getParticipationByCollegeId = async (collegeId) => {
+    try {
+      const response = await fetchParticipationEventsByCollegeId(collegeId);
+      setParticipation(response);
+    } catch (error) {
+      alert("Unable to fetch the participation details!");
+      console.log(error);
+    }
+  };
 
   // Function to truncate the description to a set word limit
   const truncateDescription = (text, wordLimit) => {
@@ -38,9 +42,28 @@ const EventCard = ({ event, college }) => {
         collegeId: user?.id,
         availableEventId: event?.id,
       });
+      alert("Participation done successfully!");
       setFlag((prev) => !prev);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteParticipation = async (participationId) => {
+    let isConfirmed = confirm(`Are you sure that you want to remove your college's participation for "${event?.title}"?`);
+    if (!isConfirmed) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await deleteParticipation(participationId);
+      console.log("Removed the participation,", response);
+      setParticipation(participation.filter((p) => p.id != participationId));
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong... Please try again later!");
     } finally {
       setIsLoading(false);
     }
@@ -69,9 +92,14 @@ const EventCard = ({ event, college }) => {
                   View
                 </Link>
               ) : participation.some((p) => p?.availableEventId === event.id) ? (
-                <Button variant="success" disabled className="d-flex align-items-center">
+                <Button
+                  variant="success"
+                  disabled={isLoading}
+                  className="d-flex align-items-center"
+                  onClick={() => handleDeleteParticipation(participation.find((p) => p?.availableEventId === event.id).id)}
+                >
                   <FaCheckCircle className="me-2" />
-                  Enrolled
+                  {isLoading ? "Please wait..." : "Enrolled"}
                 </Button>
               ) : (
                 !event?.closeRegistration && (

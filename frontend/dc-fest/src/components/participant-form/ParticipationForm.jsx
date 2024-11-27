@@ -225,25 +225,65 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           }
           break;
 
-        case "MALE_PARTICIPANTS":
-          if (participants.filter((p) => p.male).length !== ruleValue) {
-            if (isSubmitting) {
-              alert(`Oops... There should be ${ruleValue} MALE participants!`);
-            }
-            setIsValid(false);
-            return false;
-          }
-          break;
+        case "MALE_PARTICIPANTS": {
+          const maxParticipants = selectedAvailableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+          const minParticipants = selectedAvailableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value;
 
-        case "FEMALE_PARTICIPANTS":
-          if (participants.filter((p) => !p.male).length !== ruleValue) {
-            if (isSubmitting) {
-              alert(`Oops... There should be female ${ruleValue} participants!`);
+          if (ruleValue == maxParticipants) {
+            if (participants.filter((p) => p.male && p.type == "PERFORMER").length < minParticipants || participants.filter((p) => !p.male && p.type == "PERFORMER").length != 0) {
+              if (isSubmitting) {
+                alert(`Oops... There should be ${minParticipants} MALE participants!`);
+              }
+              setIsValid(false);
+              return false;
             }
-            setIsValid(false);
-            return false;
+          } else {
+            if (participants.filter((p) => p.male).length !== ruleValue) {
+              if (isSubmitting) {
+                alert(`Oops... There should be ${ruleValue} MALE participants!`);
+              }
+              setIsValid(false);
+              return false;
+            }
           }
           break;
+        }
+
+        case "FEMALE_PARTICIPANTS": {
+          const maxParticipants = selectedAvailableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+          const minParticipants = selectedAvailableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value;
+
+          if (ruleValue == maxParticipants) {
+            if (participants.filter((p) => !p.male && p.type == "PERFORMER").length < minParticipants || participants.filter((p) => p.male && p.type == "PERFORMER").length != 0) {
+              if (isSubmitting) {
+                alert(`Oops... There should be ${minParticipants} FEMALE participants!`);
+              }
+              setIsValid(false);
+              return false;
+            }
+          } else {
+            if (participants.filter((p) => !p.male).length !== ruleValue) {
+              if (isSubmitting) {
+                alert(`Oops... There should be ${ruleValue} FEMALE participants!`);
+              }
+              setIsValid(false);
+              return false;
+            }
+          }
+          break;
+        }
+
+        // case "FEMALE_PARTICIPANTS":
+        //   if (participants.filter((p) => !p.male).length !== ruleValue) {
+        //     if (isSubmitting) {
+        //       alert(
+        //         `Oops... There should be female ${ruleValue} participants!`
+        //       );
+        //     }
+        //     setIsValid(false);
+        //     return false;
+        //   }
+        //   break;
 
         // case "COLLEGE_ACOMPANIST":
         //   if (participants.filter((p) => !p.type == "ACCOMPANIST").length !== ruleValue) {
@@ -308,6 +348,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
         await createParticipants(participantData);
         successCount++;
       } catch (error) {
+        alert("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
         console.error("Error creating participant:", error);
       }
     }

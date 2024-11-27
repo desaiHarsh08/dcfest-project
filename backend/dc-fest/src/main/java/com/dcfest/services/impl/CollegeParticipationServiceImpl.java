@@ -2,12 +2,13 @@ package com.dcfest.services.impl;
 
 import com.dcfest.dtos.CollegeParticipationDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
-import com.dcfest.models.AvailableEventModel;
-import com.dcfest.models.CollegeModel;
-import com.dcfest.models.CollegeParticipationModel;
+import com.dcfest.models.*;
 import com.dcfest.repositories.CollegeParticipationRepository;
+import com.dcfest.repositories.EventRepository;
+import com.dcfest.repositories.ParticipantRepository;
 import com.dcfest.services.CollegeParticipationService;
 
+import com.dcfest.services.ParticipantServices;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,15 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
     @Autowired
     private CollegeParticipationRepository participationRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private ParticipantRepository participantRepository;
+
+    @Autowired
+    private ParticipantServices participantServices;
 
     @Override
     public CollegeParticipationDto createParticipation(CollegeParticipationDto participationDto) {
@@ -98,11 +108,25 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
     @Override
     public boolean deleteParticipation(Long id) {
-        if (participationRepository.existsById(id)) {
-            participationRepository.deleteById(id);
-            return true;
+        // Check for whether college's participation exist.
+        CollegeParticipationModel existCollegeParticipationModel = this.participationRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("No college_participation exist for id: " + id)
+        );
+        // Fetch the event from available_event
+        EventModel eventModel = this.eventRepository.findByAvailableEvent(new AvailableEventModel(existCollegeParticipationModel.getAvailableEvent().getId())).orElse(null);
+        if (eventModel == null) {
+            throw new IllegalArgumentException("Unable to find the event from the available_event");
         }
-        return false; // Return false if the participation was not found
+        // Delete the participants
+        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), existCollegeParticipationModel.getCollege().getId());
+        for (ParticipantModel participantModel: participantModels) {
+            if (!this.participantServices.deleteParticipant(participantModel.getId())) {
+                throw new IllegalArgumentException("Unable to delete the participants");
+            }
+        }
+        // Delete the college's participation
+        participationRepository.deleteById(id);
+        return true;
     }
 
     private CollegeParticipationDto collegeParticipationModelToDto(

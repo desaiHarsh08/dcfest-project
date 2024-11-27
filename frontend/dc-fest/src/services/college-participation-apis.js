@@ -4,7 +4,7 @@ export const fetchParticipationEvents = async () => {
     const response = await API.get('/api/participations', {
         withCredentials: true
     });
-    
+
     return response.data;
 };
 
@@ -12,12 +12,9 @@ export const fetchParticipationEventsByCollegeId = async (collegeId) => {
     const response = await API.get(`/api/participations/college/${collegeId}`, {
         withCredentials: true
     });
-    
+
     return response.data;
 };
-
-
-
 
 export const doParticipate = async (collegeParticiption) => {
     console.log('registering college event :', collegeParticiption)
@@ -27,6 +24,14 @@ export const doParticipate = async (collegeParticiption) => {
             "Content-Type": "application/json"
         }
     });
-    
+
+    return response.data;
+};
+
+export const deleteParticipation = async (collegeParticiptionId) => {
+    const response = await API.delete(`/api/participations/${collegeParticiptionId}`, {
+        withCredentials: true
+    });
+
     return response.data;
 };

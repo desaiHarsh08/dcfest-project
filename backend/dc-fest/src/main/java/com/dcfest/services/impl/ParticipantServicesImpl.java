@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import com.dcfest.constants.EventType;
 import com.dcfest.constants.RoundStatus;
 import com.dcfest.constants.RoundType;
+import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.models.*;
 import com.dcfest.repositories.*;
 import org.modelmapper.ModelMapper;
@@ -87,15 +88,20 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(availableEventModel);
 
+        // Retrieve the REGISTERED_SLOTS_AVAILABLE
         EventRuleModel eventRuleModel = eventRuleModels.stream().filter(ele -> ele.getEventRuleTemplate().getId().equals(6L)).findAny().orElse(null);
         if (eventRuleModel == null) {
             throw new IllegalArgumentException("Unable to get the Maximum slots available");
         }
 
-        int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
-        int slotsOccupied = this.getParticipantByEventId(eventModel.getId()).size();
-        if (slotsOccupied == maxSlotsAvailable) {
-            throw new IllegalArgumentException("No slots available for participating!");
+        // Check the unique college
+        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(participantDto.getEventIds().get(0), participantDto.getCollegeId());
+        if (participantModels.isEmpty()) { // Unique (New) College participant
+            int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
+            Long slotsOccupied = this.participantRepository.countDistinctColleges(participantDto.getEventIds().get(0), participantDto.getCollegeId());
+            if (slotsOccupied >= maxSlotsAvailable) {
+                throw new RegisteredSlotsAvailableException("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+            }
         }
 
         // Create the participant
@@ -353,6 +359,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         foundParticipantModel.setEmail(participantDto.getEmail());
         foundParticipantModel.setPresent(participantDto.isPresent());
         foundParticipantModel.setWhatsappNumber(participantDto.getWhatsappNumber());
+        foundParticipantModel.setMale(participantDto.isMale());
 
         // Save the changes
         foundParticipantModel = this.participantRepository.save(foundParticipantModel);

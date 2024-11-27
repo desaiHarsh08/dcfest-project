@@ -1,5 +1,7 @@
 package com.dcfest.advice;
 
+import com.dcfest.exceptions.OTSESlotsException;
+import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.utils.ErrorMessage;
 
@@ -56,6 +58,22 @@ public class DcFestControllerAdvice {
         ex.printStackTrace();
         return new ResponseEntity<>(
                 new ErrorMessage(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND, ex.getMessage()),
+                HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RegisteredSlotsAvailableException.class)
+    public ResponseEntity<?> handleRegisteredSlotsException(RegisteredSlotsAvailableException ex) {
+        ex.printStackTrace();
+        return new ResponseEntity<>(
+                new ErrorMessage(HttpStatus.UNPROCESSABLE_ENTITY.value(), HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()),
+                HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(OTSESlotsException.class)
+    public ResponseEntity<?> handleOTSESlotsException(OTSESlotsException ex) {
+        ex.printStackTrace();
+        return new ResponseEntity<>(
+                new ErrorMessage(HttpStatus.CONFLICT.value(), HttpStatus.CONFLICT, ex.getMessage()),
                 HttpStatus.NOT_FOUND);
     }
 

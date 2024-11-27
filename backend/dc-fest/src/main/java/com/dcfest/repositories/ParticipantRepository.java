@@ -38,4 +38,9 @@ public interface ParticipantRepository extends JpaRepository<ParticipantModel, L
     @Query("DELETE FROM ParticipantModel p WHERE p.college.id = :collegeId")
     void deleteByCollegeId(@Param("collegeId") Long collegeId);
 
+    @Query("SELECT COUNT(DISTINCT p.college.id) " +
+            "FROM ParticipantModel p JOIN p.events e " +
+            "WHERE e.id = :eventId AND p.college.id = :collegeId")
+    Long countDistinctColleges(@Param("eventId") Long eventId, @Param("collegeId") Long collegeId);
+
 }

@@ -124,8 +124,7 @@ public class CollegeServicesImpl implements CollegeServices {
         foundCollege.setIcCode(collegeDto.getIcCode());
         foundCollege.setPhone(collegeDto.getPhone());
         foundCollege.setPoints(collegeDto.getPoints());
-
-        foundCollege.setPassword(this.bCryptPasswordEncoder.encode(collegeDto.getPassword()));
+        
         // Save the changes
         foundCollege = this.collegeRepository.save(foundCollege);
 

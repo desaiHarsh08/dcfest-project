@@ -5,9 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const CollegeRankingPage = () => {
     // Sample data for demonstration with ranking
     const colleges = [
-        { rank: 1, name: "ABC College", icCode: "IC123", points: 85, participants: 10 },
-        { rank: 2, name: "XYZ University", icCode: "IC456", points: 90, participants: 12 },
-        { rank: 3, name: "LMN Institute", icCode: "IC789", points: 75, participants: 8 },
+       
     ];
 
     const navigate = useNavigate();
@@ -44,11 +42,11 @@ const CollegeRankingPage = () => {
                 <tbody>
                     {colleges.map((college, index) => (
                         <tr key={index}>
-                            <td>{college.rank}</td> {/* Display rank */}
-                            <td>{college.name}</td>
-                            <td>{college.icCode}</td>
-                            <td>{college.points}</td>
-                            <td>{college.participants}</td>
+                            <td>{college?.rank}</td> {/* Display rank */}
+                            <td>{college?.name}</td>
+                            <td>{college?.icCode}</td>
+                            <td>{college?.points}</td>
+                            <td>{college?.participants}</td>
                         </tr>
                     ))}
                 </tbody>
