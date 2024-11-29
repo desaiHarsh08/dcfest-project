@@ -28,6 +28,14 @@ export const fetchParticipantsByCollegeId = async (collegeId) => {
     return response.data;
 };
 
+export const fetchParticipants = async (page) => {
+    const response = await API.get(`/api/participants?page=${page}`, {
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
 
 export const fetchParticipantsByEventIdAndCollegeId = async (eventId, collegeId) => {
     const response = await API.get(`/api/participants/college-event?eventId=${eventId}&collegeId=${collegeId}`, {

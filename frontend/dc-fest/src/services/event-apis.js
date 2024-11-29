@@ -32,3 +32,10 @@ export const fetchEventByAvailableEventId = async (availableEventId) => {
     
     return response.data;
 };
+export const fetchEvents = async () => {
+    const response = await API.get(`/api/events`, {
+        withCredentials: true
+    });
+    
+    return response.data;
+};
