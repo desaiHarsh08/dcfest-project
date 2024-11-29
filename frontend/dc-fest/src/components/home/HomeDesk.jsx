@@ -46,20 +46,36 @@ const HomeDesk = () => {
       link: "event-desk",
     },
     {
+        title: "Scoring Department",
+        icon: <FaClipboardCheck size={40} color="#ffffff" />,
+        bgColor: "linear-gradient(135deg, #FF512F 0%, #F09819 100%)",
+        imgSrc: scoringDepartmentImage,
+        description: "Access scoring details and results.",
+        link: "scoring-department",
+      },
+      {
+        title: "Teams Ranking",
+        icon: <FaFlagCheckered size={40} color="#ffffff" />,
+        bgColor: "linear-gradient(135deg, #FF512F 0%, #DD2476 100%)",
+        imgSrc: teamsRanking,
+        description: "View team rankings based on performance.",
+        link: "teams-ranking",
+      },
+      {
+        title: "College Rankings",
+        icon: <FaTrophy size={40} color="#ffffff" />,
+        bgColor: "linear-gradient(135deg, #DCE35B 0%, #45B649 100%)",
+        imgSrc: collegeRanking,
+        description: "Check the current rankings of colleges.",
+        link: "college-rankings",
+      },
+    {
       title: "Upload College Lists",
       icon: <FaUsers size={40} color="#ffffff" />,
       bgColor: "linear-gradient(135deg, #F2994A 0%, #F2C94C 100%)",
       imgSrc: upload,
       description: "Upload lists of participating college teams.",
       link: "college-teams-participated",
-    },
-    {
-      title: "College Rankings",
-      icon: <FaTrophy size={40} color="#ffffff" />,
-      bgColor: "linear-gradient(135deg, #DCE35B 0%, #45B649 100%)",
-      imgSrc: collegeRanking,
-      description: "Check the current rankings of colleges.",
-      link: "college-rankings",
     },
     {
       title: "Add Event",
@@ -70,29 +86,14 @@ const HomeDesk = () => {
       link: "add-event",
     },
     {
-      title: "Teams Ranking",
-      icon: <FaFlagCheckered size={40} color="#ffffff" />,
-      bgColor: "linear-gradient(135deg, #FF512F 0%, #DD2476 100%)",
-      imgSrc: teamsRanking,
-      description: "View team rankings based on performance.",
-      link: "teams-ranking",
-    },
-    {
-      title: "Help Desk",
+      title: "Get Reports",
       icon: <FaLifeRing size={40} color="#ffffff" />,
       bgColor: "linear-gradient(135deg, #6A11CB 0%, #2575FC 100%)",
       imgSrc: helpDeskImage,
-      description: "Get support and answers to your questions.",
+      description: "Get the reports of the events participated.",
       link: "help-desk",
     },
-    {
-      title: "Scoring Department",
-      icon: <FaClipboardCheck size={40} color="#ffffff" />,
-      bgColor: "linear-gradient(135deg, #FF512F 0%, #F09819 100%)",
-      imgSrc: scoringDepartmentImage,
-      description: "Access scoring details and results.",
-      link: "scoring-department",
-    },
+    
   ];
 
   return (
@@ -114,7 +115,7 @@ const HomeDesk = () => {
       <ParticipationStats />
       <Row className="d-flex justify-content-center align-items-stretch h-75">
         {cardsData.map((card, index) => (
-          <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4">
+          <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
             <Link to={card.link} className="text-decoration-none h-100">
               <Card
                 className="text-center h-100 shadow-lg border-0 custom-card"
@@ -130,7 +131,7 @@ const HomeDesk = () => {
                 </div>
                 <Card.Body className="p-4">
                   <div className="icon-container mb-3">{card.icon}</div>
-                  <Card.Title className="card-title ">{card.title}</Card.Title>
+                  <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
                   <Card.Text className="card-text text-white fw-bold fs-5">
                     {card.description}
                   </Card.Text>

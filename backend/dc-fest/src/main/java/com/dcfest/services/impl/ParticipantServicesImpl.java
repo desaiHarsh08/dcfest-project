@@ -1,5 +1,7 @@
 package com.dcfest.services.impl;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.awt.image.BufferedImage;
@@ -7,9 +9,8 @@ import java.io.ByteArrayOutputStream;
 import java.security.SecureRandom;
 import javax.imageio.ImageIO;
 
-import com.dcfest.constants.EventType;
-import com.dcfest.constants.RoundStatus;
-import com.dcfest.constants.RoundType;
+import com.dcfest.constants.*;
+import com.dcfest.exceptions.OTSESlotsException;
 import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.models.*;
 import com.dcfest.repositories.*;
@@ -91,18 +92,53 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // Retrieve the REGISTERED_SLOTS_AVAILABLE
         EventRuleModel eventRuleModel = eventRuleModels.stream().filter(ele -> ele.getEventRuleTemplate().getId().equals(6L)).findAny().orElse(null);
         if (eventRuleModel == null) {
-            throw new IllegalArgumentException("Unable to get the Maximum slots available");
+            throw new RegisteredSlotsAvailableException("Unable to get the Maximum slots available");
         }
+        // Retrieve the OTSE_SLOTS
+        EventRuleModel otseSlotsEventRule = eventRuleModels.stream().filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("OTSE_SLOTS")).findAny().orElse(null);
+        if (otseSlotsEventRule == null) {
+            throw new IllegalArgumentException("Unable to get the OTSE slots available rule");
+        }
+
 
         // Check the unique college
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(participantDto.getEventIds().get(0), participantDto.getCollegeId());
         if (participantModels.isEmpty()) { // Unique (New) College participant
             int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
-            Long slotsOccupied = this.participantRepository.countDistinctColleges(participantDto.getEventIds().get(0), participantDto.getCollegeId());
+            Long slotsOccupied = this.participantRepository.countDistinctColleges(participantDto.getEventIds().get(0));
             if (slotsOccupied >= maxSlotsAvailable) {
-                throw new RegisteredSlotsAvailableException("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+//                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy"); // Define the date format
+//                LocalDate comparisonDate = LocalDate.parse("10 Dec, 2024", formatter);
+// LocalDate.now().isAfter(comparisonDate)
+                if (participantDto.getEntryType().equals(EntryType.NORMAL)) {
+                    throw new RegisteredSlotsAvailableException("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+                }
+                int otseSlotsAvailable = Integer.parseInt(otseSlotsEventRule.getValue());
+                if (otseSlotsAvailable == 0) {
+                    throw new OTSESlotsException("No OTSE slots available");
+                }
+
+                // Grab the unique colleges
+                List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDto.getEventIds().get(0));
+                List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream().filter(p -> p.getType().equals(ParticipantType.PERFORMER)).toList();
+                List<Long> collegesIds = new ArrayList<>();
+                for (ParticipantModel participantModel: fiteredParticipantsByType) {
+                    if (collegesIds.contains(participantModel.getCollege().getId())) {
+                        continue;
+                    }
+                    collegesIds.add(participantModel.getCollege().getId());
+                }
+
+
+                int otseSlotsOccupied = collegesIds.size();
+                if (otseSlotsOccupied > otseSlotsAvailable) {
+                    throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
+                }
+
             }
         }
+
+
 
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
@@ -118,8 +154,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
         }
         participantModel.setGroup(group);
 
-        String qrData = this.generateAlphanumericUUID();
-        participantModel.setQrcode(qrData);
+//        String qrData = this.generateAlphanumericUUID();
+//        participantModel.setQrcode(qrData);
 
         // Save the participant
         participantModel = this.participantRepository.save(participantModel);
@@ -151,6 +187,11 @@ public class ParticipantServicesImpl implements ParticipantServices {
 //        }
 
         return this.participantModelToDto(participantModel);
+    }
+
+    @Override
+    public  Long slotsOccupied(Long eventId) {
+        return this.participantRepository.countDistinctColleges(eventId);
     }
 
     private String generateAlphanumericUUID() {

@@ -30,6 +30,11 @@ public class ParticipantController {
         return new ResponseEntity<>(participants, HttpStatus.OK);
     }
 
+    @GetMapping("/occupied-slots")
+    public ResponseEntity<Long> getSlotsOccupied(@RequestParam("eventId") Long eventId) {
+        return new ResponseEntity<>(participantServices.slotsOccupied(eventId), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ParticipantDto> getParticipantById(@PathVariable Long id) {
         ParticipantDto participant = participantServices.getParticipantById(id);

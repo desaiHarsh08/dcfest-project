@@ -1,18 +1,18 @@
 package com.dcfest.services.impl;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.dcfest.dtos.*;
 import com.dcfest.models.*;
+import com.dcfest.repositories.*;
 import com.dcfest.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dcfest.exceptions.ResourceNotFoundException;
-import com.dcfest.repositories.AvailableEventRepository;
-import com.dcfest.repositories.NotificationLogRepository;
 
 @Service
 public class AvailableEventServicesImpl implements AvailableEventServices {
@@ -37,6 +37,18 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
     @Autowired
     private CollegeParticipationService collegeParticipationService;
+
+    @Autowired
+    private ParticipantServices participantServices;
+
+    @Autowired
+    private ParticipantRepository participantRepository;
+
+    @Autowired
+    private CollegeParticipationRepository collegeParticipationRepository;
+
+    @Autowired
+    private CollegeRepository collegeRepository;
 
     @Override
     public AvailableEventDto createAvailableEvent(AvailableEventDto availableEventDto) {
@@ -123,6 +135,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         foundAvailableEventModel.setCloseRegistration(availableEventDto.isCloseRegistration());
         // Save the changes
         foundAvailableEventModel = this.availableEventRepository.save(foundAvailableEventModel);
+
         // Update the event_rules
         List<EventRuleDto> existingEventRuleDtos = this.eventRuleServices.getEventRulesByAvailableEventId(foundAvailableEventModel.getId());
         for (EventRuleDto eventRuleDto : availableEventDto.getEventRules()) {
@@ -134,6 +147,11 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
                 this.eventRuleServices.deleteEventRule(eventRuleDto.getId());
             }
         }
+        // Post close registration
+        if (availableEventDto.isCloseRegistration()) {
+            this.postCloseRegistrationProcess(foundAvailableEventModel, existingEventRuleDtos);
+        }
+
         // Update the round
         List<RoundDto> existingRoundDtos = this.roundServices.getRoundsByAvailableEventId(foundAvailableEventModel.getId());
         if (!existingRoundDtos.isEmpty()) {
@@ -149,6 +167,50 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         }
 
         return this.availableEventModelToDto(foundAvailableEventModel);
+    }
+
+    @Override
+    public void postCloseRegistrationProcess(AvailableEventModel availableEventModel, List<EventRuleDto> eventRuleDtos) {
+        EventDto eventDto = this.eventServices.getEventByAvailableEventId(availableEventModel.getId());
+        if (eventDto == null) {
+            return;
+        }
+        // Fetch all the participants
+        List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(eventDto.getId());
+        // Fetch colleges participated
+        List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
+        // Sort by college's name
+        collegeParticipationModels.sort(Comparator.comparing(college -> college.getCollege().getName()));
+        // Assign the teamNumber to the participants
+        int count = 0;
+        EventRuleDto registeredAvailableSlotsRule = eventRuleDtos.stream().filter(e -> e.getEventRuleTemplate().getId().equals(6L)).findFirst().orElseThrow(
+                () -> new IllegalArgumentException("unable to find the registered_slots_available_rule")
+        );
+        EventRuleDto otseSlotsRule = eventRuleDtos.stream().filter(e -> e.getEventRuleTemplate().getName().equals("OTSE_SLOTS")).findFirst().orElseThrow(
+                () -> new IllegalArgumentException("unable to find the otse_slots_rule")
+        );
+        for (CollegeParticipationModel collegeParticipationModel: collegeParticipationModels) {
+
+            if (count >= (Integer.parseInt(registeredAvailableSlotsRule.getValue()) + Integer.parseInt(otseSlotsRule.getValue()))) {
+                break;
+            }
+            count = count + 1;
+            // Fetch the college details: -
+            CollegeModel collegeModel = this.collegeRepository.findById(collegeParticipationModel.getCollege().getId()).orElse(null);
+            if (collegeModel == null) {
+                continue;
+            }
+            // Generate the team_number
+            String teamNumber = collegeModel.getIcCode() + "_" + String.format("%02d", count);
+            // Set the team_number
+            allParticipantModels = allParticipantModels.stream().map(p -> {
+                if (p.getCollege().getId().equals(collegeModel.getId()) && p.getEvents().stream().anyMatch(e -> e.getId().equals(eventDto.getId()))) {
+                    p.setTeamNumber(teamNumber);
+                }
+                return p;
+            }).toList();
+        }
+
     }
 
     @Override

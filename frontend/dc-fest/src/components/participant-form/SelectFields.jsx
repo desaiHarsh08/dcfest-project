@@ -14,9 +14,7 @@ const SelectFields = ({
   iccode,
   availableEvent,
 }) => {
-  console.log("in selects-field, iccode:", iccode);
-  console.log("in selects-field, iccode:", availableEvent);
-  console.log("in selects-field, selectedCollege:", selectedCollege);
+  
   return (
     <div id="event-participant-main-field" className="d-flex gap-3 w-100">
       <Form.Group className="field-card mb-4">

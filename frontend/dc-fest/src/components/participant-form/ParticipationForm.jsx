@@ -28,7 +28,6 @@ const participantObj = {
 const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, college }) => {
   const navigate = useNavigate();
 
-  console.log("availableEvent in participation form from add participant page:", availableEvent);
   const [categories, setCategories] = useState([]);
   const [colleges, setColleges] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState();
@@ -46,7 +45,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       .then((data) => {
         setCategories(data);
         if (availableEvent) {
-          console.log("in if of pf");
           const tmpCategory = data.find((ele) => ele.id == availableEvent.eventCategoryId);
           setSelectedCategory(tmpCategory);
           setSelectedAvailableEvent(availableEvent);
@@ -86,25 +84,19 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
   useEffect(() => {
     if (!selectedCollege) {
-      console.log("Fetching colleges...");
       fetchColleges()
         .then((data) => {
           setColleges(data);
-          console.log("Fetched colleges:", data);
 
           if (iccode) {
-            console.log("Matching college with iccode:", iccode);
             const tmpSelectedCollege = data.find((ele) => ele.icCode === iccode);
 
             if (tmpSelectedCollege) {
-              console.log("Setting selected college based on iccode:", tmpSelectedCollege.id);
               setSelectedCollege(tmpSelectedCollege);
             } else {
-              console.warn("No matching college found for iccode. Falling back to first college.");
               setSelectedCollege(data[0]);
             }
           } else {
-            console.log("No iccode provided. Setting first college by default.");
             setSelectedCollege(data[0]?.id);
           }
         })
@@ -121,7 +113,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
   // Set default participants based on the selected event rules
   useEffect(() => {
-    console.log("selectedAvailableEvent:", selectedAvailableEvent);
     if (selectedAvailableEvent) {
       handleSetDefaultParticipants(selectedAvailableEvent);
     }
@@ -159,7 +150,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
   // Function to initialize participants based on event rules
   const handleSetDefaultParticipants = (selectedAvailableEvent) => {
-    console.log("in default set, selectedAvailableEvent:", selectedAvailableEvent);
     const newParticipants = [];
     const minParticipantsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "MIN_PARTICIPANTS");
     const accompanistRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "COLLEGE_ACCOMPANIST");
@@ -205,7 +195,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           break;
 
         case "MAX_PARTICIPANTS":
-          console.log("MAX_PARTICIPANTS:", participants.filter((p) => p.type == "PERFORMER").length);
           if (participants.filter((p) => p.type == "PERFORMER").length > ruleValue) {
             if (isSubmitting) {
               alert(`Oops... There should be maximum ${ruleValue} participants!`);
@@ -326,7 +315,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     // Check participants if already registered
     try {
       const res = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
-      console.log("Checked from db, participants:", res);
       if (res.length > 0) {
         alert("Your college had already added the participants, you may edit the details now!");
         navigate(-1);
@@ -348,8 +336,8 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
         await createParticipants(participantData);
         successCount++;
       } catch (error) {
-        alert("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
-        console.error("Error creating participant:", error);
+        alert(error.response.data.message);
+        console.error("Error creating participant:", error.response.data.message);
       }
     }
     if (successCount > 0) {
@@ -397,13 +385,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   const handleDisabled = () => {
     const maxMarticipants = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
     const accompanist = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value;
-    console.log("maxMarticipants:", maxMarticipants);
-    console.log("accompanist:", accompanist);
-    // if (accompanist) {
-    //   return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist && participants.length < maxMarticipants + accompanist);
-    // } else {
-    //   return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
-    // }
 
     return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
   };
@@ -411,13 +392,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   const handleDisabledAccompanist = () => {
     const maxMarticipants = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
     const accompanist = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value;
-    console.log("maxMarticipants:", maxMarticipants);
-    console.log("accompanist:", accompanist);
-    // if (accompanist) {
-    //   return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist && participants.length < maxMarticipants + accompanist);
-    // } else {
-    //   return !(participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants);
-    // }
 
     return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist);
   };

@@ -15,6 +15,8 @@ public interface ParticipantServices {
 
     List<ParticipantDto> getParticipantByCollegeId(Long collegeId);
 
+    Long slotsOccupied(Long eventId);
+
     PageResponse<ParticipantDto> getParticipantByIsPresent(int pageNumber, boolean isPresent);
 
     List<ParticipantDto> getParticipantByEventId(Long eventId);

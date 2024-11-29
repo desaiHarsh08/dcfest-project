@@ -1,5 +1,5 @@
-// AuthProvider.jsx
-import React, { useState, useCallback, useEffect, createContext } from "react";
+/* eslint-disable react/prop-types */
+import { useState, useCallback, useEffect, createContext } from "react";
 import { API } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import "../styles/LoadingDots.css"; // Make sure to import the CSS file
@@ -31,11 +31,7 @@ export const AuthProvider = ({ children }) => {
 
   const generateNewToken = useCallback(async () => {
     try {
-      const response = await API.post(
-        "/auth/refresh-token",
-        {},
-        { withCredentials: true }
-      );
+      const response = await API.post("/auth/refresh-token", {}, { withCredentials: true });
       setAccessToken(response.data.accessToken);
       setUser(response.data.user);
       return response.data.accessToken;
@@ -56,6 +52,7 @@ export const AuthProvider = ({ children }) => {
       (config) => {
         if (accessToken) {
           config.headers["Authorization"] = `Bearer ${accessToken}`;
+          config.headers["email"] = `${user?.email}`;
         }
         return config;
       },
@@ -70,9 +67,7 @@ export const AuthProvider = ({ children }) => {
           originalRequest._retry = true;
           const newAccessToken = await generateNewToken();
           if (newAccessToken) {
-            originalRequest.headers[
-              "Authorization"
-            ] = `Bearer ${newAccessToken}`;
+            originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
             return API(originalRequest);
           }
         }

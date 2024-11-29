@@ -41,7 +41,7 @@ import { useEffect, useState } from "react";
 import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
-import { fetchParticipantsByEventId, fetchParticipantsByEventIdAndCollegeId } from "../services/participants-api";
+import { fetchParticipantsByEventId, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent } from "../services/participants-api";
 
 export default function AddParticipantByCollege() {
   const navigate = useNavigate();
@@ -81,6 +81,18 @@ export default function AddParticipantByCollege() {
       .then((availableEventData) => {
         console.log("Available Event data:", availableEventData);
         setAvailableEvent(availableEventData);
+        fetchSlotsOccupiedForEvent(eventId)
+          .then((data) => {
+            console.log("slots occupied data:", data);
+            // const isPastDeadline = new Date() > new Date("10 Dec 2024");
+            console.log("availableEventData:", availableEventData);
+            const maxSlots = availableEventData.eventRules.find((r) => r.eventRuleTemplate.name == "REGISTERED_SLOTS_AVAILABLE")?.value;
+            console.log("REGISTERED_SLOTS_AVAILABLE:", maxSlots);
+            if (data == 0 || data >= maxSlots) {
+              navigate(`/${iccode}/${eventId}`);
+            }
+          })
+          .catch((err) => console.log("Unable to get slots occupied data", err));
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
@@ -95,7 +107,7 @@ export default function AddParticipantByCollege() {
         console.log(data);
         setParticipants(data);
         if (data.length > 0) {
-          navigate(-1);
+          navigate(`/${iccode}/${eventId}`);
         }
       });
     }

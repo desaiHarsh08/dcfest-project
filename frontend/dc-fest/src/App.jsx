@@ -54,7 +54,11 @@ const router = createBrowserRouter([
   },
   {
     path: ":iccode",
-    element: <CollegeDeskLayout />,
+    element: (
+      <AuthProvider>
+        <CollegeDeskLayout />
+      </AuthProvider>
+    ),
     children: [
       { path: "", element: <CollegeDesk /> },
       { path: "settings", element: <CollegeSettings /> },

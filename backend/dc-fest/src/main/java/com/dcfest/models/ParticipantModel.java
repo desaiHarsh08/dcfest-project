@@ -44,6 +44,8 @@ public class ParticipantModel {
     @Column(name = "group_type")
     private String group;
 
+    private String teamNumber;
+
     @Column(nullable = false, unique = true)
     private String qrcode;
 

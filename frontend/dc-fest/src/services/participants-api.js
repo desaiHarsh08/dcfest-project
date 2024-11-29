@@ -36,6 +36,15 @@ export const fetchParticipants = async (page) => {
     return response.data;
 };
 
+export const fetchSlotsOccupiedForEvent = async (eventId) => {
+    console.log("in api, eventId:", eventId)
+    const response = await API.get(`/api/participants/occupied-slots?eventId=${eventId}`, {
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
 
 export const fetchParticipantsByEventIdAndCollegeId = async (eventId, collegeId) => {
     const response = await API.get(`/api/participants/college-event?eventId=${eventId}&collegeId=${collegeId}`, {
@@ -46,6 +55,7 @@ export const fetchParticipantsByEventIdAndCollegeId = async (eventId, collegeId)
 };
 
 export const updateParticipant = async (participant) => {
+    console.log("in api, participant:", participant);
     const response = await API.put(`/api/participants/${participant?.id}`, participant, {
         withCredentials: true,
     });

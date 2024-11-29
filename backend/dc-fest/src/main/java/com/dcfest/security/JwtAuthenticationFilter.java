@@ -1,5 +1,6 @@
 package com.dcfest.security;
 
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.Arrays;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -40,13 +43,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Get the token from the request's header
         String bearerToken = request.getHeader("Authorization"); // "Bearer <token>"
+        String userName = request.getHeader("email"); // "Bearer <token>"
+
 
         System.out.println("bearerToken: " + bearerToken);
         System.out.println("email/iccode: " + email);
 
         // Check if the token is correct
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+        if (userName != null && bearerToken != null && bearerToken.startsWith("Bearer ")) {
             token = bearerToken.substring(7);
+
+//            // Get the email from cookies, set by server
+//            if (request.getCookies() != null) {
+//                String cookieEmail = Arrays.stream(request.getCookies())
+//                        .filter(cookie -> "email".equals(cookie.getName()))
+//                        .map(Cookie::getValue)
+//                        .findFirst()
+//                        .orElse(null);
+//                System.out.println("cookieEmail: " + cookieEmail);
+//                System.out.println("userName: " + userName);
+//                if (!userName.equals(cookieEmail)) {
+//                    throw new SecurityException("Authentication failed... Please try to login again!");
+//                }
+//            }
+
             try {
                 email = this.jwtTokenHelper.getUsernameFromToken(token);
             } catch (IllegalArgumentException | MalformedJwtException illegalArgumentException) {

@@ -129,6 +129,7 @@ public class AuthController {
             authResponse.setUser(this.collegeServices.getCollegeByIcCode(collegeModel.getIcCode()));
         }
 
+
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
 
@@ -348,7 +349,6 @@ public class AuthController {
             emailServices.senOTP(otpRequest.getEmail(), "User", otp);
         } else if (otpRequest.getPhone() != null) { // Send phone
             List<String> messageArr = new ArrayList<>();
-            messageArr.add("User");
             messageArr.add(otp.toString());
             this.whatsAppService.sendWhatsAppMessage(
                     otpRequest.getPhone(),
