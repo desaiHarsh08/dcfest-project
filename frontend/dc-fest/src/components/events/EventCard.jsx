@@ -4,7 +4,7 @@ import { Button, Card, Col, Badge } from "react-bootstrap";
 import styles from "../../styles/EventCard.module.css"; // Import your custom styles
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
-import { deleteParticipation, doParticipate, fetchParticipationEventsByCollegeId } from "../../services/college-participation-apis";
+import { deleteParticipation, doParticipate, fetchParticipationEventsByCollegeId, fetchParticipationsByAvailableEventId } from "../../services/college-participation-apis";
 import { FaCheckCircle, FaSpinner, FaEye } from "react-icons/fa";
 
 const EventCard = ({ event, college }) => {
@@ -12,6 +12,7 @@ const EventCard = ({ event, college }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [participation, setParticipation] = useState([]);
   const [flag, setFlag] = useState(false);
+  const [slotsOccupied, setSlotsOccupied] = useState(null);
 
   useEffect(() => {
     if (college?.id) {
@@ -45,9 +46,28 @@ const EventCard = ({ event, college }) => {
       alert("Participation done successfully!");
       setFlag((prev) => !prev);
     } catch (error) {
+      alert(error.response.data.message);
       console.log(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (event?.id) {
+      fetchSlotsOccupied(event.id);
+    }
+  }, [event]);
+
+  const fetchSlotsOccupied = async (availableEventId) => {
+    try {
+      console.log("here fetching");
+      const response = await fetchParticipationsByAvailableEventId(availableEventId);
+      console.log("response:", event?.title, response.length);
+      setSlotsOccupied(response.length);
+    } catch (error) {
+      console.log(error);
+      alert("Unable to fetch the details!");
     }
   };
 
@@ -101,19 +121,19 @@ const EventCard = ({ event, college }) => {
                   <FaCheckCircle className="me-2" />
                   {isLoading ? "Please wait..." : "Enrolled"}
                 </Button>
+              ) : !event?.closeRegistration && slotsOccupied < event?.eventRules.find((ele) => ele.eventRuleTemplate.name === "REGISTERED_SLOTS_AVAILABLE")?.value ? (
+                <Button variant="primary" onClick={handleCollegeRegister} disabled={isLoading} className="d-flex align-items-center">
+                  {isLoading ? (
+                    <>
+                      <FaSpinner className="me-2 spinner-border-sm" />
+                      Registering...
+                    </>
+                  ) : (
+                    "Register"
+                  )}
+                </Button>
               ) : (
-                !event?.closeRegistration && (
-                  <Button variant="primary" onClick={handleCollegeRegister} disabled={isLoading} className="d-flex align-items-center">
-                    {isLoading ? (
-                      <>
-                        <FaSpinner className="me-2 spinner-border-sm" />
-                        Registering...
-                      </>
-                    ) : (
-                      "Register"
-                    )}
-                  </Button>
-                )
+                <Button disabled variant="danger">Full</Button>
               )}
             </div>
           </Card.Body>

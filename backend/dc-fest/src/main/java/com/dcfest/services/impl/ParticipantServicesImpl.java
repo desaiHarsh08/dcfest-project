@@ -69,6 +69,11 @@ public class ParticipantServicesImpl implements ParticipantServices {
     private CollegeRepository collegeRepository;
 
     @Autowired
+    private CollegeParticipationRepository collegeParticipationRepository;
+
+
+
+    @Autowired
     private EventRuleRepository eventRuleRepository;
 
     @Override
@@ -104,8 +109,12 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // Check the unique college
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(participantDto.getEventIds().get(0), participantDto.getCollegeId());
         if (participantModels.isEmpty()) { // Unique (New) College participant
+
             int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
-            Long slotsOccupied = this.participantRepository.countDistinctColleges(participantDto.getEventIds().get(0));
+            List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
+
+            int slotsOccupied = collegeParticipationModels.size();
+
             if (slotsOccupied >= maxSlotsAvailable) {
 //                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy"); // Define the date format
 //                LocalDate comparisonDate = LocalDate.parse("10 Dec, 2024", formatter);

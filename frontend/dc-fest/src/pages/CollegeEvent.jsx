@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Badge, Card, ListGroup, Modal, Form } from "react-bootstrap";
 import Navbar from "../components/Navbar/Navbar";
 import { Link, useParams } from "react-router-dom";
-import { createParticipants, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent, updateParticipant } from "../services/participants-api";
+import { createParticipants, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, updateParticipant } from "../services/participants-api";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
 import { FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
 import { fetchCollegeByIcCode } from "../services/college-apis";
+import { fetchParticipationsByAvailableEventId } from "../services/college-participation-apis";
 
 const participantObj = {
   name: "",
@@ -32,7 +33,6 @@ const CollegeEvent = () => {
   const [addFlag, setAddFlag] = useState(false);
   const [isValid, setIsValid] = useState(false);
   const [slotsOccupied, setSlotsOccupied] = useState();
-
   const [college, setCollege] = useState();
 
   const handleClose = () => setShow(false);
@@ -45,13 +45,7 @@ const CollegeEvent = () => {
       .then((data) => {
         fetchAvailableEventsById(data.availableEventId).then((data) => {
           setAvailableEvent(data);
-
-          fetchSlotsOccupiedForEvent(eventId)
-            .then((data) => {
-              console.log("slots occupied data:", data);
-              setSlotsOccupied(data);
-            })
-            .catch((err) => console.log("Unable to get slots occupied data", err));
+          fetchSlotsOccupied(data?.id);
         });
       })
       .catch((err) => console.log(err));
@@ -74,6 +68,18 @@ const CollegeEvent = () => {
       getParticipants();
     }
   }, [college]);
+
+  const fetchSlotsOccupied = async (availableEventId) => {
+    try {
+      console.log("here fetching");
+      const response = await fetchParticipationsByAvailableEventId(availableEventId);
+      console.log("response:", availableEvent?.title, response.length);
+      setSlotsOccupied(response.length);
+    } catch (error) {
+      console.log(error);
+      alert("Unable to fetch the details!");
+    }
+  };
 
   const getParticipants = async () => {
     try {
@@ -555,11 +561,15 @@ const CollegeEvent = () => {
                       </button>
                     )}
                 </div>
-                {college && participants.length == 0 && new Date() < new Date("2024-12-10") && (
-                  <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
-                    Register Participant
-                  </Link>
-                )}
+                {college &&
+                  participants.length == 0 &&
+                  slotsOccupied &&
+                  slotsOccupied < availableEvent.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value &&
+                  new Date() < new Date("2024-12-10") && (
+                    <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
+                      Register Participant
+                    </Link>
+                  )}
               </div>
 
               {/* Participants Table */}

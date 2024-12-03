@@ -1,47 +1,11 @@
-/* eslint-disable no-unused-vars */
-// import { useParams } from "react-router-dom";
-// import ParticipationForm from "../components/participant-form/ParticipationForm";
-// import { useEffect, useState } from "react";
-// import { fetchEventByAvailableEventId, fetchEventById } from "../services/event-apis";
-// import { fetchAvailableEventsById } from "../services/available-events-apis";
-
-// export default function AddParticipantByCollege() {
-//   const { iccode, eventId } = useParams();
-//   console.log(iccode);
-
-//   const [event, setEvent] = useState();
-//   const [availableEvent, setAvailableEvent] = useState();
-//   const [loading, setLoading] = useState(false);
-
-//   useEffect(() => {
-//     fetchEventById(eventId)
-//       .then((data) => {
-//         setEvent(data);
-//         console.log(data);
-//         fetchAvailableEventsById(data.availableEventId)
-//           .then((data) => {
-//             console.log("available event: ", data);
-//             setAvailableEvent(data);
-//           })
-//           .catch((err) => console.log(err));
-//       })
-//       .catch((err) => console.log("Unable to fetch the event data", err));
-//   }, [eventId]);
-
-//   return (
-//     <div className="container vh-100 d-flex justify-content-center align-items-center">
-//       <ParticipationForm formType="REGISTRATION" iccode={iccode} availableEvent={availableEvent} />;
-//     </div>
-//   );
-// }
-
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ParticipationForm from "../components/participant-form/ParticipationForm";
 import { useEffect, useState } from "react";
 import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
-import { fetchParticipantsByEventId, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent } from "../services/participants-api";
+import { fetchParticipantsByEventIdAndCollegeId } from "../services/participants-api";
+import { fetchParticipationsByAvailableEventId } from "../services/college-participation-apis";
 
 export default function AddParticipantByCollege() {
   const navigate = useNavigate();
@@ -54,6 +18,7 @@ export default function AddParticipantByCollege() {
   const [loading, setLoading] = useState(true); // Track loading state
   const [error, setError] = useState(null); // Track error state
   const [participants, setParticipants] = useState([]);
+  const [slotsOccupied, setSlotsOccupied] = useState();
 
   useEffect(() => {
     fetchCollegeByIcCode(iccode)
@@ -81,18 +46,7 @@ export default function AddParticipantByCollege() {
       .then((availableEventData) => {
         console.log("Available Event data:", availableEventData);
         setAvailableEvent(availableEventData);
-        fetchSlotsOccupiedForEvent(eventId)
-          .then((data) => {
-            console.log("slots occupied data:", data);
-            // const isPastDeadline = new Date() > new Date("10 Dec 2024");
-            console.log("availableEventData:", availableEventData);
-            const maxSlots = availableEventData.eventRules.find((r) => r.eventRuleTemplate.name == "REGISTERED_SLOTS_AVAILABLE")?.value;
-            console.log("REGISTERED_SLOTS_AVAILABLE:", maxSlots);
-            if (data == 0 || data >= maxSlots) {
-              navigate(`/${iccode}/${eventId}`);
-            }
-          })
-          .catch((err) => console.log("Unable to get slots occupied data", err));
+        fetchSlotsOccupied(availableEventData.id);
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
@@ -102,16 +56,32 @@ export default function AddParticipantByCollege() {
   }, [eventId]);
 
   useEffect(() => {
-    if (event && college) {
+    if (event && college, slotsOccupied, availableEvent) {
       fetchParticipantsByEventIdAndCollegeId(eventId, college.id).then((data) => {
         console.log(data);
         setParticipants(data);
-        if (data.length > 0) {
+        const maxSlotsAvailable = availableEvent.eventRules?.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value;
+        
+        if (!maxSlotsAvailable) navigate(`/${iccode}/${eventId}`);
+
+        if (data.length > 0 || slotsOccupied >= maxSlotsAvailable) {
           navigate(`/${iccode}/${eventId}`);
         }
       });
     }
-  }, [eventId, college]);
+  }, [eventId, college, slotsOccupied, availableEvent]);
+
+  const fetchSlotsOccupied = async (availableEventId) => {
+    try {
+      console.log("here fetching");
+      const response = await fetchParticipationsByAvailableEventId(availableEventId);
+      console.log("response:", availableEvent?.title, response.length);
+      setSlotsOccupied(response.length);
+    } catch (error) {
+      console.log(error);
+      alert("Unable to fetch the details!");
+    }
+  };
 
   if (loading) {
     return (

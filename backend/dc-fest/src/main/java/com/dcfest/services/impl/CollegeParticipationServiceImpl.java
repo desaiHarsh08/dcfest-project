@@ -2,12 +2,10 @@ package com.dcfest.services.impl;
 
 import com.dcfest.dtos.CollegeDto;
 import com.dcfest.dtos.CollegeParticipationDto;
+import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.*;
-import com.dcfest.repositories.CollegeParticipationRepository;
-import com.dcfest.repositories.CollegeRepository;
-import com.dcfest.repositories.EventRepository;
-import com.dcfest.repositories.ParticipantRepository;
+import com.dcfest.repositories.*;
 import com.dcfest.services.CollegeParticipationService;
 
 import com.dcfest.services.ParticipantServices;
@@ -40,8 +38,27 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     @Autowired
     private ParticipantServices participantServices;
 
+    @Autowired
+    private EventRuleRepository eventRuleRepository;
+
     @Override
     public CollegeParticipationDto createParticipation(CollegeParticipationDto participationDto) {
+        List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
+        EventRuleModel eventRuleModel = eventRuleModels.stream().filter(e -> e.getEventRuleTemplate().getName().equalsIgnoreCase("REGISTERED_SLOTS_AVAILABLE")).findFirst().orElse(null);
+        if(eventRuleModel == null){
+            throw new IllegalArgumentException("Unable to find event rule.");
+        }
+
+        int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
+
+        List<CollegeParticipationModel> collegeParticipationModels =  this.participationRepository.findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
+
+        int slotsOccupied = collegeParticipationModels.size();
+
+        if(slotsOccupied >= maxSlotsAvailable){
+            throw new RegisteredSlotsAvailableException("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+        }
+
         // Create the college's participation
         CollegeParticipationModel collegeParticipationModel = new CollegeParticipationModel();
         collegeParticipationModel.setAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));

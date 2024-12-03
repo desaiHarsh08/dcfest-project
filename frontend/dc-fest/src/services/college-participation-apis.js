@@ -50,6 +50,17 @@ export const fetchAllParticipations = async () => {
     return response.data;
 };
 
+export const fetchParticipationsByAvailableEventId = async (availableEventId) => {
+    const response = await API.get(`/api/participations/available-event/${availableEventId}`, {
+        withCredentials: true,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    return response.data;
+};
+
 export const deleteParticipation = async (collegeParticiptionId) => {
     const response = await API.delete(`/api/participations/${collegeParticiptionId}`, {
         withCredentials: true
