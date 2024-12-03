@@ -1,6 +1,7 @@
 package com.dcfest.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.dcfest.models.AvailableEventModel;
@@ -18,5 +19,13 @@ public interface CollegeParticipationRepository extends JpaRepository<CollegePar
 
     Optional<CollegeParticipationModel> findByCollegeAndAvailableEvent(CollegeModel college,
             AvailableEventModel availableEvent);
+
+    @Query("""
+        SELECT cp 
+        FROM CollegeParticipationModel cp 
+        JOIN EventModel e ON e.availableEvent.id = cp.availableEvent.id 
+        WHERE e.participants IS EMPTY
+    """)
+    List<CollegeParticipationModel> findByEventWithEmptyParticipants();
 
 }

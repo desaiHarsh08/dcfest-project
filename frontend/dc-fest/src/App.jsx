@@ -15,7 +15,6 @@ import EventDeskPage from "./pages/EventDeskPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
 import EventAttendancePage from "./pages/EventAttendancePage";
 import EventParticipationPage from "./pages/EventParticipationPage";
-import HelpDesk from "./pages/HelpDesk";
 import ScoringDepartment from "./pages/ScoringDepartment";
 import CollegeDesk from "./pages/CollegeDesk";
 import CollegeEvent from "./pages/CollegeEvent";
@@ -29,6 +28,7 @@ import AddEventPage from "./pages/AddEventPage";
 import { AuthProvider } from "./providers/AuthProvider";
 import AddParticipantByCollege from "./pages/AddParticipantByCollege";
 import CollegeSettings from "./pages/CollegeSettings";
+import GetReports from "./pages/GetReports";
 
 const router = createBrowserRouter([
   {
@@ -160,7 +160,7 @@ const router = createBrowserRouter([
       },
       { path: "college-rankings", element: <CollegeRankingPage /> },
       { path: "teams-ranking", element: <TeamsRankingPage /> },
-      { path: "help-desk", element: <HelpDesk /> },
+      { path: "get-reports", element: <GetReports /> },
       { path: "scoring-department", element: <ScoringDepartment /> },
     ],
   },

@@ -1,6 +1,7 @@
 package com.dcfest.dtos;
 
 import com.dcfest.constants.EntryType;
+import com.dcfest.constants.HandPreferenceType;
 import com.dcfest.constants.ParticipantType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,4 +26,5 @@ public class ParticipantDto {
     private List<Long> eventIds;    // Event IDs as a list of Longs (no JPA annotations)
     private ParticipantType type = ParticipantType.PERFORMER;
     private EntryType entryType = EntryType.NORMAL;
+    private HandPreferenceType handPreference = HandPreferenceType.RIGHT_HANDED;
 }

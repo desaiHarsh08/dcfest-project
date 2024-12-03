@@ -123,6 +123,23 @@ const CollegeList = ({ colleges, setColleges, loading }) => {
     saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `college-participants.xlsx`);
   };
 
+  const handleDownloadCollegeParticipants = async (collegeId) => {
+    const college = colleges.find((c) => c.id == collegeId);
+    const participants = await getParticipants(collegeId);
+    if (!participants || participants.length == 0) {
+      alert("No data available for downloading!");
+      return;
+    }
+
+    const formattedData = handleFormatData(participants);
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `participants-${colleges.find((c) => c.id === collegeId)?.name}.xlsx`);
+  };
+
   const handleFormatData = (participants) => {
     let formattedData = [];
     participants.forEach((participant, index) => {
@@ -153,45 +170,48 @@ const CollegeList = ({ colleges, setColleges, loading }) => {
     return formattedData;
   };
 
-  const handleDownload = async (collegeId) => {
-    console.log("college:", collegeId);
-    const participants = await getParticipants(collegeId);
-    if (!participants?.length) {
-      alert("No data available for download.");
-      return;
+  const handleDownload = async () => {
+    // const formattedData = handleFormatData(participants);
+    const formattedData = [];
+    for (let i = 0, c = 0; i < colleges.length; i++) {
+      for (let j = 0; j < colleges[i].representatives.length; j++) {
+        console.log("adding college: ", colleges[i].icCode, ++c);
+        formattedData.push({
+          srno: formattedData.length + i + j + 1,
+          iccode: colleges[i].icCode,
+          name: colleges[i].name,
+          email: colleges[i].email,
+          phone: colleges[i].phone,
+          points: colleges[i].points,
+          rep_name: colleges[i].representatives[j].name,
+          rep_email: colleges[i].representatives[j].email,
+          rep_phone: colleges[i].representatives[j].phone,
+          rep_whatsappNumber: colleges[i].representatives[j].whatsappNumber,
+        });
+      }
     }
 
-    const formattedData = handleFormatData(participants);
     const worksheet = XLSX.utils.json_to_sheet(formattedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `participants-${colleges.find((c) => c.id === collegeId)?.name}.xlsx`);
+    saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `colleges.xlsx`);
   };
 
   return (
     <>
-      <div className="d-flex justify-content-center my-3">
-        <div>
-          <Button
-            variant="success"
-            className="download-all-btn d-flex align-items-center gap-2"
-            onClick={handleDownloadAll}
-            disabled={availableEvents.length == 0 || events.length == 0 || !colleges || colleges.length == 0 || !categories || categories.length == 0 || loadingDownLoad}
-          >
-            <AiOutlineDownload size={20} />
-            {loadingDownLoad ? "Please wait..." : "Download All Reports"}
-          </Button>
-          {loadingDownLoad && (
-            <p>
-              Total Pages: {currentPage}/{pages}
-            </p>
-          )}
-        </div>
-      </div>
+      <div className="d-flex justify-content-center my-3"></div>
       <Row className="mt-5 justify-content-center">
         <Col md={10}>
-          <h2 className="text-center mb-4">List of Colleges</h2>
+          <div className="d-flex justify-content-between align-items-center  my-3">
+            <div className="d-flex align-items-center">
+              <h2 className="m-0">List of Colleges</h2>
+            </div>
+            <Button variant="success" className="download-all-btn d-flex align-items-center gap-2" onClick={handleDownload} disabled={!colleges || colleges.length == 0}>
+              <AiOutlineDownload size={20} />
+              {loadingDownLoad ? "Please wait..." : "Download List"}
+            </Button>
+          </div>
           <Table striped bordered hover responsive>
             <thead>
               <tr>
@@ -211,7 +231,7 @@ const CollegeList = ({ colleges, setColleges, loading }) => {
                   college={college}
                   index={index}
                   onDelete={handleShowModal}
-                  onDownload={handleDownload}
+                  onDownload={handleDownloadCollegeParticipants}
                   loading={loadingId === college.id}
                   downloading={downloadingId === college.id}
                 />

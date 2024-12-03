@@ -145,6 +145,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         participantModel.setCollege(collegeModel);
         participantModel.setEntryType(participantModel.getEntryType());
         participantModel.getEvents().add(eventModel);
+        participantModel.setHandPreference(participantDto.getHandPreference());
         String group;
         if (availableEventModel.getType().equals(EventType.TEAM)) {
             group = collegeModel.getIcCode() + "_T" + (this.participantRepository.count() + 1);
@@ -401,6 +402,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         foundParticipantModel.setPresent(participantDto.isPresent());
         foundParticipantModel.setWhatsappNumber(participantDto.getWhatsappNumber());
         foundParticipantModel.setMale(participantDto.isMale());
+        foundParticipantModel.setHandPreference(participantDto.getHandPreference());
 
         // Save the changes
         foundParticipantModel = this.participantRepository.save(foundParticipantModel);

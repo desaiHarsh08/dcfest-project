@@ -100,7 +100,7 @@ const TeamsParticipatedPage = () => {
   }
 
   return (
-    <Container className="my-5 pb-5">
+    <Container className="pb-5">
       <button
         className="back-button"
         onClick={() => navigate(-1)} // Navigates to the previous page

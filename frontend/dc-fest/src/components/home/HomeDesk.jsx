@@ -1,15 +1,6 @@
 import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import {
-  FaClipboardList,
-  FaRegClipboard,
-  FaUsers,
-  FaTrophy,
-  FaFlagCheckered,
-  FaLifeRing,
-  FaClipboardCheck,
-  FaUserPlus,
-} from "react-icons/fa";
+import { FaClipboardList, FaRegClipboard, FaUsers, FaTrophy, FaFlagCheckered, FaLifeRing, FaClipboardCheck, FaUserPlus } from "react-icons/fa";
 import "../../styles/CardGrid.css"; // Ensure updated styles
 import totalEvents from "../../assets/img/events2.jpg";
 import eventRegistration from "../../assets/img/event-registeration2.jpg";
@@ -27,7 +18,7 @@ import { MdEmail } from "react-icons/md";
 
 const HomeDesk = () => {
   const { user } = useContext(AuthContext);
-  console.log("welcome Dear User!", user)
+  console.log("welcome Dear User!", user);
   const cardsData = [
     {
       title: "Categories",
@@ -46,29 +37,29 @@ const HomeDesk = () => {
       link: "event-desk",
     },
     {
-        title: "Scoring Department",
-        icon: <FaClipboardCheck size={40} color="#ffffff" />,
-        bgColor: "linear-gradient(135deg, #FF512F 0%, #F09819 100%)",
-        imgSrc: scoringDepartmentImage,
-        description: "Access scoring details and results.",
-        link: "scoring-department",
-      },
-      {
-        title: "Teams Ranking",
-        icon: <FaFlagCheckered size={40} color="#ffffff" />,
-        bgColor: "linear-gradient(135deg, #FF512F 0%, #DD2476 100%)",
-        imgSrc: teamsRanking,
-        description: "View team rankings based on performance.",
-        link: "teams-ranking",
-      },
-      {
-        title: "College Rankings",
-        icon: <FaTrophy size={40} color="#ffffff" />,
-        bgColor: "linear-gradient(135deg, #DCE35B 0%, #45B649 100%)",
-        imgSrc: collegeRanking,
-        description: "Check the current rankings of colleges.",
-        link: "college-rankings",
-      },
+      title: "Scoring Department",
+      icon: <FaClipboardCheck size={40} color="#ffffff" />,
+      bgColor: "linear-gradient(135deg, #FF512F 0%, #F09819 100%)",
+      imgSrc: scoringDepartmentImage,
+      description: "Access scoring details and results.",
+      link: "scoring-department",
+    },
+    {
+      title: "Teams Ranking",
+      icon: <FaFlagCheckered size={40} color="#ffffff" />,
+      bgColor: "linear-gradient(135deg, #FF512F 0%, #DD2476 100%)",
+      imgSrc: teamsRanking,
+      description: "View team rankings based on performance.",
+      link: "teams-ranking",
+    },
+    {
+      title: "College Rankings",
+      icon: <FaTrophy size={40} color="#ffffff" />,
+      bgColor: "linear-gradient(135deg, #DCE35B 0%, #45B649 100%)",
+      imgSrc: collegeRanking,
+      description: "Check the current rankings of colleges.",
+      link: "college-rankings",
+    },
     {
       title: "Upload College Lists",
       icon: <FaUsers size={40} color="#ffffff" />,
@@ -91,9 +82,8 @@ const HomeDesk = () => {
       bgColor: "linear-gradient(135deg, #6A11CB 0%, #2575FC 100%)",
       imgSrc: helpDeskImage,
       description: "Get the reports of the events participated.",
-      link: "help-desk",
+      link: "get-reports",
     },
-    
   ];
 
   return (
@@ -117,24 +107,14 @@ const HomeDesk = () => {
         {cardsData.map((card, index) => (
           <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
             <Link to={card.link} className="text-decoration-none h-100">
-              <Card
-                className="text-center h-100 shadow-lg border-0 custom-card"
-                style={{ background: card.bgColor }}
-              >
+              <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
                 <div className="card-overlay">
-                  <Card.Img
-                    variant="top"
-                    src={card.imgSrc}
-                    alt={card.title}
-                    className="card-image"
-                  />
+                  <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
                 </div>
                 <Card.Body className="p-4">
                   <div className="icon-container mb-3">{card.icon}</div>
                   <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
-                  <Card.Text className="card-text text-white fw-bold fs-5">
-                    {card.description}
-                  </Card.Text>
+                  <Card.Text className="card-text text-white fw-bold fs-5">{card.description}</Card.Text>
                 </Card.Body>
               </Card>
             </Link>

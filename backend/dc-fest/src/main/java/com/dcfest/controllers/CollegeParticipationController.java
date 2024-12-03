@@ -4,6 +4,7 @@ import com.dcfest.dtos.CollegeParticipationDto;
 import com.dcfest.models.CollegeParticipationModel;
 import com.dcfest.services.CollegeParticipationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,6 +51,15 @@ public class CollegeParticipationController {
                 availableEventId);
         return ResponseEntity.ok(participation);
     }
+
+    @GetMapping("/interested-colleges")
+    public ResponseEntity<List<CollegeParticipationDto>> getInterestedColleges() {
+    return new ResponseEntity<>(this.collegeParticipationService.getInterestedColleges(), HttpStatus.OK);
+    }
+
+
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteParticipation(@PathVariable Long id) {

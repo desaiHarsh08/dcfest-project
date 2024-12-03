@@ -28,6 +28,28 @@ export const doParticipate = async (collegeParticiption) => {
     return response.data;
 };
 
+export const interestedColleges = async () => {
+    const response = await API.get('/api/participations/interested-colleges', {
+        withCredentials: true,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    return response.data;
+};
+
+export const fetchAllParticipations = async () => {
+    const response = await API.get('/api/participations', {
+        withCredentials: true,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    return response.data;
+};
+
 export const deleteParticipation = async (collegeParticiptionId) => {
     const response = await API.delete(`/api/participations/${collegeParticiptionId}`, {
         withCredentials: true

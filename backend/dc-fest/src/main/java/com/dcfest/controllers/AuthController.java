@@ -358,6 +358,26 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Retrieve cookies from the request
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("email".equals(cookie.getName()) || "refreshToken".equals(cookie.getName())) {
+                    // Clear the cookie
+                    cookie.setValue(null);
+                    cookie.setMaxAge(0);
+                    cookie.setPath("/");
+                    response.addCookie(cookie);
+                }
+            }
+        }
+
+        // Respond to the client
+        return ResponseEntity.ok("Logged out successfully.");
+    }
+
 
 
 }

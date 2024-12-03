@@ -23,6 +23,7 @@ const participantObj = {
   type: "PERFORMER",
   entryType: "NORMAL",
   eventIds: [],
+  handPreference: "RIGHT_HANDED",
 };
 
 const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, college }) => {

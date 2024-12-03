@@ -18,4 +18,6 @@ public interface CollegeRepository extends JpaRepository<CollegeModel, Long> {
     @Query("SELECT c FROM CollegeModel c ORDER BY c.points DESC")
     List<CollegeModel> findAllOrderByPointsDesc();
 
+
+
 }

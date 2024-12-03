@@ -48,6 +48,20 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
           <option value={"PERFORMER"}>PERFORMER</option>
         </Form.Select>
       </Form.Group>
+
+      <Form.Group className="mb-5">
+        <Form.Label>Hand Preference </Form.Label>
+        <Form.Select
+          aria-label="Default select example"
+          name="handPreference"
+          value={participant.handPreference}
+          onChange={(e) => onChange(e, participantIndex)}
+          //   disabled={!selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}
+        >
+          <option value={"LEFT_HANDED"}>LEFT_HANDED</option>
+          <option value={"RIGHT_HANDED"}>RIGHT_HANDED</option>
+        </Form.Select>
+      </Form.Group>
     </div>
   );
 };

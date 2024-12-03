@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dcfest.constants.EntryType;
+import com.dcfest.constants.HandPreferenceType;
 import com.dcfest.constants.ParticipantType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -62,6 +63,9 @@ public class ParticipantModel {
 
     @Enumerated(EnumType.STRING)
     private EntryType entryType = EntryType.NORMAL;
+
+    @Enumerated(EnumType.STRING)
+    private HandPreferenceType handPreference = HandPreferenceType.RIGHT_HANDED;
 
     public ParticipantModel(Long id) {
         this.id = id;

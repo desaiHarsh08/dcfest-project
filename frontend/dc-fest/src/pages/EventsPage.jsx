@@ -40,7 +40,7 @@ const EventsPage = () => {
 
   return (
     <>
-      <Navbar />
+      {iccode && <Navbar />}
       <Container>
         {/* Breadcrumbs */}
         <Row>

@@ -2,6 +2,7 @@ package com.dcfest.services;
 
 import java.util.List;
 
+import com.dcfest.dtos.CollegeDto;
 import com.dcfest.dtos.CollegeParticipationDto;
 import com.dcfest.models.CollegeParticipationModel;
 
@@ -18,5 +19,7 @@ public interface CollegeParticipationService {
     CollegeParticipationDto getByCollegeAndAvailableEvent(Long collegeId, Long availableEventId);
 
     boolean deleteParticipation(Long id);
+    List<CollegeParticipationDto> getInterestedColleges();
+
 
 }

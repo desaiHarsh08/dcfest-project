@@ -1,9 +1,11 @@
 package com.dcfest.services.impl;
 
+import com.dcfest.dtos.CollegeDto;
 import com.dcfest.dtos.CollegeParticipationDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.*;
 import com.dcfest.repositories.CollegeParticipationRepository;
+import com.dcfest.repositories.CollegeRepository;
 import com.dcfest.repositories.EventRepository;
 import com.dcfest.repositories.ParticipantRepository;
 import com.dcfest.services.CollegeParticipationService;
@@ -28,6 +30,9 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
     @Autowired
     private EventRepository eventRepository;
+
+    @Autowired
+    private CollegeRepository collegeRepository;
 
     @Autowired
     private ParticipantRepository participantRepository;
@@ -141,4 +146,15 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         return collegeParticipationDto;
     }
+
+    public List<CollegeParticipationDto> getInterestedColleges() {
+        List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository.findByEventWithEmptyParticipants();
+        if (collegeParticipationModels.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+
+        return collegeParticipationModels.stream().map(this::collegeParticipationModelToDto).collect(Collectors.toList());
+    }
+
 }

@@ -555,13 +555,11 @@ const CollegeEvent = () => {
                       </button>
                     )}
                 </div>
-                {college &&
-                  participants.length == 0 &&
-                  new Date() < new Date("2024-12-10") && (
-                    <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
-                      Register Participant
-                    </Link>
-                  )}
+                {college && participants.length == 0 && new Date() < new Date("2024-12-10") && (
+                  <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
+                    Register Participant
+                  </Link>
+                )}
               </div>
 
               {/* Participants Table */}
@@ -690,6 +688,19 @@ const CollegeEvent = () => {
                 >
                   <option value={"ACCOMPANIST"}>ACCOMPANIST</option>
                   <option value={"PERFORMER"}>PERFORMER</option>
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-5">
+                <Form.Label>Hand Preference</Form.Label>
+                <Form.Select
+                  aria-label="Default select example"
+                  name="handPreference"
+                  value={selectedParticipant.handPreference}
+                  onChange={handleEditFormChange}
+                  //   disabled={!selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}
+                >
+                  <option value={"LEFT_HANDED"}>LEFT_HANDED</option>
+                  <option value={"RIGHT_HANDED"}>RIGHT_HANDED</option>
                 </Form.Select>
               </Form.Group>
             </Form>
