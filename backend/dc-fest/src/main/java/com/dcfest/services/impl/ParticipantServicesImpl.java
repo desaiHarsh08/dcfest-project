@@ -113,7 +113,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
             int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
             List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
 
-            int slotsOccupied = collegeParticipationModels.size();
+            int slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId()).intValue();
+            System.out.println("Slots occupied: " + slotsOccupied);
 
             if (slotsOccupied >= maxSlotsAvailable) {
 //                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy"); // Define the date format
@@ -201,7 +202,10 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Override
     public  Long slotsOccupied(Long eventId) {
-        return this.participantRepository.countDistinctColleges(eventId);
+        System.out.println("eventId: " + eventId);
+        Long tmpSlotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventId);
+        System.out.println(tmpSlotsOccupied);
+        return tmpSlotsOccupied;
     }
 
     private String generateAlphanumericUUID() {

@@ -11,7 +11,7 @@ public interface ParticipantAttendanceServices {
 
     ParticipantAttendanceDto getAttendanceById(Long id);
 
-    boolean generateQrcode(Long collegeId, Long roundId);
+    boolean generateQrcode(Long collegeId, Long availableEventId, Long eventId, Long roundId);
 
     List<ParticipantAttendanceDto> getAllAttendances();
 

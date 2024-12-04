@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Badge, Card, ListGroup, Modal, Form } from "react-bootstrap";
 import Navbar from "../components/Navbar/Navbar";
 import { Link, useParams } from "react-router-dom";
-import { createParticipants, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, updateParticipant } from "../services/participants-api";
+import { createParticipants, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent, updateParticipant } from "../services/participants-api";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
@@ -45,7 +45,7 @@ const CollegeEvent = () => {
       .then((data) => {
         fetchAvailableEventsById(data.availableEventId).then((data) => {
           setAvailableEvent(data);
-          fetchSlotsOccupied(data?.id);
+          getSlotsOccupied();
         });
       })
       .catch((err) => console.log(err));
@@ -69,12 +69,12 @@ const CollegeEvent = () => {
     }
   }, [college]);
 
-  const fetchSlotsOccupied = async (availableEventId) => {
+  const getSlotsOccupied = async () => {
     try {
-      console.log("here fetching");
-      const response = await fetchParticipationsByAvailableEventId(availableEventId);
-      console.log("response:", availableEvent?.title, response.length);
-      setSlotsOccupied(response.length);
+      console.log("here fetching, eventId:", eventId);
+      const response = await fetchSlotsOccupiedForEvent(eventId);
+      console.log("response:", availableEvent?.title, response);
+      setSlotsOccupied(response);
     } catch (error) {
       console.log(error);
       alert("Unable to fetch the details!");

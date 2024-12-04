@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
-import { fetchParticipantsByEventIdAndCollegeId } from "../services/participants-api";
-import { fetchParticipationsByAvailableEventId } from "../services/college-participation-apis";
+import { fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent } from "../services/participants-api";
 
 export default function AddParticipantByCollege() {
   const navigate = useNavigate();
@@ -46,7 +45,7 @@ export default function AddParticipantByCollege() {
       .then((availableEventData) => {
         console.log("Available Event data:", availableEventData);
         setAvailableEvent(availableEventData);
-        fetchSlotsOccupied(availableEventData.id);
+        getSlotsOccupied(availableEventData.id);
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
@@ -56,12 +55,12 @@ export default function AddParticipantByCollege() {
   }, [eventId]);
 
   useEffect(() => {
-    if (event && college, slotsOccupied, availableEvent) {
+    if ((event && college && slotsOccupied && availableEvent)) {
       fetchParticipantsByEventIdAndCollegeId(eventId, college.id).then((data) => {
         console.log(data);
         setParticipants(data);
         const maxSlotsAvailable = availableEvent.eventRules?.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value;
-        
+
         if (!maxSlotsAvailable) navigate(`/${iccode}/${eventId}`);
 
         if (data.length > 0 || slotsOccupied >= maxSlotsAvailable) {
@@ -69,14 +68,14 @@ export default function AddParticipantByCollege() {
         }
       });
     }
-  }, [eventId, college, slotsOccupied, availableEvent]);
+  }, [eventId, college, slotsOccupied, availableEvent, event, iccode]);
 
-  const fetchSlotsOccupied = async (availableEventId) => {
+  const getSlotsOccupied = async () => {
     try {
-      console.log("here fetching");
-      const response = await fetchParticipationsByAvailableEventId(availableEventId);
-      console.log("response:", availableEvent?.title, response.length);
-      setSlotsOccupied(response.length);
+      console.log("here fetching, eventId:", eventId);
+      const response = await fetchSlotsOccupiedForEvent(eventId);
+      console.log("response:", availableEvent?.title, response);
+      setSlotsOccupied(response);
     } catch (error) {
       console.log(error);
       alert("Unable to fetch the details!");
