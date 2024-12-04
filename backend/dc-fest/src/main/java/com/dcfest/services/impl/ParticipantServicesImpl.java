@@ -116,7 +116,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
             int slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId()).intValue();
             System.out.println("Slots occupied: " + slotsOccupied);
 
-            if (slotsOccupied > maxSlotsAvailable) {
+            if (slotsOccupied + 1 > maxSlotsAvailable) {
 //                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy"); // Define the date format
 //                LocalDate comparisonDate = LocalDate.parse("10 Dec, 2024", formatter);
 // LocalDate.now().isAfter(comparisonDate)
