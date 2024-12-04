@@ -63,7 +63,7 @@ export default function AddParticipantByCollege() {
 
         if (!maxSlotsAvailable) navigate(`/${iccode}/${eventId}`);
 
-        if (data.length > 0 || slotsOccupied >= maxSlotsAvailable) {
+        if (data.length > 0 || slotsOccupied > maxSlotsAvailable) {
           navigate(`/${iccode}/${eventId}`);
         }
       });
