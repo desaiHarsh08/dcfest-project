@@ -639,7 +639,7 @@ const EventParticipationPage = () => {
           </Button>
           <div>
             {!pop && (
-              <Button disabled={confirmParticipation} variant="warning" onClick={handleConfirmParticipants} disabled={filteredParticipants.length == 0}>
+              <Button disabled={filteredParticipants.length == 0 || confirmParticipation} variant="warning" onClick={handleConfirmParticipants}>
                 Confirm Participants
               </Button>
             )}
