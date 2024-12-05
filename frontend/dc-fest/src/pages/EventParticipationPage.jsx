@@ -302,6 +302,7 @@ import * as XLSX from "xlsx";
 import { generateQrcode, getPop } from "../services/attendance-apis";
 
 const EventParticipationPage = () => {
+  const [confirmParticipation, setConfirmParticipation] = useState(false);
   const [participants, setParticipants] = useState([]);
   const [filteredParticipants, setFilteredParticipants] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -526,11 +527,14 @@ const EventParticipationPage = () => {
     console.log(eventFilter);
     console.log(selectedAvailableEvent?.rounds[0]);
     try {
+      setConfirmParticipation(true);
       const response = await generateQrcode(selectedCollege.id, selectedAvailableEvent.id, selectedAvailableEvent?.rounds[0].id);
       console.log(response);
       setPop(response);
     } catch (error) {
       console.log(error);
+    } finally {
+      setConfirmParticipation(false);
     }
   };
 
@@ -635,7 +639,7 @@ const EventParticipationPage = () => {
           </Button>
           <div>
             {!pop && (
-              <Button variant="warning" onClick={handleConfirmParticipants} disabled={filteredParticipants.length == 0}>
+              <Button disabled={confirmParticipation} variant="warning" onClick={handleConfirmParticipants} disabled={filteredParticipants.length == 0}>
                 Confirm Participants
               </Button>
             )}

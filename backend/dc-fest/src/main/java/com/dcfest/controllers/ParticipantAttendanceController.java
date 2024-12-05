@@ -55,12 +55,10 @@ public class ParticipantAttendanceController {
     public ResponseEntity<InputStreamResource> generateQrcode(
             @RequestParam Long collegeId,
             @RequestParam Long availableEventId,
-            @RequestParam Long eventId,
             @RequestParam Long roundId
     ) {
         System.out.println(collegeId);
         System.out.println(availableEventId);
-        System.out.println(eventId);
         System.out.println(roundId);
 
         try {
