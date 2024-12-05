@@ -53,4 +53,14 @@ public class EventModel {
     @JoinTable(name = "event_judge", joinColumns = @JoinColumn(name = "event_id"), inverseJoinColumns = @JoinColumn(name = "judge_id"))
     private List<JudgeModel> judges = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return "EventModel{" +
+                "id=" + id +
+                ", eventName='" + this.id + "'" +
+                // Avoid adding large object references here
+                '}';
+    }
+
+
 }

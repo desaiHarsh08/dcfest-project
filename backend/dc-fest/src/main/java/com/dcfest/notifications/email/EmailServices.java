@@ -1,6 +1,9 @@
 package com.dcfest.notifications.email;
 
+import com.dcfest.constants.RoundType;
+import com.dcfest.models.AvailableEventModel;
 import com.dcfest.models.EventModel;
+import com.dcfest.models.RoundModel;
 import com.dcfest.models.UserModel;
 import com.dcfest.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.thymeleaf.context.Context;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -168,6 +172,45 @@ public class EmailServices {
             emailSender.send(message);
         } catch (MessagingException e) {
             // Handle the exception or log it
+            e.printStackTrace();
+        }
+    }
+
+
+    @Async
+    public void sendEventProofEmail(String to, String subject, byte[] pdfData, String attachmentName, AvailableEventModel availableEventModel, RoundModel roundModel) {
+        try {
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+
+            // Format the LocalDateTime to the required format without milliseconds
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a");
+            String formattedDateTime = roundModel.getStartTime().format(formatter);
+
+
+            // Add the PDF as an attachment
+            InputStreamSource attachmentSource = new ByteArrayResource(pdfData);
+            helper.addAttachment(attachmentName, attachmentSource);
+
+            // Create the HTML content using Thymeleaf template
+            String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS" : roundModel.getRoundType().name();
+            Context context = new Context();
+            context.setVariable("eventName", availableEventModel.getTitle());
+
+            context.setVariable("eventDateTime", formattedDateTime);
+            context.setVariable("venue", roundModel.getVenue());
+            context.setVariable("round", roundName);
+            context.setVariable("slug", availableEventModel.getSlug());
+
+
+            String htmlContent = templateEngine.process("confirmEventParticipation", context);
+            helper.setText(htmlContent, true); // Enable HTML content
+
+            emailSender.send(message);
+        } catch (MessagingException e) {
+            // Log the exception for better error tracking
             e.printStackTrace();
         }
     }

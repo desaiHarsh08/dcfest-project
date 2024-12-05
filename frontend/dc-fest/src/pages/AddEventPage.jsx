@@ -53,6 +53,7 @@ const AddEventPage = () => {
     closeRegistration: false,
     description: "",
     slug: "",
+    code: "",
     type: "INDIVIDUAL",
     eventCategoryId: null,
     eventRules: [],

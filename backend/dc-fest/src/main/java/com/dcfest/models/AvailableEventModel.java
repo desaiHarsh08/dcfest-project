@@ -42,6 +42,8 @@ public class AvailableEventModel {
 
     private boolean closeRegistration;
 
+    private String code;
+
     public AvailableEventModel(Long id) {
         this.id = id;
     }
@@ -52,5 +54,15 @@ public class AvailableEventModel {
         }
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return "AvailableEventModel{" +
+                "id=" + id +
+                ", eventTitle='" + this.getTitle() + "'" +
+                // Do not add references to EventModel here
+                '}';
+    }
+
 
 }

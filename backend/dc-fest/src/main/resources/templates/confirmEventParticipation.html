@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Participation Confirmation</title>
+    <style>
+      /* Resetting styles */
+      body,
+      table,
+      td,
+      a {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      /* Global styles */
+      body {
+        background-color: #f4f4f9;
+        color: #333;
+        line-height: 1.6;
+        padding: 20px 0;
+      }
+
+      table {
+        width: 100%;
+        max-width: 650px;
+        margin: 20px auto;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      td {
+        /* padding: 20px; */
+      }
+
+      /* Header section */
+      .header {
+        background-color: #0077b6;
+        color: #fff;
+        text-align: center;
+        padding: 40px 20px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+
+      .header img {
+        max-width: 120px;
+        margin-bottom: 15px;
+      }
+
+      .header h1 {
+        font-size: 30px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+
+      .header p {
+        font-size: 16px;
+        color: #e0f7fa;
+      }
+
+      /* Event details section */
+      .event-details {
+        padding: 20px;
+        background-color: #f9fafb;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+
+      .event-details h2 {
+        color: #0077b6;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+
+      .event-details p {
+        font-size: 16px;
+        margin: 10px 0;
+      }
+
+      .highlight {
+        font-weight: bold;
+        color: #0077b6;
+      }
+
+      /* Download button */
+      .button {
+        background-color: #00bcd4;
+        color: white;
+        padding: 12px 20px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 5px;
+        display: inline-block;
+        margin-top: 20px;
+        font-size: 16px;
+        width: 100%;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .button:hover {
+        background-color: #0097a7;
+      }
+
+      /* Footer section */
+      .footer {
+        background-color: #f1f1f1;
+        color: #777;
+        text-align: center;
+        font-size: 14px;
+        padding: 20px 10px;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+
+      .footer a {
+        color: #0077b6;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* Responsive design */
+      @media (max-width: 600px) {
+        .header h1 {
+          font-size: 24px;
+        }
+
+        .event-details h2 {
+          font-size: 22px;
+        }
+
+        .button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Email Content -->
+    <table>
+      <!-- Header with event image -->
+      <tr class="header">
+        <td>
+          <!--            <img th:src="'http://13.235.168.107:5006/' + ${slug} + '.jpeg'" alt="Event Image">-->
+          <div
+            style="background-image: url(http://13.235.168.107:5006/non-gas-cooking.jpg); height: 150px; background-size: cover; background-repeat: no-repeat; object-fit: contain"
+          >
+            <!-- <img src="http://13.235.168.107:5006/non-gas-cooking.jpg" alt="Event Image" style="width: 100%; height: 100%" /> -->
+          </div>
+          <h1>Event Participation Confirmation</h1>
+          <p>We are excited to confirm your participation in the upcoming event!</p>
+        </td>
+      </tr>
+
+      <!-- Event details -->
+      <tr>
+        <td class="event-details">
+          <h2>Event Details:</h2>
+          <p style="display: flex; gap: 4px"><span style="width: 100px; display: block" class="highlight">Event Name:</span> <span th:text="${eventName}"></span></p>
+          <p style="display: flex; gap: 4px"><span style="width: 100px; display: block" class="highlight">Date & Time:</span> <span th:text="${eventDateTime}"></span></p>
+          <p style="display: flex; gap: 4px"><span style="width: 100px; display: block" class="highlight">Venue:</span> <span th:text="${venue}"></span></p>
+
+          <p style="display: flex; gap: 4px"><span style="width: 100px; display: block" class="highlight">Round:</span> <span th:text="${round}"></span></p>
+
+          <p style="padding-top: 44px">Your registration has been confirmed. Please download the attached PDF to get your unique QR code, which you will use to enter the venue.</p>
+        </td>
+      </tr>
+
+      <!-- Footer with regards -->
+      <tr class="footer">
+        <td>
+          <p>
+            Cheers,<br />
+            <strong>The Umang Fest 2024 Team</strong>
+          </p>
+          <p>
+            <a href="http://13.235.168.107:3007/">Visit Our Website</a>
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -32,6 +32,8 @@ public class AvailableEventDto {
 
     private boolean closeRegistration;
 
+    private String code;
+
     private List<EventRuleDto> eventRules = new ArrayList<>();
 
     private List<RoundDto> rounds = new ArrayList<>();

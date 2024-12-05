@@ -71,4 +71,14 @@ public class ParticipantModel {
         this.id = id;
     }
 
+    @Override
+    public String toString() {
+        return "ParticipantModel{" +
+                "id=" + id +
+                ", name='" + name + "'" +
+                // Avoid adding references to EventModel here
+                '}';
+    }
+
+
 }

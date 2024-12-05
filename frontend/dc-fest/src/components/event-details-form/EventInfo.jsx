@@ -62,6 +62,12 @@ const EventInfo = ({ categories, event, onChange }) => {
           <input name="closeRegistration" value={event?.closeRegistration} type="checkbox" onChange={onChange} className="form-check"></input>
         </div>
       </div>
+      <div className="mb-3 d-flex">
+        <label htmlFor="code" className="form-label w-25">
+          Code
+        </label>
+        <input type="text" className="form-control py-2 w-75 " name="code" onChange={onChange} value={event?.code} />
+      </div>
     </motion.div>
   );
 };

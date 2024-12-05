@@ -563,9 +563,8 @@ const CollegeEvent = () => {
                 </div>
                 {college &&
                   participants.length == 0 &&
-                  slotsOccupied &&
-                  slotsOccupied + 1 <= availableEvent.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value &&
-                  new Date() < new Date("2024-12-10") && (
+                  slotsOccupied != null &&
+                  slotsOccupied + 1 < availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
                     <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
                       Register Participant
                     </Link>

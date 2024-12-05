@@ -24,9 +24,11 @@ const EventLists = () => {
   }, []);
   return (
     <div className="mt-5">
-      {categories?.map((category) => (
-        <CategoryItem key={category.name} categoryItem={category} />
-      ))}
+      {categories?.map((category) => {
+        if (category.name != "TEST_CATEGORY") {
+          return <CategoryItem key={category.name} categoryItem={category} />;
+        }
+      })}
       <Footer />
     </div>
   );

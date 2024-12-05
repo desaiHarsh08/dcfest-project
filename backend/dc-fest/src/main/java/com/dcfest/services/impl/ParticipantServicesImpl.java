@@ -130,7 +130,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
                 // Grab the unique colleges
                 List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDto.getEventIds().get(0));
-                List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream().filter(p -> p.getType().equals(ParticipantType.PERFORMER)).toList();
+                List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream().filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
                 List<Long> collegesIds = new ArrayList<>();
                 for (ParticipantModel participantModel: fiteredParticipantsByType) {
                     if (collegesIds.contains(participantModel.getCollege().getId())) {
@@ -141,7 +141,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
 
                 int otseSlotsOccupied = collegesIds.size();
-                if (otseSlotsOccupied > otseSlotsAvailable) {
+                if (otseSlotsOccupied + 1 > otseSlotsAvailable) {
                     throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
                 }
 
