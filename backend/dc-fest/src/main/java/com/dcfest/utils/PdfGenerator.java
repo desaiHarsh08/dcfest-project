@@ -1,6 +1,5 @@
 package com.dcfest.utils;
 
-import com.itextpdf.html2pdf.HtmlConverter;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import java.io.ByteArrayOutputStream;
 
