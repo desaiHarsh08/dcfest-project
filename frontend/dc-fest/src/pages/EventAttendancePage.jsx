@@ -1,105 +1,310 @@
-// src/pages/EventAttendancePage.jsx
-import React, { useState, useEffect } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
-import '../styles/EventAttendancePage.css'; // Import custom CSS for animations and styles
-import { Button, Container, Alert, Modal } from 'react-bootstrap'; // Import Bootstrap components
-
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, useRef } from "react";
+import { Html5Qrcode } from "html5-qrcode";
+import "../styles/EventAttendancePage.css"; // Import custom CSS for animations and styles
+import { Button, Container, Alert, Modal, Row, Col, Card, ListGroup, Badge, Table } from "react-bootstrap"; // Import Bootstrap components
+import { markAttendanceForParticipant, scanQrcode } from "../services/attendance-apis";
+import { FaClipboardList, FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
+import { motion } from "framer-motion";
 const EventAttendancePage = () => {
   const [scannedData, setScannedData] = useState(null);
   const [attendanceMarked, setAttendanceMarked] = useState(false);
   const [error, setError] = useState(null);
   const [html5QrCode, setHtml5QrCode] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showScanner, setShowScanner] = useState(true); // Controls the visibility of the scanner
+  const [qrData, setQrData] = useState();
+  const [scannedQrcodeResponse, setScannedQrcodeResponse] = useState();
+
+  const qrcodeReaderRef = useRef(null);
 
   useEffect(() => {
-    const qrCode = new Html5Qrcode("reader");
-    setHtml5QrCode(qrCode);
-  }, []);
+    if (qrcodeReaderRef) {
+      const qrCode = new Html5Qrcode("reader");
+      setHtml5QrCode(qrCode);
+    }
+  }, [qrcodeReaderRef]);
+
+  const formatDateTime = (dateTime) => {
+    return new Date(dateTime).toLocaleString("en-US", {
+      //   weekday: "long", // Day of the week (e.g., Monday)
+      year: "numeric", // Year (e.g., 2024)
+      month: "long", // Month (e.g., November)
+      day: "numeric", // Day (e.g., 14)
+      hour: "2-digit", // Hour (e.g., 09)
+      minute: "2-digit", // Minute (e.g., 30)
+      //   second: "2-digit", // Second (e.g., 05)
+      hour12: true, // Use AM/PM format
+    });
+  };
 
   const startScanning = () => {
     if (!html5QrCode) return;
 
-    html5QrCode.start(
-      { facingMode: "environment" }, // Use the environment facing camera
-      {
-        fps: 10,
-        qrbox: 250 // Width and height of the scanning box
-      },
-      (decodedText) => {
-        setScannedData(decodedText);
-        markAttendance(decodedText);
-      },
-      (errorMessage) => {
-        // Handle scanning error if necessary
-      }
-    ).catch((err) => {
-      setError('Error starting QR scanner: ' + err);
-    });
+    html5QrCode
+      .start(
+        { facingMode: "environment" }, // Use the environment-facing camera
+        {
+          fps: 10,
+          qrbox: 250, // Width and height of the scanning box
+        },
+        (decodedText) => {
+          setQrData(decodedText);
+          markAttendance(decodedText); // After QR code is scanned, mark attendance
+        },
+        (errorMessage) => {
+          // Handle scanning error if necessary
+        }
+      )
+      .catch((err) => {
+        setError("Error starting QR scanner: " + err);
+      });
   };
 
-  const markAttendance = (data) => {
-    setShowModal(true); // Show the modal with scanned data
+  const markAttendance = async (data) => {
+    stopScanning(); // Stop the QR code scanner
+    setQrData(data); // Set the scanned QR data
+    setShowScanner(false); // Hide the scanner after QR code is scanned
+    try {
+      console.log("qrdata:", data);
+      const response = await scanQrcode(data);
+      setScannedQrcodeResponse(response);
+      console.log("scanned qrcode response:", response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleMarkPresent = async (participantId) => {
+    if (!participantId || !scannedQrcodeResponse) {
+      return;
+    }
+    try {
+      const response = await markAttendanceForParticipant(scannedQrcodeResponse?.roundId, scannedQrcodeResponse?.participants[0].collegeId, participantId);
+      console.log("mark attendance:", response);
+
+      try {
+        console.log("qrdata:", qrData);
+        const response = await scanQrcode(qrData);
+        setScannedQrcodeResponse(response);
+        console.log("scanned qrcode response:", response);
+      } catch (error) {
+        console.log(error);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handlePresent = () => {
     setAttendanceMarked(true);
-    setShowModal(false); // Close the modal
+    setShowModal(false); // Close the modal after marking attendance
     stopScanning(); // Stop the scanner after marking attendance
   };
 
   const stopScanning = () => {
     if (html5QrCode) {
       html5QrCode.stop().catch((err) => {
-        console.error('Failed to stop scanning:', err);
+        console.error("Failed to stop scanning:", err);
       });
     }
   };
 
   return (
-    <Container className="attendance-container">
-      <h1 className="title">Event Attendance</h1>
-      <Button variant="primary" onClick={startScanning}>
-        Start Scanning QR Code
-      </Button>
-      <div id="reader" style={{ width: "100%", maxWidth: "400px", margin: "20px auto" }}></div>
+    <Container fluid className="p-0">
+      <motion.div
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      style={{ backgroundColor: "#4cc08a"}}
+      className="text-white d-flex justify-content-center align-items-center mb-3"
+    >
+      <p
+        className="m-0 py-2 d-flex align-items-center"
+        style={{ fontSize: "18px", fontWeight: "bold" }}
+      >
+        <FaClipboardList className="me-2" style={{ fontSize: "23px" }} />
+       Participants Attendance Desk
+      </p>
+    </motion.div>
+      {showScanner && <h1 className="title text-center fs-2">Event Attendance</h1>}
 
-     
-      {error && <Alert variant="danger" className="mt-4">{error}</Alert>}
-
-      {/* Modal for attendance confirmation */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Attendance</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div>
-            <div className="name">
-              <p>Name:</p>
-              <p>Harshit Desai</p>
-            </div>
-            <div className="category">
-              <p>Category:</p>
-              <p>Star Event</p>
-            </div>
-            <div className="eventName">
-              <p>Event Name:</p>
-              <p>Beat Boxing (HUM MEI HEI DUM!)</p>
-            </div>
-            <div className="eventType">
-              <p>Event Type:</p>
-              <p>Individual</p>
-            </div>
+      {showScanner && (
+        <div className="d-flex flex-column justify-content-center ">
+          <div className="d-flex justify-content-center">
+            <Button variant="primary" onClick={startScanning}>
+              Start Scanning QR Code
+            </Button>
           </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Close
+          {showScanner && <div id="reader" ref={qrcodeReaderRef} style={{ width: "100%", maxWidth: "400px", margin: "20px auto" }}></div>}
+
+          {error && (
+            <Alert variant="danger" className="mt-4">
+              {error}
+            </Alert>
+          )}
+        </div>
+      )}
+
+      {scannedQrcodeResponse && (
+        <div className="d-flex justify-content-between align-items-center w-100">
+          <div>
+            <h1 className="title">Event Attendance</h1>
+            {<p>Team Number: {scannedQrcodeResponse?.participants[0]?.teamNumber}</p>}
+          </div>
+          <Button
+            variant="info"
+            onClick={() => {
+              setScannedQrcodeResponse(undefined);
+              setShowScanner(true);
+              setQrData(undefined);
+            }}
+          >
+            Reset
           </Button>
-          <Button variant="primary" onClick={handlePresent}>
-            Present
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </div>
+      )}
+
+      {scannedQrcodeResponse && (
+        <Row>
+          <Col md={3}>
+            <Card className="border-0 shadow-sm py-3" style={{ background: "linear-gradient(135deg,#007bff,#004080)" }}>
+              <Card.Img
+                variant="top"
+                src={`/${scannedQrcodeResponse?.availableEvent?.slug}.jpg`}
+                alt={scannedQrcodeResponse?.availableEvent?.title}
+                className="img-fluid rounded-lg" // Added rounded corners and made image responsive
+                style={{ height: "200px", objectFit: "contain" }} // Ensures the image looks good within a fixed height
+              />
+            </Card>
+            <Card className="mb-4">
+              <Card.Body>
+                <Card.Title className="h1">{scannedQrcodeResponse?.availableEvent?.title}</Card.Title>
+                <Card.Subtitle className="my-3 text-muted" style={{ fontStyle: "italic" }}>
+                  {scannedQrcodeResponse?.availableEvent?.oneLiner}
+                </Card.Subtitle>
+                <Card.Text>{scannedQrcodeResponse?.availableEvent?.description}</Card.Text>
+                <hr />
+                <div>
+                  <h5>Event Details</h5>
+                  <ListGroup variant="flush">
+                    <ListGroup.Item>
+                      <FaTicketAlt className="me-2" />
+                      <strong>Type:</strong> {scannedQrcodeResponse?.availableEvent?.type}
+                    </ListGroup.Item>
+                  </ListGroup>
+                </div>
+                <hr />
+                <div>
+                  <h5>Event Rules</h5>
+                  <ListGroup>
+                    {scannedQrcodeResponse?.availableEvent?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate?.name?.toLowerCase().includes("otse")) {
+                        return null;
+                      }
+                      if (rule.eventRuleTemplate?.name?.toLowerCase() != "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
+                  </ListGroup>
+                </div>
+                <div>
+                  <h5 className="my-4">NOTE:</h5>
+                  <ListGroup>
+                    {scannedQrcodeResponse?.availableEvent?.eventRules.map((rule, index) => {
+                      if (rule.eventRuleTemplate.name.toLowerCase() === "note") {
+                        return (
+                          <ListGroup.Item key={index}>
+                            <span dangerouslySetInnerHTML={{ __html: rule.value }} />
+                          </ListGroup.Item>
+                        );
+                      }
+                    })}
+                  </ListGroup>
+                </div>
+
+                <hr />
+                <div>
+                  <h5>Event Rounds</h5>
+                  {scannedQrcodeResponse?.availableEvent?.rounds.map((round, index) => (
+                    <Card key={index} className="mb-3 shadow-sm" style={{ backgroundColor: round.id == scannedQrcodeResponse?.roundId ? "aliceblue" : "" }}>
+                      <Card.Body>
+                        <h6>
+                          Round {index + 1}: {round.roundType == "SEMI_FINAL" ? "PRELIMS" : round.roundType}
+                        </h6>
+                        <Badge pill bg="info" className="me-2">
+                          {round.roundType}
+                        </Badge>
+                        <ListGroup variant="flush" className="mt-3" style={{ backgroundColor: round.id == scannedQrcodeResponse?.roundId ? "aliceblue" : "" }}>
+                          <ListGroup.Item className="d-flex justify-content-between">
+                            <div>
+                              <FaMapMarkerAlt className="me-2" />
+                              <strong>{round?.venue}</strong>
+                            </div>
+                            <div>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                {formatDateTime(round?.startTime)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                {formatDateTime(round?.endTime)}
+                              </p>
+                            </div>
+                          </ListGroup.Item>
+                        </ListGroup>
+                      </Card.Body>
+                    </Card>
+                  ))}
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col>
+            <Table bordered hover responsive className="table-striped">
+              <thead>
+                <tr>
+                  <th>Sr No.</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Type</th>
+                  <th>Entry</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scannedQrcodeResponse?.participants.length > 0 &&
+                  scannedQrcodeResponse?.participants.map((participant, index) => (
+                    <tr key={participant.id}>
+                      <td>{index + 1}.</td>
+                      <td>{participant.name}</td>
+                      <td>{participant.email}</td>
+                      <td style={{ minWidth: "147px" }}>{participant.whatsappNumber}</td>
+                      <td>
+                        <Badge bg={participant.type != "PERFORMER" ? "warning" : "info"}>{participant.type}</Badge>
+                      </td>
+                      <td>
+                        <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant.entryType}</Badge>
+                      </td>
+                      <td>
+                        <Button variant={participant.present ? "success" : "danger"} onClick={() => handleMarkPresent(participant?.id)}>
+                          {participant.present ? "Present" : "Absent"}
+                        </Button>
+                        {participant.present}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+      )}
     </Container>
   );
 };

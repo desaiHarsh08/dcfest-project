@@ -34,6 +34,12 @@ public class AvailableEventDto {
 
     private String code;
 
+    private String eventMaster;
+
+    private String eventMasterPhone;
+
+    private List<JudgeDto> judges = new ArrayList<>();
+
     private List<EventRuleDto> eventRules = new ArrayList<>();
 
     private List<RoundDto> rounds = new ArrayList<>();

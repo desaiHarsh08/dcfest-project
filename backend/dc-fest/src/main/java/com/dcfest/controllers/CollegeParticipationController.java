@@ -31,6 +31,12 @@ public class CollegeParticipationController {
         return ResponseEntity.ok(participations);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CollegeParticipationDto> getParticipationById(@PathVariable Long id) {
+        CollegeParticipationDto participation = collegeParticipationService.getParticipationById(id);
+        return new ResponseEntity<>(participation, HttpStatus.OK);
+    }
+
     @GetMapping("/available-event/{availableEventId}")
     public ResponseEntity<List<CollegeParticipationDto>> getByAvailableEvent(@PathVariable Long availableEventId) {
         List<CollegeParticipationDto> participations = collegeParticipationService

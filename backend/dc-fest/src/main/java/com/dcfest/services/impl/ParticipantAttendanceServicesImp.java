@@ -1,15 +1,15 @@
 package com.dcfest.services.impl;
 
 import com.dcfest.constants.RoundType;
-import com.dcfest.dtos.ParticipantAttendanceDto;
-import com.dcfest.dtos.ParticipantDto;
+import com.dcfest.dtos.*;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.*;
 import com.dcfest.notifications.email.EmailServices;
 import com.dcfest.repositories.*;
-import com.dcfest.services.ParticipantAttendanceServices;
+import com.dcfest.services.*;
 import com.dcfest.utils.PdfGenerator;
 import com.dcfest.utils.PdfService;
+import com.dcfest.utils.ScannedQrcodeResponse;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -35,6 +35,18 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
     private static final String ALPHANUMERIC_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int RANDOM_PART_LENGTH = 16; // Length of the random alphanumeric part
+
+    @Autowired
+    private EventRuleServices eventRuleServices;
+
+    @Autowired
+    private RoundServices roundServices;
+
+    @Autowired
+    private JudgeServices judgeServices;
+
+    @Autowired
+    private ScoreCardRepository scoreCardRepository;
 
     @Autowired
     private ParticipantAttendanceRepository participantAttendanceRepository;
@@ -65,6 +77,9 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
     @Autowired
     private EmailServices emailServices;
+
+    @Autowired
+    private ScoreCardServices scoreCardServices;
 
     @Autowired
     private CollegeParticipationRepository collegeParticipationRepository;
@@ -231,15 +246,19 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         // Create the attendance for the participants
         List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel);
 
-
+        CollegeParticipationModel existingCollegeParticipationModel = new CollegeParticipationModel();
         List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
         int collegeParticipationIndex = 0;
         for (CollegeParticipationModel collegeParticipationModel: collegeParticipationModels) {
             if (collegeParticipationModel.getCollege().getId().equals(collegeId)) {
+                existingCollegeParticipationModel = collegeParticipationModel;
                 break;
             }
             collegeParticipationIndex += 1;
         }
+
+
+
 
         int countTeam = this.participantAttendanceRepository.countTeam(roundId);
 
@@ -252,6 +271,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             teamNumber = "N/A" + "_" + String.format("%03d", countTeam);
         }
 
+        existingCollegeParticipationModel.setTeamNumber(teamNumber);
+        this.collegeParticipationRepository.save(existingCollegeParticipationModel);
 
         for (ParticipantModel participantModel: participantModels) {
             participantModel.setTeamNumber(teamNumber);
@@ -316,11 +337,17 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     private String generateRandomAlphanumeric() {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder(RANDOM_PART_LENGTH);
-
-        for (int i = 0; i < RANDOM_PART_LENGTH; i++) {
-            int index = random.nextInt(ALPHANUMERIC_CHARS.length());
-            sb.append(ALPHANUMERIC_CHARS.charAt(index));
-        }
+        boolean isUnique = false;
+        do {
+            sb.setLength(0);
+            for (int i = 0; i < RANDOM_PART_LENGTH; i++) {
+                int index = random.nextInt(ALPHANUMERIC_CHARS.length());
+                sb.append(ALPHANUMERIC_CHARS.charAt(index));
+            }
+            if (this.participantAttendanceRepository.findByQrcode(sb.toString()).isEmpty())  {
+                isUnique = true;
+            }
+        } while (!isUnique);
 
         return sb.toString();
     }
@@ -343,6 +370,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         return byteArrayOutputStream.toByteArray();
     }
 
+
     @Override
     public List<ParticipantAttendanceDto> getAllAttendances() {
         List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findAll();
@@ -354,15 +382,105 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     }
 
     @Override
-    public ParticipantAttendanceDto updateAttendance(ParticipantAttendanceDto participantAttendanceDto) {
-        ParticipantAttendanceModel foundParticipantAttendanceModel = this.participantAttendanceRepository.findById(participantAttendanceDto.getId()).orElseThrow(
-                () -> new ResourceNotFoundException("No attendance found for id: " + participantAttendanceDto.getId())
+    public ScannedQrcodeResponse scanQrcode(String qrData) {
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByQrcode(qrData);
+
+        if (participantAttendanceModels.isEmpty()) {
+            return null;
+        }
+        List<ParticipantDto> participantDtos = new ArrayList<>();
+        for (ParticipantAttendanceModel participantAttendanceModel: participantAttendanceModels) {
+            ParticipantModel participantModel = this.participantRepository.findById(participantAttendanceModel.getParticipant().getId()).orElse(null);
+            if (participantModel != null) {
+                participantDtos.add(this.participantModelToDto(participantModel));
+            }
+        }
+
+        RoundModel roundModel = this.roundRepository.findById(participantAttendanceModels.get(0).getRound().getId()).orElseThrow(
+                () -> new ResourceNotFoundException("No round exist for id: " + participantAttendanceModels.get(0).getRound().getId())
+        );
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(roundModel.getAvailableEvent().getId()).orElseThrow(
+                () -> new ResourceNotFoundException("No available_event exist for id: " + roundModel.getAvailableEvent().getId())
         );
 
-        foundParticipantAttendanceModel.setPresent(participantAttendanceDto.isPresent());
+        ScannedQrcodeResponse scannedQrcodeResponse = new ScannedQrcodeResponse();
+        scannedQrcodeResponse.setAvailableEvent(this.availableEventModelToDto(availableEventModel));
+        scannedQrcodeResponse.setRoundId(roundModel.getId());
+        scannedQrcodeResponse.setParticipants(participantDtos);
 
+        return scannedQrcodeResponse;
+    }
+
+
+    @Override
+    public ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId) {
+        // Fetch RoundModel and AvailableEventModel
+        RoundModel roundModel = this.roundRepository.findById(roundId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid round_id: " + roundId));
+
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(roundModel.getAvailableEvent().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid available_event_id for round: " + roundId));
+
+        // Fetch CollegeParticipationModel
+        CollegeParticipationModel collegeParticipationModel = this.collegeParticipationRepository
+                .findByCollegeAndAvailableEvent(new CollegeModel(collegeId), availableEventModel)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid college_id or available_event_id"));
+
+        // Attempt to find the specific ParticipantAttendanceModel for the given participantId
+        Optional<ParticipantAttendanceModel> participantAttendanceOptional = this.participantAttendanceRepository
+                .findParticipantAttendanceByRoundIdAndCollegeId(roundId, collegeId)
+                .stream()
+                .filter(attendance -> attendance.getParticipant().getId().equals(participantId))
+                .findFirst();
+
+        ParticipantModel participantModel = this.participantRepository.findById(participantId).orElseThrow(
+                () -> new IllegalArgumentException("No participant found for id: " + participantId)
+        );
+        System.out.println("fetched participantModel:" + participantModel);
+
+        // If the attendance record is found
+        if (participantAttendanceOptional.isPresent()) {
+            ParticipantAttendanceModel participantAttendanceModel = participantAttendanceOptional.get();
+            System.out.println("in db: " + participantAttendanceModel.isPresent());
+            participantAttendanceModel.setPresent(!participantAttendanceModel.isPresent());
+            System.out.println("after change: " + participantAttendanceModel.isPresent());
+            participantModel.setPresent(participantAttendanceModel.isPresent());
+
+
+
+            // Save the updated attendance record
+            participantAttendanceModel = this.participantAttendanceRepository.save(participantAttendanceModel);
+            System.out.println("in db participant-atte after save:" + participantAttendanceModel);
+            participantModel = this.participantRepository.save(participantModel);
+            System.out.println("in db participant after save:" + participantModel);
+
+
+            // Generate the scorecard
+            ScoreCardDto scoreCardDto = new ScoreCardDto();
+            if (!this.scoreCardRepository.findByCollegeParticipationAndRound(collegeParticipationModel, roundModel).isPresent()) {
+                scoreCardDto.setCollegeParticipationId(collegeParticipationModel.getId());
+                scoreCardDto.setRoundId(roundModel.getId());
+
+                // Initialize score parameters with meaningful values (consider updating them later)
+                List<ScoreParameterDto> scoreParameterDtos = new ArrayList<>();
+                for (int i = 0; i < 4; i++) {
+                    ScoreParameterDto scoreParameterDto = new ScoreParameterDto(null, "", null, null);
+                    scoreParameterDtos.add(scoreParameterDto);
+                }
+                scoreCardDto.setScoreParameters(scoreParameterDtos);
+                // Create the scorecard
+                this.scoreCardServices.createScoreCard(scoreCardDto);
+            }
+
+            // Return the DTO representation of the updated participant attendance
+            return this.participantAttendanceModelToDto(participantAttendanceModel);
+        }
+
+        // If no attendance record is found for the participant, return null
         return null;
     }
+
+
 
     // TODO
     @Override
@@ -381,4 +499,34 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         return participantAttendanceDto;
     }
+
+    private ParticipantDto participantModelToDto(ParticipantModel participantModel) {
+        if (participantModel == null) {
+            return null;
+        }
+        ParticipantDto participantDto = this.modelMapper.map(participantModel, ParticipantDto.class);
+        participantDto.setCollegeId(participantModel.getCollege().getId());
+        // participantDto.setEvents(new ArrayList<>());
+        participantDto.setEntryType(participantModel.getEntryType());
+
+        // Convert the list of EventModel to a list of event IDs
+        List<Long> eventIds = participantModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());
+        participantDto.setEventIds(eventIds);
+
+        return participantDto;
+    }
+
+    private AvailableEventDto availableEventModelToDto(AvailableEventModel availableEventModel) {
+        if (availableEventModel == null) {
+            return null;
+        }
+        AvailableEventDto availableEventDto = this.modelMapper.map(availableEventModel, AvailableEventDto.class);
+        availableEventDto.setEventCategoryId(availableEventModel.getEventCategory().getId());
+        availableEventDto.setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
+        availableEventDto.setRounds(this.roundServices.getRoundsByAvailableEventId(availableEventModel.getId()));
+        availableEventDto.setJudges(this.judgeServices.getJudgesByAvailableEventId(availableEventModel.getId()));
+
+        return availableEventDto;
+    }
+
 }

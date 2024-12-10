@@ -88,6 +88,40 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
     });
   }, []);
 
+  const handleAddJudge = () => {
+    const newEvent = { ...event };
+    newEvent.judges.push({
+      name: "",
+      phone: "",
+    });
+
+    console.log("new judge:", newEvent);
+    setEvent(newEvent);
+  };
+
+  const handleDeleteJudge = (judgeIndex) => {
+    const newEvent = { ...event };
+    newEvent.judges = newEvent.judges.filter((judge, idx) => idx != judgeIndex);
+    setEvent(newEvent);
+  };
+
+  const handleJudgeChange = (e, index) => {
+    const { name, value } = e.target;
+    const newEvent = { ...event };
+    newEvent.judges = newEvent.judges.map((judge, idx) => {
+      if (idx == index) {
+        if (name == "judgeName") {
+          return { ...judge, name: value };
+        } else {
+          return { ...judge, phone: value };
+        }
+      }
+      return judge;
+    });
+
+    setEvent(newEvent);
+  };
+
   const generateSlug = (title) => {
     return title
       .toLowerCase() // convert to lowercase
@@ -294,7 +328,7 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
       <h1 className="text-center text-primary mb-4">{formType} Event</h1>
       <form onSubmit={handleSubmit}>
         <div className="row g-4">
-          <EventInfo categories={categories} event={event} onChange={handleChange} />
+          <EventInfo categories={categories} event={event} onChange={handleChange} onAddJudge={handleAddJudge} onDeleteJudge={handleDeleteJudge} onJudgeChange={handleJudgeChange} />
           <EventRounds eventRounds={eventRounds} onChange={handleChangeRound} />
           <EventRules ruleTemplates={ruleTemplates} event={event} onAddRule={handleAddRule} onDeleteRule={handleDeleteRule} onChangeRule={handleChangeRule} />
         </div>

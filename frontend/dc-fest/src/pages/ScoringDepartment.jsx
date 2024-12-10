@@ -1,661 +1,231 @@
-import React, { useState } from 'react';
-import {
-    Container,
-    Table,
-    Button,
-    Modal,
-    Form,
-    Tabs,
-    Tab,
-    Row,
-    Col,
-    InputGroup,
-    FormControl,
-    Alert,
-    Card,
-} from 'react-bootstrap';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import { useNavigate } from 'react-router-dom';
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/ScoringDepartment.css";
+import { BsBuilding, BsCalendar, BsGeoAlt, BsPencilSquare, BsPerson, BsArrowLeft } from "react-icons/bs";
+import { getCollegeParticipationForScoreCard, getScoreCardSheet } from "../services/scorecard-apis";
+import TeamCard from "../components/scoring-department/TeamCard";
+import ScoreDetails from "../components/scoring-department/ScoreDetails";
+import { fetchCategories } from "../services/categories-api";
+import { Button, Form } from "react-bootstrap";
+import FilterEvents from "../components/scoring-department/FilterEvents";
 
 const ScoringDepartment = () => {
-    // State for Events
-    const navigate = useNavigate();
-    const [events, setEvents] = useState([
-        {
-            id: 1,
-            name: 'Coding Challenge',
-            participants: [
-                { id: 1, name: 'John Doe', college: 'Engineering College', score: 85 },
-                { id: 2, name: 'Alice Johnson', college: 'Science College', score: 90 },
-                { id: 3, name: 'Bob Brown', college: 'Arts College', score: 75 },
-            ],
-            winners: [], // Will hold top 3 participants
-        },
-        {
-            id: 2,
-            name: 'Robotics Competition',
-            participants: [
-                { id: 1, name: 'Jane Smith', college: 'Engineering College', score: 88 },
-                { id: 2, name: 'Mark Davis', college: 'Technology Institute', score: 92 },
-                { id: 3, name: 'Emily Clark', college: 'Science College', score: 80 },
-            ],
-            winners: [],
-        },
-        // Add more events as needed
-    ]);
+  const navigate = useNavigate();
 
-    // State for Overall College-wise Scorecard
-    const [overallScorecard, setOverallScorecard] = useState({});
+  const [teams, setTeams] = useState([]);
+  const [scoreSheetFile, setScoreSheetFile] = useState();
+  const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedAvailableEvent, setAvailableEvent] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [eventFilter, setEventFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [selectedRound, setSelectedRound] = useState([]);
+  const [parameters, setParameters] = useState(["", "", "", ""]);
 
-    // State for Search Queries per Event
-    const [searchQueries, setSearchQueries] = useState({});
+  useEffect(() => {
+    if (selectedAvailableEvent && selectedRound) {
+      getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedRound.id)
+        .then((data) => {
+          console.log(data);
+          setTeams(data);
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [selectedAvailableEvent, selectedRound]);
 
-    // State for Modals
-    const [showAddEventModal, setShowAddEventModal] = useState(false);
-    const [showAddParticipantModal, setShowAddParticipantModal] = useState(false);
-    const [currentEventId, setCurrentEventId] = useState(null);
-    const [currentParticipant, setCurrentParticipant] = useState({
-        id: null,
-        name: '',
-        college: '',
-        score: '',
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        const categoriesData = await fetchCategories();
+        console.log("categoriesData:", categoriesData);
+        setCategories(categoriesData);
+
+        if (categoriesData.length > 0) {
+          //   const firstCategory = categoriesData.find((c) => c.name == "TEST_CATEGORY");
+          const firstCategory = categoriesData[0];
+          setCategoryFilter(firstCategory.id);
+          setSelectedCategory(firstCategory);
+
+          if (firstCategory.availableEvents?.length > 0) {
+            const firstEvent = firstCategory.availableEvents[0];
+            setEventFilter(firstEvent.id);
+            setAvailableEvent(firstEvent);
+            setSelectedRound(firstEvent.rounds[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+        setError("Failed to load categories.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  const fetchScoreSheet = async (availableEventId, roundId) => {
+    try {
+      const response = await getScoreCardSheet(availableEventId, roundId);
+      console.log("scoresheet:", response);
+      setScoreSheetFile(scoreSheetFile);
+      handlePdfOpen(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePdfOpen = (content) => {
+    if (!content) {
+      return;
+    }
+    console.log(content);
+    // Assuming `response` is the byte array (PDF content)
+    const pdfBlob = new Blob([content], { type: "application/pdf" });
+
+    // Create a URL for the Blob
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    // Open the PDF in a new tab
+    window.open(`${pdfUrl}`, "_blank");
+  };
+
+  // Calculate total score for a row
+  const calculateTotalScore = (team) => {
+    let p1 = 0,
+      p2 = 0,
+      p3 = 0,
+      p4 = 0;
+
+    console.log(team);
+    if (!p1 || p1 != "" || !p1.toUpperCase("D")) {
+      p1 = Number(team.scoreParameters[0]?.points);
+      if (isNaN(p1)) {
+        p1 = 0;
+      }
+    }
+    if (!p2 || p2 != "" || !p2.toUpperCase("D")) {
+      p2 = Number(team.scoreParameters[1]?.points);
+      if (isNaN(p2)) {
+        p2 = 0;
+      }
+    }
+    if (!p3 || p3 != "" || !p3.toUpperCase("D")) {
+      p3 = Number(team.scoreParameters[2]?.points);
+      if (isNaN(p3)) {
+        p3 = 0;
+      }
+    }
+    if (!p4 || p4 != "" || !p4.toUpperCase("D")) {
+      p4 = Number(team.scoreParameters[3]?.points);
+      if (isNaN(p4)) {
+        p4 = 0;
+      }
+    }
+
+    console.log("in cal., ", p1, p2, p3, p4);
+
+    const total = p1 + p2 + p3 + p4;
+    return Math.min(total, 100); // Ensure total score does not exceed 100
+  };
+
+  const handleParameterChange = (e, index) => {
+    let newParameters = [...parameters];
+    newParameters = newParameters.map((param, idx) => {
+      if (idx == index) {
+        return e.target.value;
+      }
+      return param;
     });
-    const [showEditParticipantModal, setShowEditParticipantModal] = useState(false);
-    const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+    setParameters(newParameters);
+  };
 
-    // Handlers for Alerts
-    const showAlert = (message, variant = 'success') => {
-        setAlert({ show: true, message, variant });
-        setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
-    };
-
-    // Handlers for Adding Event
-    const handleAddEvent = (e) => {
-        e.preventDefault();
-        const eventName = e.target.eventName.value.trim();
-        if (!eventName) {
-            showAlert('Event name cannot be empty.', 'danger');
-            return;
-        }
-
-        // Check for duplicate event names
-        const duplicate = events.find(
-            (event) => event.name.toLowerCase() === eventName.toLowerCase()
-        );
-        if (duplicate) {
-            showAlert('An event with this name already exists.', 'warning');
-            return;
-        }
-
-        const newEvent = {
-            id: events.length + 1,
-            name: eventName,
-            participants: [],
-            winners: [],
-        };
-        setEvents([...events, newEvent]);
-        setShowAddEventModal(false);
-        showAlert('Event added successfully!');
-    };
-
-    // Handlers for Adding Participant
-    const handleAddParticipant = (e) => {
-        e.preventDefault();
-        const { name, college, score } = currentParticipant;
-        if (!name || !college || score === '') {
-            showAlert('All fields are required.', 'danger');
-            return;
-        }
-
-        const eventIndex = events.findIndex((event) => event.id === currentEventId);
-        if (eventIndex === -1) {
-            showAlert('Event not found.', 'danger');
-            return;
-        }
-
-        // Check for duplicate participant names within the event
-        const duplicate = events[eventIndex].participants.find(
-            (p) => p.name.toLowerCase() === name.trim().toLowerCase()
-        );
-        if (duplicate) {
-            showAlert('A participant with this name already exists in the event.', 'warning');
-            return;
-        }
-
-        const newParticipant = {
-            id: events[eventIndex].participants.length + 1,
-            name: name.trim(),
-            college: college.trim(),
-            score: parseInt(score),
-        };
-
-        const updatedEvents = [...events];
-        updatedEvents[eventIndex].participants.push(newParticipant);
-        setEvents(updatedEvents);
-        setShowAddParticipantModal(false);
-        setCurrentParticipant({ id: null, name: '', college: '', score: '' });
-        showAlert('Participant added successfully!');
-    };
-
-    // Handlers for Editing Participant
-    const handleEditParticipant = (e) => {
-        e.preventDefault();
-        const { id, name, college, score } = currentParticipant;
-        if (!name || !college || score === '') {
-            showAlert('All fields are required.', 'danger');
-            return;
-        }
-
-        const eventIndex = events.findIndex((event) => event.id === currentEventId);
-        if (eventIndex === -1) {
-            showAlert('Event not found.', 'danger');
-            return;
-        }
-
-        const participantIndex = events[eventIndex].participants.findIndex(
-            (p) => p.id === id
-        );
-        if (participantIndex === -1) {
-            showAlert('Participant not found.', 'danger');
-            return;
-        }
-
-        // Check for duplicate participant names within the event
-        const duplicate = events[eventIndex].participants.find(
-            (p) =>
-                p.name.toLowerCase() === name.trim().toLowerCase() &&
-                p.id !== id
-        );
-        if (duplicate) {
-            showAlert('A participant with this name already exists in the event.', 'warning');
-            return;
-        }
-
-        const updatedEvents = [...events];
-        updatedEvents[eventIndex].participants[participantIndex] = {
-            id,
-            name: name.trim(),
-            college: college.trim(),
-            score: parseInt(score),
-        };
-        setEvents(updatedEvents);
-        setShowEditParticipantModal(false);
-        setCurrentParticipant({ id: null, name: '', college: '', score: '' });
-        showAlert('Participant updated successfully!');
-    };
-
-    // Handlers for Deleting Participant
-    const handleDeleteParticipant = (eventId, participantId) => {
-        if (!window.confirm('Are you sure you want to delete this participant?')) return;
-
-        const eventIndex = events.findIndex((event) => event.id === eventId);
-        if (eventIndex === -1) {
-            showAlert('Event not found.', 'danger');
-            return;
-        }
-
-        const updatedEvents = [...events];
-        updatedEvents[eventIndex].participants = updatedEvents[eventIndex].participants.filter(
-            (p) => p.id !== participantId
-        );
-
-        // Reassign participant IDs
-        updatedEvents[eventIndex].participants = updatedEvents[eventIndex].participants.map(
-            (p, idx) => ({ ...p, id: idx + 1 })
-        );
-
-        // If winners were already generated, regenerate them after deletion
-        if (updatedEvents[eventIndex].winners.length > 0) {
-            const participants = [...updatedEvents[eventIndex].participants];
-            if (participants.length >= 3) {
-                participants.sort((a, b) => b.score - a.score);
-                updatedEvents[eventIndex].winners = participants.slice(0, 3);
-            } else {
-                updatedEvents[eventIndex].winners = [];
-                showAlert('Not enough participants to maintain winners. Winners have been cleared.', 'warning');
-            }
-        }
-
-        setEvents(updatedEvents);
-        showAlert('Participant deleted successfully!');
-    };
-
-    // Handlers for Opening Add Participant Modal
-    const openAddParticipantModal = (eventId) => {
-        setCurrentEventId(eventId);
-        setShowAddParticipantModal(true);
-    };
-
-    // Handlers for Opening Edit Participant Modal
-    const openEditParticipantModal = (eventId, participant) => {
-        setCurrentEventId(eventId);
-        setCurrentParticipant({
-            id: participant.id,
-            name: participant.name,
-            college: participant.college,
-            score: participant.score,
+  const handleTeamChange = (e, index, scoreParameterIndex) => {
+    const { name, value } = e.target;
+    let newTeams = [...teams];
+    console.log(newTeams);
+    newTeams = newTeams.map((team, idx) => {
+      if (index == idx) {
+        const newTeam = { ...team };
+        newTeam.scoreParameters = newTeam.scoreParameters.map((scoreParameter, scoreParameterIdx) => {
+          if (scoreParameterIndex == scoreParameterIdx) {
+            return { ...scoreParameter, [name]: value };
+          }
+          return scoreParameter;
         });
-        setShowEditParticipantModal(true);
-    };
+        return newTeam;
+      }
+      return team;
+    });
 
-    // Handler for Generating Winners
-    const generateWinners = (eventId) => {
-        const eventIndex = events.findIndex((event) => event.id === eventId);
-        if (eventIndex === -1) {
-            showAlert('Event not found.', 'danger');
-            return;
-        }
+    setTeams(newTeams);
+  };
 
-        const participants = [...events[eventIndex].participants];
-        if (participants.length < 3) {
-            showAlert('Not enough participants to generate winners.', 'warning');
-            return;
-        }
+  return (
+    <div className="scoring-department">
+      <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
+        <BsArrowLeft /> Back
+      </button>
+      <h1 className="text-center">
+        <BsPencilSquare /> Scoring Department
+      </h1>
+      <p className="text-muted text-center">Enter the scores below to record and evaluate performance accurately for the scoring department.</p>
 
-        // Sort participants by score in descending order
-        participants.sort((a, b) => b.score - a.score);
+      <div className="d-flex justify-content-between">
+        <FilterEvents
+          selectedCategory={selectedCategory}
+          eventFilter={eventFilter}
+          setAvailableEvent={setAvailableEvent}
+          setSelectedRound={setSelectedRound}
+          selectedAvailableEvent={selectedAvailableEvent}
+          selectedRound={selectedRound}
+          setEventFilter={setEventFilter}
+          categories={categories}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          setSelectedCategory={setSelectedCategory}
+        />
+        {selectedAvailableEvent && selectedRound && (
+          <Button variant="success" onClick={() => fetchScoreSheet(selectedAvailableEvent?.id, selectedRound?.id)}>
+            Download
+          </Button>
+        )}
+      </div>
 
-        const topThree = participants.slice(0, 3);
-        const updatedEvents = [...events];
-        updatedEvents[eventIndex].winners = topThree;
-        setEvents(updatedEvents);
-        showAlert('Winners generated successfully!');
+      <ScoreDetails selectedCategory={selectedCategory} selectedAvailableEvent={selectedAvailableEvent} selectedRound={selectedRound} />
 
-        // Update Overall Scorecard
-        const scorecard = { ...overallScorecard };
-        participants.forEach((p) => {
-            if (!scorecard[p.college]) {
-                scorecard[p.college] = 0;
-            }
-            scorecard[p.college] += p.score;
-        });
-        setOverallScorecard(scorecard);
-    };
-
-    // Handler for Search Input Change
-    const handleSearchChange = (eventId, query) => {
-        setSearchQueries((prev) => ({
-            ...prev,
-            [eventId]: query,
-        }));
-    };
-
-    return (
-        <Container fluid className="my-4">
-            <button
-                className="back-button"
-                onClick={() => navigate(-1)} // Navigates to the previous page
-                style={{
-                    margin: "10px",
-                    padding: "10px 20px",
-                    marginBottom: "30px",
-                    backgroundColor: "#007BFF",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                }}
-            >
-                Back
-            </button>
-            <Row className="justify-content-center">
-                <Col xs={12} lg={10}>
-                    <Card className="shadow-sm">
-                        <Card.Body>
-                            <h2 className="text-center mb-4">Scoring Department</h2>
-
-                            {alert.show && (
-                                <Alert
-                                    variant={alert.variant}
-                                    onClose={() => setAlert({ show: false })}
-                                    dismissible
-                                >
-                                    {alert.message}
-                                </Alert>
-                            )}
-
-                            {/* Button to Add New Event */}
-                            <div className="d-flex justify-content-end mb-3">
-                                <Button variant="primary" onClick={() => setShowAddEventModal(true)}>
-                                    <i className="bi bi-plus-lg me-2"></i>Add New Event
-                                </Button>
-                            </div>
-
-                            {/* Tabs for Each Event */}
-                            <Tabs defaultActiveKey={events[0]?.id} id="events-tabs" className="mb-3" fill>
-                                {events.map((event) => {
-                                    // Retrieve current search query for this event
-                                    const searchQuery = searchQueries[event.id]
-                                        ? searchQueries[event.id].toLowerCase()
-                                        : '';
-
-                                    // Filter participants based on search query
-                                    const filteredParticipants = event.participants.filter(
-                                        (p) =>
-                                            p.name.toLowerCase().includes(searchQuery) ||
-                                            p.college.toLowerCase().includes(searchQuery) ||
-                                            p.score.toString().includes(searchQuery)
-                                    );
-
-                                    return (
-                                        <Tab eventKey={event.id} title={event.name} key={event.id}>
-                                            <Row className="align-items-center mb-3">
-                                                <Col md={6} sm={12} className="mb-2 mb-md-0">
-                                                    <InputGroup>
-                                                        <FormControl
-                                                            placeholder="Search Participants"
-                                                            value={searchQueries[event.id] || ''}
-                                                            onChange={(e) => handleSearchChange(event.id, e.target.value)}
-                                                        />
-                                                        <InputGroup.Text>
-                                                            <i className="bi bi-search"></i>
-                                                        </InputGroup.Text>
-                                                    </InputGroup>
-                                                </Col>
-                                                <Col md={6} sm={12} className="text-md-end">
-                                                    <Button
-                                                        variant="success"
-                                                        className="me-2"
-                                                        onClick={() => openAddParticipantModal(event.id)}
-                                                    >
-                                                        <i className="bi bi-person-plus me-1"></i>Add Participant
-                                                    </Button>
-                                                    <Button
-                                                        variant="warning"
-                                                        onClick={() => generateWinners(event.id)}
-                                                        disabled={event.winners.length > 0}
-                                                    >
-                                                        <i className="bi bi-trophy me-1"></i>Generate Winners
-                                                    </Button>
-                                                </Col>
-                                            </Row>
-
-                                            {/* Participants Table */}
-                                            <Table striped bordered hover responsive className="mb-4">
-                                                <thead className="table-dark">
-                                                    <tr>
-                                                        <th style={{ width: '5%' }}>#</th>
-                                                        <th style={{ width: '25%' }}>Name</th>
-                                                        <th style={{ width: '25%' }}>College</th>
-                                                        <th style={{ width: '15%' }}>Score</th>
-                                                        <th style={{ width: '30%' }}>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {filteredParticipants.length > 0 ? (
-                                                        filteredParticipants.map((participant) => (
-                                                            <tr key={participant.id}>
-                                                                <td>{participant.id}</td>
-                                                                <td>{participant.name}</td>
-                                                                <td>{participant.college}</td>
-                                                                <td>{participant.score}</td>
-                                                                <td>
-                                                                    <Button
-                                                                        variant="outline-warning"
-                                                                        size="sm"
-                                                                        onClick={() =>
-                                                                            openEditParticipantModal(event.id, participant)
-                                                                        }
-                                                                        className="me-2"
-                                                                    >
-                                                                        <i className="bi bi-pencil-square me-1"></i>Edit
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="outline-danger"
-                                                                        size="sm"
-                                                                        onClick={() =>
-                                                                            handleDeleteParticipant(event.id, participant.id)
-                                                                        }
-                                                                    >
-                                                                        <i className="bi bi-trash me-1"></i>Delete
-                                                                    </Button>
-                                                                </td>
-                                                            </tr>
-                                                        ))
-                                                    ) : (
-                                                        <tr>
-                                                            <td colSpan="5" className="text-center">
-                                                                No participants found.
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </tbody>
-                                            </Table>
-
-                                            {/* Winners Section */}
-                                            {event.winners.length > 0 && (
-                                                <Card className="mt-4">
-                                                    <Card.Header className="bg-success text-white">
-                                                        Winners for {event.name}
-                                                    </Card.Header>
-                                                    <Card.Body>
-                                                        <Table striped bordered hover responsive>
-                                                            <thead>
-                                                                <tr>
-                                                                    <th style={{ width: '10%' }}>Position</th>
-                                                                    <th style={{ width: '35%' }}>Name</th>
-                                                                    <th style={{ width: '35%' }}>College</th>
-                                                                    <th style={{ width: '20%' }}>Score</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {event.winners.map((winner, index) => (
-                                                                    <tr key={index}>
-                                                                        <td>
-                                                                            {index === 0
-                                                                                ? '1st Place'
-                                                                                : index === 1
-                                                                                    ? '2nd Place'
-                                                                                    : '3rd Place'}
-                                                                        </td>
-                                                                        <td>{winner.name}</td>
-                                                                        <td>{winner.college}</td>
-                                                                        <td>{winner.score}</td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </Table>
-                                                    </Card.Body>
-                                                </Card>
-                                            )}
-                                        </Tab>
-                                    );
-                                })}
-                            </Tabs>
-
-                            {/* Overall College-wise Scorecard */}
-                            <Card className="mt-5">
-                                <Card.Header className="bg-info text-white">
-                                    Overall College-wise Scorecard
-                                </Card.Header>
-                                <Card.Body>
-                                    <Table striped bordered hover responsive>
-                                        <thead className="table-dark">
-                                            <tr>
-                                                <th style={{ width: '5%' }}>#</th>
-                                                <th style={{ width: '60%' }}>College</th>
-                                                <th style={{ width: '35%' }}>Total Score</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {Object.keys(overallScorecard).length > 0 ? (
-                                                Object.entries(overallScorecard)
-                                                    .sort((a, b) => b[1] - a[1]) // Sort by score descending
-                                                    .map(([college, score], index) => (
-                                                        <tr key={index}>
-                                                            <td>{index + 1}</td>
-                                                            <td>{college}</td>
-                                                            <td>{score}</td>
-                                                        </tr>
-                                                    ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan="3" className="text-center">
-                                                        No scores available.
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </Table>
-                                </Card.Body>
-                            </Card>
-                        </Card.Body>
-                    </Card>
-
-                    {/* Add Event Modal */}
-                    <Modal
-                        show={showAddEventModal}
-                        onHide={() => setShowAddEventModal(false)}
-                        centered
-                    >
-                        <Modal.Header closeButton>
-                            <Modal.Title>Add New Event</Modal.Title>
-                        </Modal.Header>
-                        <Form onSubmit={handleAddEvent}>
-                            <Modal.Body>
-                                <Form.Group className="mb-3" controlId="eventName">
-                                    <Form.Label>Event Name</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Enter event name"
-                                        required
-                                    />
-                                </Form.Group>
-                            </Modal.Body>
-                            <Modal.Footer>
-                                <Button variant="secondary" onClick={() => setShowAddEventModal(false)}>
-                                    Cancel
-                                </Button>
-                                <Button variant="primary" type="submit">
-                                    <i className="bi bi-plus-lg me-1"></i>Add Event
-                                </Button>
-                            </Modal.Footer>
-                        </Form>
-                    </Modal>
-
-                    {/* Add Participant Modal */}
-                    <Modal
-                        show={showAddParticipantModal}
-                        onHide={() => setShowAddParticipantModal(false)}
-                        centered
-                    >
-                        <Modal.Header closeButton>
-                            <Modal.Title>Add Participant</Modal.Title>
-                        </Modal.Header>
-                        <Form onSubmit={handleAddParticipant}>
-                            <Modal.Body>
-                                <Form.Group className="mb-3" controlId="participantName">
-                                    <Form.Label>Participant Name</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Enter participant name"
-                                        value={currentParticipant.name}
-                                        onChange={(e) =>
-                                            setCurrentParticipant({ ...currentParticipant, name: e.target.value })
-                                        }
-                                        required
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="participantCollege">
-                                    <Form.Label>College</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Enter college name"
-                                        value={currentParticipant.college}
-                                        onChange={(e) =>
-                                            setCurrentParticipant({ ...currentParticipant, college: e.target.value })
-                                        }
-                                        required
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="participantScore">
-                                    <Form.Label>Score</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        placeholder="Enter score"
-                                        value={currentParticipant.score}
-                                        onChange={(e) =>
-                                            setCurrentParticipant({ ...currentParticipant, score: e.target.value })
-                                        }
-                                        required
-                                        min="0"
-                                    />
-                                </Form.Group>
-                            </Modal.Body>
-                            <Modal.Footer>
-                                <Button variant="secondary" onClick={() => setShowAddParticipantModal(false)}>
-                                    Cancel
-                                </Button>
-                                <Button variant="success" type="submit">
-                                    <i className="bi bi-person-plus me-1"></i>Add Participant
-                                </Button>
-                            </Modal.Footer>
-                        </Form>
-                    </Modal>
-
-                    {/* Edit Participant Modal */}
-                    <Modal
-                        show={showEditParticipantModal}
-                        onHide={() => setShowEditParticipantModal(false)}
-                        centered
-                    >
-                        <Modal.Header closeButton>
-                            <Modal.Title>Edit Participant</Modal.Title>
-                        </Modal.Header>
-                        <Form onSubmit={handleEditParticipant}>
-                            <Modal.Body>
-                                <Form.Group className="mb-3" controlId="editParticipantName">
-                                    <Form.Label>Participant Name</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Enter participant name"
-                                        value={currentParticipant.name}
-                                        onChange={(e) =>
-                                            setCurrentParticipant({ ...currentParticipant, name: e.target.value })
-                                        }
-                                        required
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="editParticipantCollege">
-                                    <Form.Label>College</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Enter college name"
-                                        value={currentParticipant.college}
-                                        onChange={(e) =>
-                                            setCurrentParticipant({ ...currentParticipant, college: e.target.value })
-                                        }
-                                        required
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="editParticipantScore">
-                                    <Form.Label>Score</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        placeholder="Enter score"
-                                        value={currentParticipant.score}
-                                        onChange={(e) =>
-                                            setCurrentParticipant({ ...currentParticipant, score: e.target.value })
-                                        }
-                                        required
-                                        min="0"
-                                    />
-                                </Form.Group>
-                            </Modal.Body>
-                            <Modal.Footer>
-                                <Button variant="secondary" onClick={() => setShowEditParticipantModal(false)}>
-                                    Cancel
-                                </Button>
-                                <Button variant="warning" type="submit">
-                                    <i className="bi bi-save me-1"></i>Save Changes
-                                </Button>
-                            </Modal.Footer>
-                        </Form>
-                    </Modal>
-                </Col>
-            </Row>
-        </Container>
-    );
+      <table className="custom-table">
+        <thead>
+          <tr>
+            <th>Slot No.</th>
+            <th>Team No.</th>
+            {parameters.map((param, index) => (
+              <th key={`param-${index}`}>
+                <p>Parameter {index + 1}</p>
+                <div>
+                  <input type="text" value={param} onChange={(e) => handleParameterChange(e, index)} style={{ background: "transparent" }} />
+                </div>
+              </th>
+            ))}
+            <th>Total Score</th>
+            <th>Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+          {teams.map((team, index) => (
+            <TeamCard key={`team-${index}`} index={index} team={team} calculateTotalScore={calculateTotalScore} handleInputChange={handleTeamChange} />
+          ))}
+        </tbody>
+      </table>
+      <div>
+        <Button type="button">Save</Button>
+      </div>
+    </div>
+  );
 };
 
 export default ScoringDepartment;

@@ -9,12 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dcfest.dtos.JudgeDto;
-import com.dcfest.dtos.UserDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.AvailableEventModel;
-import com.dcfest.models.EventModel;
 import com.dcfest.models.JudgeModel;
-import com.dcfest.models.UserModel;
 import com.dcfest.notifications.email.EmailServices;
 import com.dcfest.repositories.AvailableEventRepository;
 import com.dcfest.repositories.EventRepository;
@@ -45,80 +42,22 @@ public class JudgeServicesImpl implements JudgeServices {
 
     @Override
     public JudgeDto createJudge(JudgeDto judgeDto) {
-        UserModel userModel = this.getUserModel(judgeDto.getUser());
-
-        EventModel eventModel = this.eventRepository.findById(judgeDto.getEventIds().get(0)).orElseThrow(
-                () -> new IllegalArgumentException("Please provide the valid event_id..."));
-
-        AvailableEventModel availableEventModel = this.availableEventRepository
-                .findById(eventModel.getAvailableEvent().getId()).orElseThrow(
-                        () -> new IllegalArgumentException("Please provide the valid available_event_id..."));
-        eventModel.setAvailableEvent(availableEventModel);
-
         // Create the judge
-        JudgeModel judgeModel = new JudgeModel();
-        judgeModel.setUser(userModel);
-        judgeModel.getEvents().add(eventModel);
+        JudgeModel judgeModel = new JudgeModel(
+                null,
+                judgeDto.getName(),
+                judgeDto.getPhone(),
+                new AvailableEventModel(judgeDto.getAvailableEventId())
+        );
         // Save the judge
         judgeModel = this.judgeRepository.save(judgeModel);
-        // Save the event
-        this.eventRepository.save(eventModel);
-
-        // Notify the user
-        String subject = "todo";
-//        String body = this.generateJudgeEmailBody(userModel, eventModel);
-
-//        this.emailServices.sendSimpleMessage(userModel.getEmail(), subject, body);
 
         return this.judgeModelToDto(judgeModel);
-    }
-
-    private String generateJudgeEmailBody(UserModel userModel, EventModel eventModel) {
-        // Fetch venue details for the event
-//        List<VenueModel> venueModels = this.venueRepository.findByAvailableEvent(eventModel.getAvailableEvent());
-//
-//        // Start constructing the email body
-//        StringBuilder emailBody = new StringBuilder();
-//        emailBody.append("<p>Dear ").append(userModel.getName()).append(",</p>")
-//                .append("<p>We are pleased to inform you that you have been appointed as a judge for the event <strong>")
-//                .append(eventModel.getAvailableEvent().getTitle()).append("</strong> as part of Umang DCFest 2024.</p>")
-//                .append("<p><strong>Event Details:</strong></p>")
-//                .append("<ul>")
-//                .append("<li><strong>Event Name:</strong> ").append(eventModel.getAvailableEvent().getTitle())
-//                .append("</li>");
-//
-//        // Add venue details for each venue
-//        for (VenueModel venueModel : venueModels) {
-//            emailBody.append("<li><strong>Venue:</strong> ").append(venueModel.getName()).append("</li>")
-//                    .append("<li><strong>Date & Time:</strong> ")
-//                    .append(venueModel.getStart().toLocalDate()).append(" at ")
-//                    .append(venueModel.getStart().toLocalTime()).append(" to ")
-//                    .append(venueModel.getEnd().toLocalTime()).append("</li>");
-//        }
-//
-//        emailBody.append("</ul>")
-//                .append("<p>We look forward to your valuable participation. Please feel free to contact us if you have any questions.</p>")
-//                .append("<p>Best regards,<br>The Umang DCFest Team</p>");
-
-        return null;
-    }
-
-    private UserModel getUserModel(UserDto userDto) {
-        UserModel userModel = this.userRepository.findById(userDto.getId()).orElse(null);
-        if (userModel != null) {
-            return userModel;
-        }
-        // Create the user
-        userModel = this.modelMapper.map(userDto, UserModel.class);
-
-        // Save the user
-        return this.userRepository.save(userModel);
     }
 
     @Override
     public List<JudgeDto> getAllJudges() {
         List<JudgeModel> judgeModels = this.judgeRepository.findAll();
-
         if (judgeModels.isEmpty()) {
             return new ArrayList<>();
         }
@@ -127,26 +66,15 @@ public class JudgeServicesImpl implements JudgeServices {
     }
 
     @Override
-    public JudgeDto getJudgeByUserId(Long userId) {
-        UserModel userModel = new UserModel();
-        userModel.setId(userId);
-
-        JudgeModel foundJudgeModel = this.judgeRepository.findByUser(userModel).orElseThrow(
-                () -> new ResourceNotFoundException("No `JUDGE` exist for userid: " + userId));
-
-        return this.judgeModelToDto(foundJudgeModel);
-    }
-
-    @Override
-    public List<JudgeDto> getJudgesByEventId(Long eventId) {
-        List<JudgeModel> judgeModels = this.judgeRepository.findByEventId(eventId);
-
+    public List<JudgeDto> getJudgesByAvailableEventId(Long availableEventId) {
+        List<JudgeModel> judgeModels = this.judgeRepository.findByAvailableEvent(new AvailableEventModel(availableEventId));
         if (judgeModels.isEmpty()) {
             return new ArrayList<>();
         }
 
         return judgeModels.stream().map(this::judgeModelToDto).collect(Collectors.toList());
     }
+
 
     @Override
     public JudgeDto getJudgeById(Long id) {
@@ -157,22 +85,21 @@ public class JudgeServicesImpl implements JudgeServices {
     }
 
     @Override
+    public JudgeDto updateJudge(JudgeDto judgeDto) {
+        JudgeModel foundJudgeModel = this.judgeRepository.findById(judgeDto.getId()).orElseThrow(
+                () -> new ResourceNotFoundException("No judge exist for id: " + judgeDto.getId())
+        );
+        foundJudgeModel.setName(judgeDto.getName());
+        foundJudgeModel.setPhone(judgeDto.getPhone());
+
+        foundJudgeModel = this.judgeRepository.save(foundJudgeModel);
+
+        return this.judgeModelToDto(foundJudgeModel);
+    }
+
+    @Override
     public boolean deleteJudge(Long id) {
-       // Fetch the judge by ID
-        JudgeModel judge = this.judgeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Judge not found with ID: " + id));
-
-        // Remove the judge from each event's judges list
-        for (EventModel event : judge.getEvents()) {
-            event.getJudges().remove(judge);
-            this.eventRepository.save(event);  // Save each event after removing the judge
-        }
-
-        // Clear the events list in the judge itself to complete the cleanup
-        judge.getEvents().clear();
-        this.judgeRepository.save(judge);
-
-        // Now delete the judge
+        this.getJudgeById(id);
         this.judgeRepository.deleteById(id);
 
         return true;
@@ -182,23 +109,10 @@ public class JudgeServicesImpl implements JudgeServices {
         if (judgeModel == null) {
             return null;
         }
-        JudgeDto judgeDto = new JudgeDto();
-        judgeDto.setId(judgeModel.getId());
-        // Convert the list of EventModel to a list of event IDs
-        List<Long> eventIds = judgeModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());
-        judgeDto.setEventIds(eventIds);
-        judgeDto.setUser(this.userModelToDto(judgeModel.getUser()));
+        JudgeDto judgeDto = this.modelMapper.map(judgeModel, JudgeDto.class);
+        judgeDto.setAvailableEventId(judgeModel.getAvailableEvent().getId());
 
         return judgeDto;
-    }
-
-    private UserDto userModelToDto(UserModel userModel) {
-        if (userModel == null) {
-            return null;
-        }
-        UserDto userDto = this.modelMapper.map(userModel, UserDto.class);
-
-        return userDto;
     }
 
 }

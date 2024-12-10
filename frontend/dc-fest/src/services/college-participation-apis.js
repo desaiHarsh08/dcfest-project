@@ -1,5 +1,15 @@
 import { API } from "../utils/api";
 
+export const fetchParticipationById = async (id) => {
+    console.log("in api for fetchParticipationById, id:", id)
+    const response = await API.get(`/api/participations/${id}`, {
+        withCredentials: true
+    });
+    console.log('res of fetchParticipationById(), ', response.data);
+
+    return response.data;
+};
+
 export const fetchParticipationEvents = async () => {
     const response = await API.get('/api/participations', {
         withCredentials: true

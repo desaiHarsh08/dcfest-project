@@ -32,9 +32,9 @@
         font-size: 18px;
       }
 
-      header img {
-        height: 100px;
-      }
+<!--      header img {-->
+<!--        height: 100px;-->
+<!--      }-->
 
       main {
         padding: 20px;
@@ -43,7 +43,7 @@
       .table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 14px;
+        font-size: 12px;
         border-left: transparent;
         border-top: transparent;
         border-right: transparent;
@@ -142,10 +142,10 @@
           font-size: 9px;
         }
 
-        @page {
-          size: A4;
-          margin: 20mm;
-        }
+       @page {
+                            margin: 0;
+                            size: A4;
+                        }
 
         .qrcode-container img {
           width: 100px;
@@ -155,12 +155,12 @@
     </style>
   </head>
   <body>
-    <div class="p-0 p-5 py-4 my-2">
-      <header class="mb-3 w-100">
-        <nav style="text-align: center; width: 100%; padding: 10px; position: relative">
+    <div class="p-0 px-5 my-2">
+      <header class="w-100" style="padding:0px">
+        <nav style="text-align: center; width: 100%; padding: 10px 10px 10px 0; position: relative">
           <!-- Left Logo -->
           <img
-            height="80"
+            height="50"
             src="http://13.235.168.107:5006/bges.jpeg"
             alt="BESC Logo"
             style="display: inline-block; vertical-align: middle; position: absolute; left: 10px; top: 50%; transform: translateY(-50%)"
@@ -175,7 +175,7 @@
 
           <!-- Right Logo -->
           <img
-            height="80"
+            height="114"
             src="http://13.235.168.107:5006/umang-logo.jpeg"
             alt="Umang Logo"
             style="display: inline-block; vertical-align: middle; position: absolute; right: 10px; top: 50%; transform: translateY(-50%)"
@@ -183,46 +183,46 @@
         </nav>
       </header>
       <main>
-        <section class="mt-5 h-100" style="width: 100%; height: 100%; display: table; border: .4px solid black;">
+        <section class="h-100" style="width: 100%; height: 100%; display: table; border: .4px solid black;">
           <!-- Left Div -->
           <div style="width: 70%; display: table-cell; vertical-align: top">
-            <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 14px; width: 100%; height: 100%">
-              <tbody>
+            <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 12px; width: 100%; height: 100%">
+              <tbody >
                 <tr>
-                  <td class="w-25"><strong>POP NO.:</strong></td>
-                  <td class="w-75" th:text="${teamNumber}"></td>
+                  <td class="w-50" ><strong>POP NO.:</strong></td>
+                  <td class="w-50" th:text="${teamNumber}"></td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>College:</strong></td>
-                  <td class="w-75" th:text="${college}"></td>
+                  <td class="w-50"><strong>College:</strong></td>
+                  <td class="w-50" th:text="${college}"></td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event:</strong></td>
-                  <td class="w-75" th:text="${eventTitle}"></td>
+                  <td class="w-50"><strong>Event:</strong></td>
+                  <td class="w-50" th:text="${eventTitle}"></td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Venue:</strong></td>
-                  <td class="w-75" th:text="${venueName}"></td>
+                  <td class="w-50"><strong>Venue:</strong></td>
+                  <td class="w-50" th:text="${venueName}"></td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event Date &amp; Time:</strong></td>
-                  <td class="w-75" th:text="${dateTime}"></td>
+                  <td class="w-50"><strong>Event Date &amp; Time:</strong></td>
+                  <td class="w-50" th:text="${dateTime}"></td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Round:</strong></td>
-                  <td class="w-75" th:text="${roundName}"></td>
+                  <td class="w-50"><strong>Round:</strong></td>
+                  <td class="w-50" th:text="${roundName}"></td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Team:</strong></td>
-                  <td class="w-75" th:text="${groupNumber}"></td>
+                  <td class="w-50"><strong>Team:</strong></td>
+                  <td class="w-50" th:text="${groupNumber}"></td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event Master:</strong></td>
-                  <td class="w-75">As fed in s/w in event details section</td>
+                  <td class="w-50"><strong>Event Master:</strong></td>
+                  <td class="w-50">As fed in s/w in event details section</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event Master Mobile:</strong></td>
-                  <td class="w-75">As fed in s/w in event details section</td>
+                  <td class="w-50"><strong>Event Master Mobile:</strong></td>
+                  <td class="w-50">As fed in s/w in event details section</td>
                 </tr>
               </tbody>
             </table>
@@ -233,26 +233,26 @@
             <div class="p-4" style="border: 0.4px solid black; height: 50%; margin: auto">
               <img th:src="${qrcodeImage}" alt="QR Code" width="125" height="125" style="margin: 12px" />
             </div>
-            <p style="font-size: 14px; height: 50%; margin: 0; border: 0.4px solid black">Please ensure that the above QR Code is scanned at the venue to mark your attendance at the event.</p>
+            <p style="font-size: 12px; height: 50%; margin: 0; border: 0.4px solid black">Please ensure that the above QR Code is scanned at the venue to mark your attendance at the event.</p>
           </div>
         </section>
 
         <section class="my-4">
-          <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 14px">
-            <thead class="text-center">
-              <th>Sr. No.</th>
-              <th>Participants</th>
-              <th>Gender</th>
-              <th>Contact No.</th>
-              <th>Participation Type</th>
+          <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 12px">
+            <thead style="text-align: center">
+              <th style="text-align: center">Sr. No.</th>
+              <th style="text-align: center">Participants</th>
+              <th style="text-align: center">Gender</th>
+              <th style="text-align: center">Contact No.</th>
+              <th style="text-align: center">Participation Type</th>
             </thead>
-            <tbody>
+            <tbody style="text-align: center">
             <tr th:each="participant, iterStat : ${participants}" class="text-center">
-              <td th:text="${iterStat.index + 1}"></td> <!-- Use iterStat.index + 1 to get 1-based index -->
-              <td th:text="${participant.name}"></td>
-              <td th:text="${participant.isMale ? 'Male' : 'Female'}"></td>
-              <td th:text="${participant.whatsappNumber}"></td>
-              <td th:text="${participant.type.name()}"></td> <!-- For enum type -->
+              <td style="text-align: center" th:text="${iterStat.index + 1}"></td> <!-- Use iterStat.index + 1 to get 1-based index -->
+              <td style="text-align: center" th:text="${participant.name}"></td>
+              <td style="text-align: center"  th:text="${participant.isMale ? 'Male' : 'Female'}"></td>
+              <td style="text-align: center" th:text="${participant.whatsappNumber}"></td>
+              <td style="text-align: center" th:text="${participant.type.name()}"></td> <!-- For enum type -->
             </tr>
             </tbody>
           </table>

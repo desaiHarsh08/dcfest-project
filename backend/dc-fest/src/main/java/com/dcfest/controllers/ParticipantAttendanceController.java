@@ -3,6 +3,7 @@ package com.dcfest.controllers;
 import com.dcfest.dtos.ParticipantAttendanceDto;
 import com.dcfest.services.ParticipantAttendanceServices;
 import com.dcfest.utils.PdfService;
+import com.dcfest.utils.ScannedQrcodeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
@@ -80,6 +81,27 @@ public class ParticipantAttendanceController {
         }
     }
 
+    @GetMapping("/scan-qrcode/{qrData}")
+    public ResponseEntity<ScannedQrcodeResponse> scanQrData(@PathVariable String qrData) {
+        System.out.println("qrData: " + qrData);
+        return new ResponseEntity<>(
+                this.participantAttendanceServices.scanQrcode(qrData),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/mark-attendance")
+    public ResponseEntity<ParticipantAttendanceDto> markAttendance(
+            @RequestParam Long roundId,
+            @RequestParam Long collegeId,
+            @RequestParam Long participantId
+    ) {
+        return new ResponseEntity<>(
+                this.participantAttendanceServices.markAttendance(roundId, collegeId, participantId),
+                HttpStatus.OK
+        );
+    }
+
     @GetMapping("/get-pop")
     public ResponseEntity<InputStreamResource> getPop(
             @RequestParam Long collegeId,
@@ -106,18 +128,6 @@ public class ParticipantAttendanceController {
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-    // Update Attendance
-    @PutMapping("/update")
-    public ResponseEntity<ParticipantAttendanceDto> updateAttendance(@RequestBody ParticipantAttendanceDto participantAttendanceDto) {
-        try {
-            ParticipantAttendanceDto updatedDto = participantAttendanceServices.updateAttendance(participantAttendanceDto);
-            return new ResponseEntity<>(updatedDto, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
 

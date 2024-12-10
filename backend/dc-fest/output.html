@@ -32,9 +32,9 @@
         font-size: 18px;
       }
 
-      header img {
-        height: 100px;
-      }
+<!--      header img {-->
+<!--        height: 100px;-->
+<!--      }-->
 
       main {
         padding: 20px;
@@ -43,7 +43,7 @@
       .table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 14px;
+        font-size: 12px;
         border-left: transparent;
         border-top: transparent;
         border-right: transparent;
@@ -142,10 +142,10 @@
           font-size: 9px;
         }
 
-        @page {
-          size: A4;
-          margin: 20mm;
-        }
+       @page {
+                            margin: 0;
+                            size: A4;
+                        }
 
         .qrcode-container img {
           width: 100px;
@@ -155,13 +155,13 @@
     </style>
   </head>
   <body>
-    <div class="p-0 p-5 py-4 my-2">
-      <header class="mb-3 w-100">
-        <nav style="text-align: center; width: 100%; padding: 10px; position: relative">
+    <div class="p-0 px-5 my-2">
+      <header class="w-100" style="padding:0px">
+        <nav style="text-align: center; width: 100%; padding: 10px 10px 10px 0; position: relative">
           <!-- Left Logo -->
           <img
-            height="80"
-            src="http://localhost:5003/bges.jpeg"
+            height="50"
+            src="http://13.235.168.107:5006/bges.jpeg"
             alt="BESC Logo"
             style="display: inline-block; vertical-align: middle; position: absolute; left: 10px; top: 50%; transform: translateY(-50%)"
           />
@@ -175,54 +175,54 @@
 
           <!-- Right Logo -->
           <img
-            height="80"
-            src="http://localhost:5003/umang-logo.jpeg"
+            height="114"
+            src="http://13.235.168.107:5006/umang-logo.jpeg"
             alt="Umang Logo"
             style="display: inline-block; vertical-align: middle; position: absolute; right: 10px; top: 50%; transform: translateY(-50%)"
           />
         </nav>
       </header>
       <main>
-        <section class="mt-5 h-100" style="width: 100%; height: 100%; display: table; border: .4px solid black;">
+        <section class="h-100" style="width: 100%; height: 100%; display: table; border: .4px solid black;">
           <!-- Left Div -->
           <div style="width: 70%; display: table-cell; vertical-align: top">
-            <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 14px; width: 100%; height: 100%">
-              <tbody>
+            <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 12px; width: 100%; height: 100%">
+              <tbody >
                 <tr>
-                  <td class="w-25"><strong>POP NO.:</strong></td>
-                  <td class="w-75">TE1_001</td>
+                  <td class="w-50" ><strong>POP NO.:</strong></td>
+                  <td class="w-50">TE1_001</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>College:</strong></td>
-                  <td class="w-75">noP COLLEGE</td>
+                  <td class="w-50"><strong>College:</strong></td>
+                  <td class="w-50">noP COLLEGE</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event:</strong></td>
-                  <td class="w-75">test event 1</td>
+                  <td class="w-50"><strong>Event:</strong></td>
+                  <td class="w-50">test event 1</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Venue:</strong></td>
-                  <td class="w-75">Main Stage2</td>
+                  <td class="w-50"><strong>Venue:</strong></td>
+                  <td class="w-50">Main Stage2</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event Date &amp; Time:</strong></td>
-                  <td class="w-75">05/12/2024, 07:03 am</td>
+                  <td class="w-50"><strong>Event Date &amp; Time:</strong></td>
+                  <td class="w-50">05/12/2024, 07:03 am</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Round:</strong></td>
-                  <td class="w-75">PRELIMINARY</td>
+                  <td class="w-50"><strong>Round:</strong></td>
+                  <td class="w-50">PRELIMINARY</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Team:</strong></td>
-                  <td class="w-75">iccode9_001</td>
+                  <td class="w-50"><strong>Team:</strong></td>
+                  <td class="w-50">iccode9_001</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event Master:</strong></td>
-                  <td class="w-75">As fed in s/w in event details section</td>
+                  <td class="w-50"><strong>Event Master:</strong></td>
+                  <td class="w-50">As fed in s/w in event details section</td>
                 </tr>
                 <tr>
-                  <td class="w-25"><strong>Event Master Mobile:</strong></td>
-                  <td class="w-75">As fed in s/w in event details section</td>
+                  <td class="w-50"><strong>Event Master Mobile:</strong></td>
+                  <td class="w-50">As fed in s/w in event details section</td>
                 </tr>
               </tbody>
             </table>
@@ -231,28 +231,28 @@
           <!-- Right Div -->
           <div style="width: 30%; display: table-cell; vertical-align: top; text-align: center">
             <div class="p-4" style="border: 0.4px solid black; height: 50%; margin: auto">
-              <img src="data:image/png;base64,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" alt="QR Code" width="125" height="125" style="margin: 12px" />
+              <img src="data:image/png;base64,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" alt="QR Code" width="125" height="125" style="margin: 12px" />
             </div>
-            <p style="font-size: 14px; height: 50%; margin: 0; border: 0.4px solid black">Please ensure that the above QR Code is scanned at the venue to mark your attendance at the event.</p>
+            <p style="font-size: 12px; height: 50%; margin: 0; border: 0.4px solid black">Please ensure that the above QR Code is scanned at the venue to mark your attendance at the event.</p>
           </div>
         </section>
 
         <section class="my-4">
-          <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 14px">
-            <thead class="text-center">
-              <th>Sr. No.</th>
-              <th>Participants</th>
-              <th>Gender</th>
-              <th>Contact No.</th>
-              <th>Participation Type</th>
+          <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 12px">
+            <thead style="text-align: center">
+              <th style="text-align: center">Sr. No.</th>
+              <th style="text-align: center">Participants</th>
+              <th style="text-align: center">Gender</th>
+              <th style="text-align: center">Contact No.</th>
+              <th style="text-align: center">Participation Type</th>
             </thead>
-            <tbody>
+            <tbody style="text-align: center">
             <tr class="text-center">
-              <td>1</td> <!-- Use iterStat.index + 1 to get 1-based index -->
-              <td>Harsh Desai updated</td>
-              <td>Male</td>
-              <td>9322585046</td>
-              <td>PERFORMER</td> <!-- For enum type -->
+              <td style="text-align: center">1</td> <!-- Use iterStat.index + 1 to get 1-based index -->
+              <td style="text-align: center">Harsh Desai updated</td>
+              <td style="text-align: center">Male</td>
+              <td style="text-align: center">9322585046</td>
+              <td style="text-align: center">PERFORMER</td> <!-- For enum type -->
             </tr>
             </tbody>
           </table>

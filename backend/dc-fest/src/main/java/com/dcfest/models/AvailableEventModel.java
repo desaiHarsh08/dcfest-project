@@ -44,6 +44,10 @@ public class AvailableEventModel {
 
     private String code;
 
+    private String eventMaster;
+
+    private String eventMasterPhone;
+
     public AvailableEventModel(Long id) {
         this.id = id;
     }

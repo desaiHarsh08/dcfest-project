@@ -23,7 +23,6 @@ const RULE_SEQ_NAME = [
   "NOTE",
 ];
 
-
 const roundType = ["PRELIMINARY", "QUARTER", "SEMI_FINAL", "FINAL"];
 const rounds = [];
 for (let i = 0; i < roundType.length; i++) {
@@ -55,9 +54,12 @@ const AddEventPage = () => {
     slug: "",
     code: "",
     type: "INDIVIDUAL",
+    eventMaster: "",
+    eventMasterPhone: "",
     eventCategoryId: null,
     eventRules: [],
     rounds: [],
+    judges: [],
   });
 
   useEffect(() => {
@@ -80,7 +82,7 @@ const AddEventPage = () => {
     });
   }, []);
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleDefaultEventRules = (ruleTemplates) => {
     const eventRules = [];
@@ -192,6 +194,37 @@ const AddEventPage = () => {
     setEvent((prev) => ({ ...prev, rounds: newEventRounds }));
   };
 
+  const validatePhoneNumber = (phone) => {
+    // Define regex for a valid phone number
+    const phoneRegex = /^[6-9]\d{9}$/; // Valid for Indian phone numbers (10 digits, starting with 6-9)
+
+    // Test the phone number
+    if (phoneRegex.test(phone)) {
+      console.log("Valid phone number:", phone);
+      return true;
+    } else {
+      console.error("Invalid phone number:", phone);
+      return false;
+    }
+  };
+
+  const handleJudgeChange = (e, index) => {
+    const { name, value } = e.target;
+    const newEvent = { ...event };
+    newEvent.judges = newEvent.judges.map((judge, idx) => {
+      if (idx == index) {
+        if (name == "judgeName") {
+          return { ...judge, name: value };
+        } else {
+          return { ...judge, phone: value };
+        }
+      }
+      return judge;
+    });
+
+    setEvent(newEvent);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (event.title == null || event.title == undefined || event.title.trim() == "") {
@@ -204,6 +237,11 @@ const AddEventPage = () => {
     }
     if (event.rounds.length === 0) {
       alert("Please provide the rounds!");
+      return;
+    }
+
+    if (!validatePhoneNumber(event.eventMasterPhone)) {
+      alert("Please provide the valid phone no.");
       return;
     }
 
@@ -314,6 +352,23 @@ const AddEventPage = () => {
     // window.location.reload();
   };
 
+  const handleAddJudge = () => {
+    const newEvent = { ...event };
+    newEvent.judges.push({
+      name: "",
+      phone: "",
+    });
+
+    console.log("new judge:", newEvent);
+    setEvent(newEvent);
+  };
+
+  const handleDeleteJudge = (judgeIndex) => {
+    const newEvent = { ...event };
+    newEvent.judges = newEvent.judges.filter((judge, idx) => idx != judgeIndex);
+    setEvent(newEvent);
+  };
+
   const handleClosePreview = () => {
     // Close the preview modal without submitting
     setShowPreview(false);
@@ -340,7 +395,7 @@ const AddEventPage = () => {
       <h1 className="text-center text-primary mb-4">Add New Event</h1>
       <form onSubmit={handleSubmit}>
         <div className="row g-4">
-          <EventInfo categories={categories} event={event} onChange={handleChange} />
+          <EventInfo categories={categories} event={event} onChange={handleChange} onAddJudge={handleAddJudge} onDeleteJudge={handleDeleteJudge} onJudgeChange={handleJudgeChange} />
           <EventRounds eventRounds={eventRounds} onChange={handleChangeRound} />
           <EventRules ruleTemplates={ruleTemplates} event={event} onAddRule={handleAddRule} onDeleteRule={handleDeleteRule} onChangeRule={handleChangeRule} />
         </div>

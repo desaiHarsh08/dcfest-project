@@ -97,8 +97,6 @@ const EventPage = () => {
     }
   };
 
-  let srno = 0;
-
   return (
     <Container className="py-5">
       {/* Back Button */}
@@ -124,6 +122,25 @@ const EventPage = () => {
                   <i>&quot;{event?.oneLiner}&quot;</i>
                 </Card.Subtitle>
                 <Card.Text>{event?.description}</Card.Text>
+                <hr />
+                <div>
+                  <h5>Event Master</h5>
+                  <p className="m-0 p-0">{event?.eventMaster}</p>
+                  <p className="m-0 p-0">{event?.eventMasterPhone}</p>
+                </div>
+                <hr />
+                <div>
+                  <h5>Judges</h5>
+                  <ul className="p-0">
+                    {event?.judges.map((judge, index) => (
+                      <li key={`judge-${index}`} className="d-flex gap-2">
+                        <p>{index + 1}.</p>
+                        <p>{judge?.name}</p>
+                        <p>{judge?.phone}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 <hr />
                 <div>
                   <h5 className="my-4">Event Rules</h5>

@@ -1,0 +1,119 @@
+/* Main Container */
+.scoring-department {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Header Section */
+.header {
+    margin-bottom: 20px;
+}
+
+.header .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.header .col {
+    flex: 1;
+    text-align: left;
+    font-size: 14px;
+    padding: 5px;
+    border-bottom: 1px solid #000;
+}
+
+/* Table */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.custom-table th,
+.custom-table td {
+    border: 1px solid black;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.custom-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.custom-table td {
+    height: 60px;
+    /* Default height for other cells */
+    padding: 10px;
+}
+
+/* Styling for parameter cells to add input boxes */
+.custom-table td input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.parameter-input {
+    margin-bottom: 10px;
+    /* Space between rows */
+}
+
+/* Adjustments for read-only fields */
+.custom-table td input[readonly] {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header .col {
+        font-size: 12px;
+    }
+
+    .custom-table {
+        font-size: 12px;
+    }
+
+    .custom-table td input {
+        font-size: 12px;
+    }
+}
+
+/* Styling for parameter input row */
+.custom-table thead tr:nth-child(2) {
+    background-color: #f9f9f9;
+    /* Light background for the parameter name row */
+}
+
+.custom-table thead input {
+    width: 100%;
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Optional: Adjust spacing for better alignment */
+.custom-table td input {
+    margin-top: 10px;
+}
+
+/* Adjustments for responsive design */
+@media (max-width: 768px) {
+    .custom-table thead input {
+        font-size: 12px;
+    }
+
+    .custom-table td input {
+        font-size: 12px;
+    }
+}

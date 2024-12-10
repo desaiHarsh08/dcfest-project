@@ -4,6 +4,7 @@ import com.dcfest.dtos.ParticipantAttendanceDto;
 import com.dcfest.models.ParticipantAttendanceModel;
 import com.dcfest.models.ParticipantModel;
 import com.dcfest.models.RoundModel;
+import com.dcfest.utils.ScannedQrcodeResponse;
 import org.springframework.core.io.InputStreamSource;
 
 import java.util.List;
@@ -18,7 +19,9 @@ public interface ParticipantAttendanceServices {
 
     List<ParticipantAttendanceDto> getAllAttendances();
 
-    ParticipantAttendanceDto updateAttendance(ParticipantAttendanceDto participantAttendanceDto);
+    ScannedQrcodeResponse scanQrcode(String qrData);
+
+    ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId);
 
     boolean deleteAttendance(Long id);
 

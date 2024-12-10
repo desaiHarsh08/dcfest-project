@@ -28,17 +28,7 @@ public class JudgeController {
         return new ResponseEntity<>(judges, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<JudgeDto> getJudgeByUserId(@PathVariable Long userId) {
-        JudgeDto judge = judgeServices.getJudgeByUserId(userId);
-        return new ResponseEntity<>(judge, HttpStatus.OK);
-    }
 
-    @GetMapping("/event/{eventId}")
-    public ResponseEntity<List<JudgeDto>> getJudgesByEventId(@PathVariable Long eventId) {
-        List<JudgeDto> judges = judgeServices.getJudgesByEventId(eventId);
-        return new ResponseEntity<>(judges, HttpStatus.OK);
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<JudgeDto> getJudgeById(@PathVariable Long id) {

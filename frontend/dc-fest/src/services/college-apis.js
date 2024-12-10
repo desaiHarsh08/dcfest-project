@@ -53,6 +53,7 @@ export const updateCollege = async (college) => {
     
     return response.data;
 };
+
 export const resetPassword = async (college) => {
     console.log(college);
     const response = await API.put(`/api/colleges/reset-password/${college?.id}`, college, {

@@ -37,4 +37,10 @@ public class CollegeParticipationModel {
     @JoinColumn(name = "available_event_id_fk", nullable = false)
     private AvailableEventModel availableEvent;
 
+    private String teamNumber;
+
+    public CollegeParticipationModel(Long id) {
+        this.id = id;
+    }
+
 }

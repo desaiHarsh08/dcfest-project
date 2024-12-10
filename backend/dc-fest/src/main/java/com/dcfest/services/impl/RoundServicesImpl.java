@@ -91,13 +91,18 @@ public class RoundServicesImpl implements RoundServices {
         return this.roundModelToDto(foundRoundModel);
     }
 
+    // TODO
     @Override
     public boolean deleteRound(Long id) {
         this.getRoundById(id);
-        // Delete the round
-        this.roundRepository.deleteById(id);
+        // Delete all the participant attendances
 
-        return true;
+        // Delete all the scorecards
+
+        // Delete the round
+//        this.roundRepository.deleteById(id);
+
+        return false;
     }
 
     private RoundDto roundModelToDto(RoundModel roundModel) {

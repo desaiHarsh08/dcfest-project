@@ -6,6 +6,8 @@ import { updateAvailableEvent } from "../../services/available-events-apis";
 const EditModal = ({ isOpen, onClose, event, setEvent }) => {
   if (!isOpen) return null;
 
+  
+
   return (
     // <Modal show={isOpen} onHide={onClose} size="lg" centered>
     //   <Modal.Header closeButton>

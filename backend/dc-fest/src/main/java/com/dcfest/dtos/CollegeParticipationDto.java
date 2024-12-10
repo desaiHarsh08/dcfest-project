@@ -15,4 +15,6 @@ public class CollegeParticipationDto {
 
     private Long availableEventId;
 
+    private String teamNumber;
+
 }

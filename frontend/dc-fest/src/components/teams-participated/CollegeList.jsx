@@ -3,7 +3,7 @@
 /* eslint-disable react/prop-types */
 import { Col, Row, Table, Modal, Button, Spinner } from "react-bootstrap";
 import CollegeRow from "./CollegeRow";
-import { deleteCollege } from "../../services/college-apis";
+import { deleteCollege, updateCollege } from "../../services/college-apis";
 import { useEffect, useState } from "react";
 import { fetchParticipants, fetchParticipantsByCollegeId } from "../../services/participants-api";
 import * as XLSX from "xlsx";
@@ -198,11 +198,55 @@ const CollegeList = ({ colleges, setColleges, loading }) => {
     saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `colleges.xlsx`);
   };
 
+  const handleCollegeChange = (e, collegeIndex) => {
+    const { name, value } = e.target;
+    let newColleges = [...colleges];
+    newColleges[collegeIndex][name] = value;
+
+    setColleges(newColleges);
+  };
+
+  const handleRepresentativeChange = (e, collegeIndex, repIndex) => {
+    const { name, value } = e.target;
+    let newColleges = [...colleges];
+    newColleges = newColleges.map((college, idx) => {
+      if (collegeIndex == idx) {
+        const newCollege = { ...college };
+        newCollege.representatives = newCollege.representatives.map((rep, index) => {
+          if (index == repIndex) {
+            return { ...rep, [name]: value };
+          }
+          return rep;
+        });
+        return newCollege;
+      }
+      return college;
+    });
+
+    setColleges(newColleges);
+  };
+
+  const handleEdit = async (updatedCollege) => {
+    try {
+      const response = await updateCollege(updatedCollege);
+      const newColleges = colleges.map((college) => {
+        if (college.id == updatedCollege.id) {
+          return response;
+        }
+        return college;
+      });
+      setColleges(newColleges);
+    } catch (error) {
+      alert("Unable to update the college... Please try again later!");
+      console.log("error:", error);
+    }
+  };
+
   return (
     <>
       <div className="d-flex justify-content-center my-3"></div>
       <Row className="mt-5 justify-content-center">
-        <Col md={10}>
+        <Col md={12}>
           <div className="d-flex justify-content-between align-items-center  my-3">
             <div className="d-flex align-items-center">
               <h2 className="m-0">List of Colleges</h2>
@@ -229,11 +273,14 @@ const CollegeList = ({ colleges, setColleges, loading }) => {
                 <CollegeRow
                   key={college.id}
                   college={college}
+                  onChange={handleCollegeChange}
+                  onRepresentativeChange={handleRepresentativeChange}
                   index={index}
                   onDelete={handleShowModal}
                   onDownload={handleDownloadCollegeParticipants}
                   loading={loadingId === college.id}
                   downloading={downloadingId === college.id}
+                  onEdit={handleEdit}
                 />
               ))}
             </tbody>

@@ -8,7 +8,6 @@ import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
 import { FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
 import { fetchCollegeByIcCode } from "../services/college-apis";
-import { fetchParticipationsByAvailableEventId } from "../services/college-participation-apis";
 
 const participantObj = {
   name: "",
@@ -564,7 +563,7 @@ const CollegeEvent = () => {
                 {college &&
                   participants.length == 0 &&
                   slotsOccupied != null &&
-                  slotsOccupied + 1 < availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
+                  slotsOccupied + 1 <= availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
                     <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
                       Register Participant
                     </Link>

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
-import com.dcfest.models.JudgeModel;
 import com.dcfest.models.ParticipantModel;
 import com.dcfest.repositories.JudgeRepository;
 import com.dcfest.repositories.ParticipantRepository;
@@ -13,13 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dcfest.dtos.EventDto;
-import com.dcfest.dtos.JudgeDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.AvailableEventModel;
 import com.dcfest.models.EventModel;
 import com.dcfest.repositories.EventRepository;
 import com.dcfest.services.EventServices;
-import com.dcfest.services.JudgeServices;
 import com.dcfest.services.ParticipantServices;
 
 @Service
@@ -30,9 +27,6 @@ public class EventServicesImpl implements EventServices {
 
     @Autowired
     private EventRepository eventRepository;
-
-    @Autowired
-    private JudgeServices judgeServices;
 
     @Autowired
     private JudgeRepository judgeRepository;
@@ -52,8 +46,6 @@ public class EventServicesImpl implements EventServices {
         eventModel.setAvailableEvent(availableEventModel);
         // Save the event
         eventModel = this.eventRepository.save(eventModel);
-
-        // Create the judge -> will be done while creating a judge
 
         // Create the participant -> will be done while creating a participant
 
@@ -114,15 +106,8 @@ public class EventServicesImpl implements EventServices {
             this.participantRepository.save(participant);
         }
 
-        // Remove the event from each judge's event list
-        for (JudgeModel judge : event.getJudges()) {
-            judge.getEvents().remove(event);
-            this.judgeRepository.save(judge);
-        }
-
         // Clear participants and judges lists in the event itself
         event.getParticipants().clear();
-        event.getJudges().clear();
 
         // Save the event after clearing relationships to update the join tables
         this.eventRepository.save(event);

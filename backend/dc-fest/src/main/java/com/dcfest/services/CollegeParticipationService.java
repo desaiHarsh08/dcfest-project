@@ -12,6 +12,8 @@ public interface CollegeParticipationService {
 
     List<CollegeParticipationDto> getAllParticipations();
 
+    CollegeParticipationDto getParticipationById(Long id);
+
     List<CollegeParticipationDto> getByAvailableEvent(Long availableEventId);
 
     List<CollegeParticipationDto> getByCollege(Long collegeId);

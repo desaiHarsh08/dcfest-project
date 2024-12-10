@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ParticipationForm from "../components/participant-form/ParticipationForm";
 import { useEffect, useState } from "react";

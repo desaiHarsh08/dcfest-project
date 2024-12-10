@@ -151,6 +151,15 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
         return true;
     }
 
+    @Override
+    public CollegeParticipationDto getParticipationById(Long id) {
+        CollegeParticipationModel collegeParticipationModel = this.participationRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("No participation exist for id: " + id)
+        );
+
+        return this.collegeParticipationModelToDto(collegeParticipationModel);
+    }
+
     private CollegeParticipationDto collegeParticipationModelToDto(
             CollegeParticipationModel collegeParticipationModel) {
         if (collegeParticipationModel == null) {

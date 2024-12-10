@@ -10,9 +10,9 @@ public interface JudgeServices {
 
     List<JudgeDto> getAllJudges();
 
-    JudgeDto getJudgeByUserId(Long userId);
+    JudgeDto updateJudge(JudgeDto judgeDto);
 
-    List<JudgeDto> getJudgesByEventId(Long eventId);
+    List<JudgeDto> getJudgesByAvailableEventId(Long availableEventId);
 
     JudgeDto getJudgeById(Long id);
 

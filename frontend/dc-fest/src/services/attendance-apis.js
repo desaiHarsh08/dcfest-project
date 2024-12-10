@@ -31,3 +31,20 @@ export const getPop = async (collegeId, availableEventId, roundId) => {
         throw error;
     }
 };
+
+
+export const scanQrcode = async (qrData) => {
+    const response = await API.get(`/api/attendance/scan-qrcode/${qrData}`, {
+        withCredentials: true
+    });
+
+    return response.data;
+};
+
+export const markAttendanceForParticipant = async (roundId, collegeId, participantId) => {
+    const response = await API.get(`/api/attendance/mark-attendance?roundId=${roundId}&collegeId=${collegeId}&participantId=${participantId}`, {
+        withCredentials: true
+    });
+
+    return response.data;
+};

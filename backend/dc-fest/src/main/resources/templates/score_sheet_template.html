@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UMANG 2024 | Scoresheet</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        margin: 0;
+        padding: 0;
+      }
+
+      .h-50 {
+        height: 50%;
+      }
+
+      header {
+        padding: 20px 0;
+      }
+
+      header nav {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      header h5 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      main {
+        padding: 20px;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        border-left: transparent;
+        border-top: transparent;
+        border-right: transparent;
+        border-bottom: transparent;
+      }
+
+      .table th,
+      .table td {
+        padding: 8px;
+        text-align: left;
+        border: 0.4px solid black;
+      }
+
+      /* .table th {} */
+
+      .w-75 {
+        width: 75%;
+      }
+
+      .w-25 {
+        width: 35%;
+      }
+
+      .d-flex {
+        display: flex;
+      }
+
+      .flex-column {
+        flex-direction: column;
+      }
+
+      .justify-content-center {
+        justify-content: center;
+      }
+
+      .align-items-center {
+        align-items: center;
+      }
+
+      .mt-5 {
+        margin-top: 30px;
+      }
+
+      .my-4 {
+        margin: 40px 0;
+      }
+
+      .p-5 {
+        padding: 20px;
+      }
+
+      .text-center {
+        text-align: center !important;
+      }
+
+      .text-center img {
+        margin: 0 auto;
+      }
+
+      .footer {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 12px;
+        padding: 10px;
+      }
+
+      /* For QR code container */
+      .qrcode-container {
+        border: 0.4px solid #ddd;
+        padding: 10px;
+        text-align: center;
+        margin-top: 15px;
+      }
+
+      .qrcode-container img {
+        border-radius: 5px;
+      }
+
+      .qrcode-text {
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      @media print {
+        body {
+          font-size: 12px;
+        }
+
+        .table th,
+        .table td {
+          padding: 6px;
+        }
+
+        .footer {
+          font-size: 9px;
+        }
+
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+
+        .qrcode-container img {
+          width: 100px;
+          height: 100px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="p-0 p-5 py-4 my-2">
+      <header class="w-100" style="padding: 0px">
+        <nav style="text-align: center; width: 100%; padding: 10px 10px 10px 0; position: relative">
+          <!-- Left Logo -->
+          <img
+            height="50"
+            src="http://13.235.168.107:5006/bges.jpeg"
+            alt="BESC Logo"
+            style="display: inline-block; vertical-align: middle; position: absolute; left: 10px; top: 50%; transform: translateY(-50%)"
+          />
+
+          <!-- Center Text -->
+          <div style="text-align: center; display: inline-block">
+            <h5 style="margin: 5px 0">The Bhawanipur Education Society College</h5>
+            <h5 style="margin: 5px 0">UMANG 2024</h5>
+            <h5 style="margin: 5px 0">Proof of Participants</h5>
+          </div>
+
+          <!-- Right Logo -->
+          <img
+            height="114"
+            src="http://13.235.168.107:5006/umang-logo.jpeg"
+            alt="Umang Logo"
+            style="display: inline-block; vertical-align: middle; position: absolute; right: 10px; top: 50%; transform: translateY(-50%)"
+          />
+        </nav>
+      </header>
+      <main>
+        <section class="mt-5 h-100" style="width: 100%; height: 100%; display: table; border: 0.4px solid black">
+          <!-- Left Div -->
+          <div style="width: 70%; border: 0.4px solid black; display: table-cell; vertical-align: top; border-bottom: transparent; border-left: transparent; border-top: transparent">
+            <div style="display: table; height: 33%; width: 100%">
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black">Department</p>
+              <p style="margin: 0; padding: 4px 0; display: table-cell; width: 50%; border: 0.4px solid black" th:text="${categoryName}"></p>
+            </div>
+            <div style="display: table; height: 33%; width: 100%">
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black">Event Name</p>
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 50%; border: 0.4px solid black" th:text="${eventTitle}"></p>
+            </div>
+
+            <div style="display: table; height: 33%; width: 100%">
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black">Event Venue</p>
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 50%; border: 0.4px solid black" th:text="${venue}"></p>
+            </div>
+          </div>
+
+          <!-- Right Div -->
+          <div style="width: 30%; display: table-cell; vertical-align: top">
+            <div class="p-4" style="border: 0.4px solid black; height: 50%; margin: auto; border-top: transparent; border-right: transparent; border-left: transparent">
+              <tr>
+                <td class="w-25"><strong style="margin: 5px">JUDGE NAME:</strong></td>
+                <td class="w-75"></td>
+              </tr>
+            </div>
+            <tr>
+              <td class="w-25"><strong style="margin: 5px">EVENT DATE:</strong></td>
+              <td class="w-75" th:text="${eventDate}"></td>
+            </tr>
+          </div>
+        </section>
+        <section class="my-4" style="width: 100%">
+          <table style="width: 100%; border-collapse: collapse; table-layout: fixed">
+            <thead>
+              <tr>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black">Slot No.</th>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black">Team No.</th>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black; padding: 0">
+                  <p style="margin: 0; border-bottom: 0.4px solid black; height: 20px">Parameter 1</p>
+                  <p style="margin: 0; height: 20px" th:text="${param1}"></p>
+                </th>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black; padding: 0">
+                  <p style="margin: 0; border-bottom: 0.4px solid black; height: 20px">Parameter 2</p>
+                  <p style="margin: 0; height: 20px" th:text="${param2}"></p>
+                </th>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black; padding: 0">
+                  <p style="margin: 0; border-bottom: 0.4px solid black; height: 20px">Parameter 3</p>
+                  <p style="margin: 0; height: 20px" th:text="${param3}"></p>
+                </th>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black; padding: 0">
+                  <p style="margin: 0; border-bottom: 0.4px solid black; height: 20px">Parameter 4</p>
+                  <p style="margin: 0; height: 20px" th:text="${param4}"></p>
+                </th>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black">Total Score</th>
+                <th style="padding: 8px; text-align: center; border: 0.4px solid black">Rank</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="team, iterStat : ${teams}">
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${iterStat.index + 1}"></td>
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${team.teamNumber}"></td>
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${team.p1}"></td>
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${team.p2}"></td>
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${team.p3}"></td>
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${team.p4}"></td>
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${team.totalPoints}"></td>
+                <td style="text-align: center; border: 0.4px solid black; padding: 4px 0" th:text="${team.rank}"></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+      <div class="footer"></div>
+    </div>
+  </body>
+</html>

@@ -355,7 +355,8 @@ const EventParticipationPage = () => {
         setCategories(categoriesData);
 
         if (categoriesData.length > 0) {
-          const firstCategory = categoriesData.find((c) => c.name == "TEST_CATEGORY");
+          //   const firstCategory = categoriesData.find((c) => c.name == "TEST_CATEGORY");
+          const firstCategory = categoriesData[0];
           setCategoryFilter(firstCategory.id);
           setSelectedCategory(firstCategory);
 
@@ -389,8 +390,10 @@ const EventParticipationPage = () => {
       const response = await fetchParticipantsByEventId(event.id);
 
       setParticipants(response);
-
-      setSelectedCollege(colleges.find((c) => c.id == response[0].collegeId));
+      console.log(response);
+      if (response.length > 0) {
+        setSelectedCollege(colleges.find((c) => c.id == response[0].collegeId));
+      }
     } catch (err) {
       console.error("Error fetching participants:", err);
       setError("Failed to load participants.");
@@ -572,14 +575,14 @@ const EventParticipationPage = () => {
           className="category-dropdown"
           value={categoryFilter}
           onChange={(e) => {
-            // const tmpSelectedCategory = categories.find((c) => c.id == e.target.value);
-            // setCategoryFilter(e.target.value);
-            // setSelectedCategory(tmpSelectedCategory);
-            // if (tmpSelectedCategory) {
-            //   const firstEvent = tmpSelectedCategory.availableEvents[0];
-            //   setEventFilter(firstEvent.id);
-            //   setAvailableEvent(firstEvent);
-            // }
+            const tmpSelectedCategory = categories.find((c) => c.id == e.target.value);
+            setCategoryFilter(e.target.value);
+            setSelectedCategory(tmpSelectedCategory);
+            if (tmpSelectedCategory) {
+              const firstEvent = tmpSelectedCategory.availableEvents[0];
+              setEventFilter(firstEvent.id);
+              setAvailableEvent(firstEvent);
+            }
           }}
         >
           {categories.map((category, categoryIndex) => (
