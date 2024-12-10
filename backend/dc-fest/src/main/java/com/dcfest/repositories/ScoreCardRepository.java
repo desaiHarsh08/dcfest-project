@@ -14,4 +14,6 @@ public interface ScoreCardRepository extends JpaRepository<ScoreCardModel, Long>
 
     Optional<ScoreCardModel> findByCollegeParticipationAndRound(CollegeParticipationModel collegeParticipation, RoundModel round);
 
+    List<ScoreCardModel> findByRound(RoundModel round);
+
 }

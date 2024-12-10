@@ -14,6 +14,8 @@ public interface ScoreCardServices {
 
     ScoreCardDto getScoreCardById(Long id);
 
+    List<ScoreCardDto> getScoreCardsByRoundId(Long id);
+
     List<ScoreCardDto> getAllScoreCards();
 
     boolean deleteScoreCard(Long id);

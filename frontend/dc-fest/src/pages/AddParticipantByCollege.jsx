@@ -64,7 +64,7 @@ export default function AddParticipantByCollege() {
 
         if (!maxSlotsAvailable) navigate(`/${iccode}/${eventId}`);
 
-        if (data.length > 0 || slotsOccupied + 1 > maxSlotsAvailable) {
+        if (data.length > 0 || slotsOccupied + 1 > maxSlotsAvailable || new Date() > new Date("2024-12-11T14:00:00")) {
           navigate(`/${iccode}/${eventId}`);
         }
       });
@@ -110,7 +110,7 @@ export default function AddParticipantByCollege() {
   }
 
   return (
-    <div className="container vh-100 d-flex flex-column justify-content-center ">
+    <div className=" vh-100 d-flex flex-column justify-content-center ">
       <div>
         <Link to={`../`} className="btn btn-outline-primary" style={{ textDecoration: "none" }}>
           &larr; Back

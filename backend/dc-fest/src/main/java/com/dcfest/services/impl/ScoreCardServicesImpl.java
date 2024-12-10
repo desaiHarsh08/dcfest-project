@@ -82,6 +82,16 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
     }
 
     @Override
+    public List<ScoreCardDto> getScoreCardsByRoundId(Long roundId) {
+        List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByRound(new RoundModel(roundId));
+        if (scoreCardModels.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return scoreCardModels.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    @Override
     public ScoreCardDto createScoreCard(ScoreCardDto scoreCardDto) {
         // Return if already created
         if (this.scoreCardRepository.findByCollegeParticipationAndRound(
@@ -252,11 +262,11 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
     public boolean deleteScoreCard(Long id) {
         ScoreCardDto foundScoreCard = this.getScoreCardById(id);
         // Delete all the score-parameters
-//        for (ScoreParameterDto scoreParameterDto: foundScoreCard.getScoreParameters()) {
-//            if (!this.scoreParameterServices.deleteScoreParameter(scoreParameterDto.getId())) {
-//                throw new IllegalArgumentException("unable to delete the score_parameter for id: " + scoreParameterDto.getId());
-//            }
-//        }
+        for (ScoreParameterDto scoreParameterDto: foundScoreCard.getScoreParameters()) {
+            if (!this.scoreParameterServices.deleteScoreParameter(scoreParameterDto.getId())) {
+                throw new IllegalArgumentException("unable to delete the score_parameter for id: " + scoreParameterDto.getId());
+            }
+        }
 
         // Delete the scorecard
         this.scoreCardRepository.deleteById(id);

@@ -37,6 +37,9 @@ const EventCard = ({ event, college }) => {
   };
 
   const handleCollegeRegister = async () => {
+    if (new Date() > new Date("2024-12-11T14:00:00")) {
+      return;
+    }
     setIsLoading(true);
     try {
       await doParticipate({
@@ -72,6 +75,10 @@ const EventCard = ({ event, college }) => {
   };
 
   const handleDeleteParticipation = async (participationId) => {
+    if (new Date() > new Date("2024-12-11T14:00:00")) {
+      return;
+    }
+
     let isConfirmed = confirm(`Are you sure that you want to remove your college's participation for "${event?.title}"?`);
     if (!isConfirmed) {
       return;
@@ -122,7 +129,7 @@ const EventCard = ({ event, college }) => {
                   {isLoading ? "Please wait..." : "Enrolled"}
                 </Button>
               ) : !event?.closeRegistration && slotsOccupied < event?.eventRules.find((ele) => ele.eventRuleTemplate.name === "REGISTERED_SLOTS_AVAILABLE")?.value ? (
-                <Button variant="primary" onClick={handleCollegeRegister} disabled={isLoading} className="d-flex align-items-center">
+                <Button variant="primary" onClick={handleCollegeRegister} disabled={isLoading || new Date() > new Date("2024-12-11T14:00:00")} className="d-flex align-items-center">
                   {isLoading ? (
                     <>
                       <FaSpinner className="me-2 spinner-border-sm" />
@@ -133,7 +140,9 @@ const EventCard = ({ event, college }) => {
                   )}
                 </Button>
               ) : (
-                <Button disabled variant="danger">Full</Button>
+                <Button disabled variant="danger">
+                  Full
+                </Button>
               )}
             </div>
           </Card.Body>

@@ -306,8 +306,9 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
     setLoading(true);
     console.log(" confirm, newEvent:", newEvent);
     try {
-      const response = await onConfirmAction(newEvent);
-      console.log(response);
+      console.log("updating:", newEvent);
+      await onConfirmAction(newEvent);
+
       alert("Event Successfully saved!");
     } catch (error) {
       console.log(error);
@@ -323,13 +324,40 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
     setShowPreview(false);
   };
 
+  const handleAddRound = () => {
+    const newEvent = { ...event };
+    newEvent.rounds.push({
+      roundType: roundType[0],
+      status: "NOT_STARTED",
+      note: "",
+      disableNotifications: false,
+      qualifyNumber: 1,
+      venue: "",
+      startDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, "0")}-${new Date().getDate().toString().padStart(2, "0")}`,
+      endDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, "0")}-${new Date().getDate().toString().padStart(2, "0")}`,
+      startTime: new Date(),
+      endTime: new Date(),
+    });
+
+    setEvent(newEvent);
+  };
+
+  const handleDeleteRound = (roundIndex) => {
+    console.log("in delete, roundIndex:", roundIndex);
+    const newEvent = { ...event };
+    console.log("in delete, before:", newEvent.rounds);
+    newEvent.rounds = newEvent.rounds.filter((_, idx) => idx != roundIndex);
+    console.log("in delete, after:", newEvent.rounds);
+    setEvent(newEvent);
+  };
+
   return (
     <motion.div className="container mt-5 pb-5 mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <h1 className="text-center text-primary mb-4">{formType} Event</h1>
       <form onSubmit={handleSubmit}>
         <div className="row g-4">
           <EventInfo categories={categories} event={event} onChange={handleChange} onAddJudge={handleAddJudge} onDeleteJudge={handleDeleteJudge} onJudgeChange={handleJudgeChange} />
-          <EventRounds eventRounds={eventRounds} onChange={handleChangeRound} />
+          <EventRounds eventRounds={event.rounds} onChange={handleChangeRound} onAddRound={handleAddRound} onDeleteRound={handleDeleteRound} />
           <EventRules ruleTemplates={ruleTemplates} event={event} onAddRule={handleAddRule} onDeleteRule={handleDeleteRule} onChangeRule={handleChangeRule} />
         </div>
 

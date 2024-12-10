@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import com.dcfest.dtos.ScoreCardDto;
+import com.dcfest.models.ParticipantAttendanceModel;
+import com.dcfest.repositories.ParticipantAttendanceRepository;
+import com.dcfest.services.ParticipantAttendanceServices;
+import com.dcfest.services.ScoreCardServices;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +22,12 @@ import com.dcfest.services.RoundServices;
 
 @Service
 public class RoundServicesImpl implements RoundServices {
+
+    @Autowired
+    private ScoreCardServices scoreCardServices;
+
+    @Autowired
+    private ParticipantAttendanceRepository participantAttendanceRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -96,13 +107,21 @@ public class RoundServicesImpl implements RoundServices {
     public boolean deleteRound(Long id) {
         this.getRoundById(id);
         // Delete all the participant attendances
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByRound(new RoundModel(id));
+        for (ParticipantAttendanceModel participantAttendanceModel: participantAttendanceModels) {
+            this.participantAttendanceRepository.deleteById(participantAttendanceModel.getId());
+        }
 
         // Delete all the scorecards
+        List<ScoreCardDto> scoreCardDtos = this.scoreCardServices.getScoreCardsByRoundId(id);
+        for (ScoreCardDto scoreCardDto: scoreCardDtos) {
+            this.scoreCardServices.deleteScoreCard(scoreCardDto.getId());
+        }
 
         // Delete the round
-//        this.roundRepository.deleteById(id);
+        this.roundRepository.deleteById(id);
 
-        return false;
+        return true;
     }
 
     private RoundDto roundModelToDto(RoundModel roundModel) {

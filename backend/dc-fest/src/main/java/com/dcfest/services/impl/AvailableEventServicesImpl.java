@@ -199,6 +199,8 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         foundAvailableEventModel.setType(availableEventDto.getType());
         foundAvailableEventModel.setCloseRegistration(availableEventDto.isCloseRegistration());
         foundAvailableEventModel.setCode(availableEventDto.getCode());
+        foundAvailableEventModel.setEventMaster(availableEventDto.getEventMaster());
+        foundAvailableEventModel.setEventMasterPhone(availableEventDto.getEventMasterPhone());
 
         // Save the changes to the main entity
         foundAvailableEventModel = this.availableEventRepository.save(foundAvailableEventModel);
@@ -344,7 +346,8 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         availableEventDto.setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setRounds(this.roundServices.getRoundsByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setJudges(this.judgeServices.getJudgesByAvailableEventId(availableEventModel.getId()));
-
+        availableEventDto.setEventMaster(availableEventModel.getEventMaster());
+        availableEventDto.setEventMasterPhone(availableEventModel.getEventMasterPhone());
         return availableEventDto;
     }
 

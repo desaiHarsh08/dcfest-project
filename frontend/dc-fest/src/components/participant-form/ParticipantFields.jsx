@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { useEffect } from "react";
-import { Form } from "react-bootstrap";
+import { Badge, Form } from "react-bootstrap";
 
 const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent }) => {
   useEffect(() => {}, [selectedAvailableEvent]);
@@ -62,6 +62,7 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
           <option value={"RIGHT_HANDED"}>RIGHT_HANDED</option>
         </Form.Select>
       </Form.Group>
+      <div className="mb-3">{new Date() > new Date("2024-12-11T14:00:00") && <Badge bg="danger">OTSE</Badge>}</div>
     </div>
   );
 };

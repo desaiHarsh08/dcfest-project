@@ -6,7 +6,18 @@ import { updateAvailableEvent } from "../../services/available-events-apis";
 const EditModal = ({ isOpen, onClose, event, setEvent }) => {
   if (!isOpen) return null;
 
-  
+  const handleUpdateEvent = async (event) => {
+    console.log("Updating event:", event);
+    try {
+      const response = await updateAvailableEvent(event);
+      console.log(response);
+    } catch (error) {
+      alert(error.response.data);
+      console.log(error);
+    } finally {
+      onClose();
+    }
+  };
 
   return (
     // <Modal show={isOpen} onHide={onClose} size="lg" centered>
@@ -21,15 +32,7 @@ const EditModal = ({ isOpen, onClose, event, setEvent }) => {
             X
           </button>
         </div>
-        <EventForm
-          event={event}
-          setEvent={setEvent}
-          onConfirmAction={(event) => {
-            onClose();
-            updateAvailableEvent(event);
-          }}
-          formType="Edit"
-        />
+        <EventForm event={event} setEvent={setEvent} onConfirmAction={handleUpdateEvent} formType="Edit" />
       </div>
     </div>
     //   </Modal.Body>

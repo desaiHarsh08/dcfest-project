@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { motion } from "framer-motion";
+import { Button, Form } from "react-bootstrap";
+import { MdDelete } from "react-icons/md";
 
 const attributes = [
   {
@@ -29,8 +31,10 @@ const attributes = [
   },
 ];
 
+const roundType = ["PRELIMINARY", "QUARTER", "SEMI_FINAL", "FINAL"];
+
 /* eslint-disable react/prop-types */
-const EventRounds = ({ eventRounds, onChange }) => {
+const EventRounds = ({ eventRounds, onChange, onAddRound, onDeleteRound }) => {
   const formatTime = (dateTimeString, format = "HH:mm") => {
     // Create a Date object from the input string
     const date = new Date(dateTimeString);
@@ -58,6 +62,9 @@ const EventRounds = ({ eventRounds, onChange }) => {
     <div className="mb-5">
       <div className="border-bottom mb-4 d-flex align-items-center gap-2">
         <h3 className="fs-3 pb-2">Rounds</h3>
+        <Button size="sm" type="button" onClick={onAddRound}>
+          +
+        </Button>
       </div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="card p-3 my-3">
@@ -68,11 +75,20 @@ const EventRounds = ({ eventRounds, onChange }) => {
               {attributes.map((att) => (
                 <th key={att.name}>{att.name}</th>
               ))}
+              <th>Actions</th>
             </thead>
             <tbody>
               {eventRounds.map((round, roundIndex) => (
                 <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} key={`row-round-${roundIndex}`}>
-                  <td>{round?.roundType}</td>
+                  <td>
+                    <Form.Select aria-label="Default select example" value={round?.roundType} name="roundType" onChange={(e) => onChange(e, roundIndex)}>
+                      {roundType.map((r, index) => (
+                        <option key={`round-type-${index}`} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </td>
                   <td>
                     <input value={round.venue} onChange={(e) => onChange(e, roundIndex)} name="venue" type="text" className="form-control" />
                   </td>
@@ -86,7 +102,7 @@ const EventRounds = ({ eventRounds, onChange }) => {
                     <input
                       value={formatTime(round.startTime)}
                       onChange={(e) => {
-                        console.log(e.target.value)
+                        console.log(e.target.value);
                         onChange(e, roundIndex);
                       }}
                       name="startTime"
@@ -96,6 +112,9 @@ const EventRounds = ({ eventRounds, onChange }) => {
                   </td>
                   <td>
                     <input value={formatTime(round.endTime)} onChange={(e) => onChange(e, roundIndex)} name="endTime" type="time" className="form-control" />
+                  </td>
+                  <td>
+                    <MdDelete className="fs-3 text-danger" style={{ cursor: "pointer" }} onClick={() => onDeleteRound(roundIndex)} />
                   </td>
                 </motion.tr>
               ))}

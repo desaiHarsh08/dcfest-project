@@ -13,6 +13,7 @@ import { fetchColleges } from "../../services/college-apis";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 import { createParticipants, fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
 import { useNavigate } from "react-router-dom";
+import { FaBolt, FaClipboardCheck, FaRegClock } from "react-icons/fa";
 
 const participantObj = {
   name: "",
@@ -21,7 +22,7 @@ const participantObj = {
   male: true,
   collegeId: null,
   type: "PERFORMER",
-  entryType: "NORMAL",
+  entryType: new Date() > new Date("2024-12-11T14:00:00") ? "OTSE" : "NORMAL",
   eventIds: [],
   handPreference: "RIGHT_HANDED",
 };
@@ -44,44 +45,30 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   useEffect(() => {
     fetchCategories()
       .then((data) => {
-        setCategories(data);
+        if (new Date() > new Date("2024-12-11T14:00:00")) {
+            data.filter()
+        }
+        else {
+            setCategories(data);
+        }
+
+
+
         if (availableEvent) {
           const tmpCategory = data.find((ele) => ele.id == availableEvent.eventCategoryId);
           setSelectedCategory(tmpCategory);
           setSelectedAvailableEvent(availableEvent);
           handleSetDefaultParticipants(availableEvent);
+          console.log("available_event:", availableEvent);
         } else {
           setSelectedCategory(data[0]);
           setSelectedAvailableEvent(data[0]?.availableEvents[0]);
+          console.log("available_event:", data[0]?.availableEvents[0]);
           handleSetDefaultParticipants(data[0]?.availableEvents[0]);
         }
       })
       .catch((err) => console.error("Error fetching categories:", err));
   }, []);
-
-  // Fetch colleges if not already set
-  //   useEffect(() => {
-  //     if (!selectedCollege) {
-  //       console.log("fetching college");
-  //       fetchColleges()
-  //         .then((data) => {
-  //           setColleges(data);
-  //           console.log("in 1st if of ue, college:", college);
-  //           if (iccode) {
-  //             console.log("college:", college);
-  //             console.log("in if of college load, iccode:", iccode);
-  //             const tmpSelectedCollege = data.find((ele) => ele.icCode === iccode);
-  //             console.log("tmpSelectedCollege:", tmpSelectedCollege, tmpSelectedCollege.id);
-  //             setSelectedCollege(tmpSelectedCollege.id);
-  //             console.log(selectedCollege);
-  //           } else {
-  //             console.log("here");
-  //             setSelectedCollege(data[0]?.id);
-  //           }
-  //         })
-  //         .catch((err) => console.error("Error fetching colleges:", err));
-  //     }
-  //   }, []);
 
   useEffect(() => {
     if (!selectedCollege) {
@@ -104,13 +91,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
         .catch((err) => console.error("Error fetching colleges:", err));
     }
   }, [iccode, selectedCollege]);
-
-  //   useEffect(() => {
-  //     if (selectedCategory) {
-  //       setSelectedAvailableEvent(selectedCategory?.availableEvents[0]);
-  //       handleSetDefaultParticipants(selectedCategory?.availableEvents[0]);
-  //     }
-  //   }, [selectedCategory]);
 
   // Set default participants based on the selected event rules
   useEffect(() => {
@@ -263,28 +243,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           break;
         }
 
-        // case "FEMALE_PARTICIPANTS":
-        //   if (participants.filter((p) => !p.male).length !== ruleValue) {
-        //     if (isSubmitting) {
-        //       alert(
-        //         `Oops... There should be female ${ruleValue} participants!`
-        //       );
-        //     }
-        //     setIsValid(false);
-        //     return false;
-        //   }
-        //   break;
-
-        // case "COLLEGE_ACOMPANIST":
-        //   if (participants.filter((p) => !p.type == "ACCOMPANIST").length !== ruleValue) {
-        //     if (isSubmitting) {
-        //       alert(`Oops... There should be ${ruleValue} accompanist!`);
-        //     }
-        //     setIsValid(false);
-        //     return false;
-        //   }
-        //   break;
-
         default:
           break;
       }
@@ -323,6 +281,11 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       }
     } catch (error) {
       console.log("error in fetchParticipantsByEventIdAndCollegeId() - ", error);
+    }
+
+    if (iccode && new Date() > new Date("2024-12-11T14:00:00") && participants.some((p) => p.entryType == "NORMAL")) {
+      alert(`"Oops! Umangfest-2024 registrations are closed. Don't miss out next time—contact the host college for help!`);
+      return;
     }
 
     setLoading(true);
@@ -397,8 +360,39 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     return !(participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist);
   };
 
+  //   if (
+  //     // new Date() > new Date("2024-12-11T14:00:00") &&
+  //     selectedAvailableEvent
+  //   ) {
+  //     const otseRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "OTSE_SLOTS");
+  //     console.log("otse-rule:", otseRule);
+  //     if (otseRule && Number(otseRule.value) == 0) {
+  //       //
+  //       return (
+  //         <div className="d-flex">
+  //           <p>
+  //             <span>Oops...</span>
+  //             <strong>{selectedAvailableEvent?.title}</strong>
+  //             <span>does&apos;t not contain any OTSE slots</span>
+  //           </p>
+  //         </div>
+  //       );
+  //     }
+  //   }
+
   return (
     <>
+      {new Date() > new Date("2024-12-11T14:00:00") && (
+        <div className="vw-100 d-flex positon-absolute justify-content-center" style={{ top: "83px", zIndex: "1", position: "absolute" }}>
+          <div className="w-100 d-flex justify-content-center align-items-center gap-2 bottom-0 border" style={{ listStyle: "none", backgroundColor: "#ff6767", color: "white" }}>
+            <FaBolt />
+            <p style={{ fontSize: "12px" }} className="d-flex justify-content-center align-items-center p-0 m-0 py-1 fw-bold text-center">
+              OTSE ENTRIES ACCEPETD
+            </p>
+          </div>
+        </div>
+      )}
+
       <Container fluid className="d-flex align-items-center justify-content-center bg-light" id="event-participant-container">
         <Row className="w-100 h-100 py-2">
           <Col xs={12} md={8} lg={8} className="mx-auto h-100">
@@ -462,27 +456,30 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
         </Row>
       </Container>
 
-      <div className="container position-absolute bottom-0 border">
-        <ul className="d-flex justify-content-between align-items-center p-0 m-0 py-2 " style={{ listStyle: "none", backgroundColor: "aliceblue" }}>
-          <li>Min. Participants: {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value}</li>
-          <li>
-            Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS").value}
-          </li>
-          <li>
-            Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} /{" "}
-            {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value || 0}
-          </li>
-          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS") && (
+      <div className="vw-100 position-relative bottom-0 d-flex justify-content-center border">
+        <div className="container position-absolute bottom-0 left-0 border">
+          <ul className="d-flex justify-content-between align-items-center p-0 m-0 py-2 " style={{ listStyle: "none", backgroundColor: "aliceblue" }}>
+            <li>Min. Participants: {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value}</li>
             <li>
-              Male: {participants.filter((p) => p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS")?.value}
+              Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} /{" "}
+              {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS").value}
             </li>
-          )}
-          {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS") && (
             <li>
-              Female: {participants.filter((p) => !p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS")?.value}
+              Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} /{" "}
+              {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value || 0}
             </li>
-          )}
-        </ul>
+            {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS") && (
+              <li>
+                Male: {participants.filter((p) => p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS")?.value}
+              </li>
+            )}
+            {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS") && (
+              <li>
+                Female: {participants.filter((p) => !p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS")?.value}
+              </li>
+            )}
+          </ul>
+        </div>
       </div>
     </>
   );

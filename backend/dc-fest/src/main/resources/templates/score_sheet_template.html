@@ -181,36 +181,59 @@
         </nav>
       </header>
       <main>
-        <section class="mt-5 h-100" style="width: 100%; height: 100%; display: table; border: 0.4px solid black">
+        <section class="mt-5" style="width: 100%; height: 99px; display: table; border: 0.4px solid black">
           <!-- Left Div -->
           <div style="width: 70%; border: 0.4px solid black; display: table-cell; vertical-align: top; border-bottom: transparent; border-left: transparent; border-top: transparent">
-            <div style="display: table; height: 33%; width: 100%">
-              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black">Department</p>
-              <p style="margin: 0; padding: 4px 0; display: table-cell; width: 50%; border: 0.4px solid black" th:text="${categoryName}"></p>
+            <div class="h-33" style="display: table; height: 33px; width: 100%">
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black; border-left: transparent; border-bottom: transparent; border-top: transparent">
+                Department
+              </p>
+              <p
+                style="margin: 0; padding: 4px 4px 0; display: table-cell; width: 50%; border: 0.4px solid black; border-left: transparent; border-right: transparent; border-top: transparent"
+                th:text="${categoryName}"
+              ></p>
             </div>
-            <div style="display: table; height: 33%; width: 100%">
-              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black">Event Name</p>
-              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 50%; border: 0.4px solid black" th:text="${eventTitle}"></p>
+            <div class="h-33" style="display: table; height: 33px; width: 100%">
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black; border-left: transparent">Event Name</p>
+              <p
+                style="margin: 0; padding: 4px 4px; display: table-cell; width: 50%; border: 0.4px solid black; border-left: transparent; border-right: transparent; border-top: transparent"
+                th:text="${eventTitle}"
+              ></p>
             </div>
 
-            <div style="display: table; height: 33%; width: 100%">
-              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 25%; border: 0.4px solid black">Event Venue</p>
-              <p style="margin: 0; padding: 4px 4px; display: table-cell; width: 50%; border: 0.4px solid black" th:text="${venue}"></p>
+            <div class="h-33" style="display: table; width: 100%; height: 34px">
+              <p style="margin: 0; padding: 4px 4px; display: table-cell; border: 0.4px solid black; width: 25%; border-bottom: transparent; border-top: transparent; border-left: transparent">
+                Event Venue
+              </p>
+              <p
+                style="
+                  margin: 0;
+                  padding: 4px 4px;
+                  display: table-cell;
+                  width: 50%;
+                  border: 0.4px solid black;
+                  border-bottom: transparent;
+                  border-left: transparent;
+                  border-right: transparent;
+                  border-top: transparent;
+                "
+                th:text="${venue}"
+              ></p>
             </div>
           </div>
 
           <!-- Right Div -->
-          <div style="width: 30%; display: table-cell; vertical-align: top">
+          <div style="width: 30%; display: table-cell; vertical-align: top; height: 99px">
             <div class="p-4" style="border: 0.4px solid black; height: 50%; margin: auto; border-top: transparent; border-right: transparent; border-left: transparent">
-              <tr>
-                <td class="w-25"><strong style="margin: 5px">JUDGE NAME:</strong></td>
-                <td class="w-75"></td>
-              </tr>
+              <div style="width: 100%; height: 50%">
+                <p style="margin: 0; padding: 4px 4px 8px 4px">Judge Name</p>
+                <p style="margin: 0; padding: 4px 4px"></p>
+              </div>
             </div>
-            <tr>
-              <td class="w-25"><strong style="margin: 5px">EVENT DATE:</strong></td>
-              <td class="w-75" th:text="${eventDate}"></td>
-            </tr>
+            <div style="width: 100%; height: 50%">
+              <p style="margin: 0; padding: 4px 4px">Event Date</p>
+              <p style="margin: 0; padding: 4px 4px" th:text="${eventDate}"></p>
+            </div>
           </div>
         </section>
         <section class="my-4" style="width: 100%">

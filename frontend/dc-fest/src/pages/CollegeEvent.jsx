@@ -35,7 +35,12 @@ const CollegeEvent = () => {
   const [college, setCollege] = useState();
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    if (new Date() > new Date("2024-12-11T14:00:00")) {
+      return;
+    }
+    setShow(true);
+  };
 
   const [selectedParticipant, setSelectedParticipant] = useState(participantObj);
 
@@ -90,6 +95,9 @@ const CollegeEvent = () => {
     }
   };
   const handleDelete = async (id) => {
+    if (new Date() > new Date("2024-12-11T14:00:00")) {
+      return;
+    }
     const tmpParticipant = participants.find((p) => p.id == id);
     const isConfirm = confirm(`Are you sure that you want to delete "${tmpParticipant?.name}"?`);
     if (!isConfirm) {
@@ -314,6 +322,9 @@ const CollegeEvent = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (new Date() > new Date("2024-12-11T14:00:00")) {
+      return;
+    }
     console.log("Im in handle Save", isValid);
     if (!handleRuleChecks(true)) {
       return;
@@ -346,6 +357,9 @@ const CollegeEvent = () => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    if (new Date() > new Date("2024-12-11T14:00:00")) {
+      return;
+    }
 
     if (!handleRuleChecks(true)) {
       alert("Please provide the correct participant entries... check the rules");
@@ -510,6 +524,7 @@ const CollegeEvent = () => {
                 <div className="d-flex align-items-center gap-2">
                   <h4 className="text-secondary">Participants</h4>
                   {participants.length > 0 &&
+                    new Date() < new Date("2024-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
                       <button
@@ -535,6 +550,7 @@ const CollegeEvent = () => {
                       </button>
                     )}
                   {participants.length > 0 &&
+                    new Date() < new Date("2024-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter((p) => p.type == "ACCOMPANIST").length && (
                       <button
@@ -561,6 +577,7 @@ const CollegeEvent = () => {
                     )}
                 </div>
                 {college &&
+                  new Date() < new Date("2024-12-11T14:00:00") &&
                   participants.length == 0 &&
                   slotsOccupied != null &&
                   slotsOccupied + 1 <= availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
@@ -580,7 +597,7 @@ const CollegeEvent = () => {
                     <th>Phone</th>
                     <th>Type</th>
                     <th>Entry</th>
-                    <th>Actions</th>
+                    {new Date() < new Date("2024-12-11T14:00:00") && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -597,30 +614,32 @@ const CollegeEvent = () => {
                         <td>
                           <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant.entryType}</Badge>
                         </td>
-                        <td>
-                          {(availableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length ||
-                            participant.type === "ACCOMPANIST") && (
-                            <Button
-                              variant={deletingId === participant.id ? "secondary" : "danger"}
-                              onClick={() => handleDelete(participant.id)}
-                              size="sm"
-                              disabled={loading && deletingId === participant.id}
-                            >
-                              {loading && deletingId === participant.id ? "Deleting..." : "Delete"}
-                            </Button>
-                          )}
+                        {new Date() < new Date("2024-12-11T14:00:00") && (
+                          <td>
+                            {(availableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length ||
+                              participant.type === "ACCOMPANIST") && (
+                              <Button
+                                variant={deletingId === participant.id ? "secondary" : "danger"}
+                                onClick={() => handleDelete(participant.id)}
+                                size="sm"
+                                disabled={loading && deletingId === participant.id}
+                              >
+                                {loading && deletingId === participant.id ? "Deleting..." : "Delete"}
+                              </Button>
+                            )}
 
-                          <button
-                            className="btn btn-success btn-sm"
-                            onClick={() => {
-                              handleShow();
-                              setSelectedParticipant(participant);
-                              setAddFlag(false);
-                            }}
-                          >
-                            Edit
-                          </button>
-                        </td>
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => {
+                                handleShow();
+                                setSelectedParticipant(participant);
+                                setAddFlag(false);
+                              }}
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   ) : (
@@ -662,22 +681,28 @@ const CollegeEvent = () => {
                   label="Male"
                   name={`male`} // Unique name for each participant's radio group
                   checked={selectedParticipant?.male}
-                  onChange={() =>
+                  onChange={() => {
+                    if (new Date() > new Date("2024-12-11T14:00:00")) {
+                      return;
+                    }
                     handleEditFormChange({
                       target: { name: "male", value: true },
-                    })
-                  }
+                    });
+                  }}
                 />
                 <Form.Check
                   type="radio"
                   label="Female"
                   name={`male`} // Same unique name for the pair
                   checked={!selectedParticipant?.male}
-                  onChange={() =>
+                  onChange={() => {
+                    if (new Date() > new Date("2024-12-11T14:00:00")) {
+                      return;
+                    }
                     handleEditFormChange({
                       target: { name: "male", value: false },
-                    })
-                  }
+                    });
+                  }}
                 />
               </Form.Group>
 
@@ -721,6 +746,9 @@ const CollegeEvent = () => {
               variant="primary"
               disabled={loading}
               onClick={(e) => {
+                if (new Date() > new Date("2024-12-11T14:00:00")) {
+                  return;
+                }
                 if (!addFlag) {
                   handleSave(e);
                 } else {

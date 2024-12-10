@@ -318,16 +318,16 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         System.out.println(pdfBytes);
 
         // Notify the reps
-        for (CollegeRepresentativeModel collegeRepresentativeModel: collegeRepresentativeModels) {
-            this.emailServices.sendEventProofEmail(
-                    collegeRepresentativeModel.getEmail(),
-                    "Confirmed Participation for the event - " + availableEventModel.getTitle(),
-                    pdfBytes,
-                    "POP_" + teamNumber + ".pdf",
-                    availableEventModel,
-                    roundModel
-            );
-        }
+//        for (CollegeRepresentativeModel collegeRepresentativeModel: collegeRepresentativeModels) {
+//            this.emailServices.sendEventProofEmail(
+//                    collegeRepresentativeModel.getEmail(),
+//                    "Confirmed Participation for the event - " + availableEventModel.getTitle(),
+//                    pdfBytes,
+//                    "POP_" + teamNumber + ".pdf",
+//                    availableEventModel,
+//                    roundModel
+//            );
+//        }
 
         InputStreamSource attachmentSource = new ByteArrayResource(pdfBytes);
 
