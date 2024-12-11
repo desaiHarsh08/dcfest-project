@@ -46,13 +46,16 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     fetchCategories()
       .then((data) => {
         if (new Date() > new Date("2024-12-11T14:00:00")) {
-            data.filter()
-        }
-        else {
-            setCategories(data);
-        }
+          data = data.map((category) => {
+            const availableOtseEvents = category.availableEvents.filter((a) => a.eventRules.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value != 0);
+            category = { ...category, availableEvents: availableOtseEvents };
 
-
+            return category;
+          });
+          setCategories(data);
+        } else {
+          setCategories(data);
+        }
 
         if (availableEvent) {
           const tmpCategory = data.find((ele) => ele.id == availableEvent.eventCategoryId);

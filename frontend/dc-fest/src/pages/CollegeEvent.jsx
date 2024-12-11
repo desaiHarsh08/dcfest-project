@@ -96,6 +96,7 @@ const CollegeEvent = () => {
   };
   const handleDelete = async (id) => {
     if (new Date() > new Date("2024-12-11T14:00:00")) {
+        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
       return;
     }
     const tmpParticipant = participants.find((p) => p.id == id);
@@ -323,6 +324,7 @@ const CollegeEvent = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (new Date() > new Date("2024-12-11T14:00:00")) {
+        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
       return;
     }
     console.log("Im in handle Save", isValid);
@@ -358,6 +360,7 @@ const CollegeEvent = () => {
   const handleAdd = async (e) => {
     e.preventDefault();
     if (new Date() > new Date("2024-12-11T14:00:00")) {
+        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
       return;
     }
 

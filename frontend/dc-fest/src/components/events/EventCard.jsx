@@ -38,6 +38,7 @@ const EventCard = ({ event, college }) => {
 
   const handleCollegeRegister = async () => {
     if (new Date() > new Date("2024-12-11T14:00:00")) {
+        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
       return;
     }
     setIsLoading(true);
@@ -76,6 +77,7 @@ const EventCard = ({ event, college }) => {
 
   const handleDeleteParticipation = async (participationId) => {
     if (new Date() > new Date("2024-12-11T14:00:00")) {
+        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
       return;
     }
 
