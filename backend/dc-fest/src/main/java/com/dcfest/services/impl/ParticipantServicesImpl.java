@@ -10,10 +10,12 @@ import java.security.SecureRandom;
 import javax.imageio.ImageIO;
 
 import com.dcfest.constants.*;
+import com.dcfest.dtos.ParticipantAttendanceDto;
 import com.dcfest.exceptions.OTSESlotsException;
 import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.models.*;
 import com.dcfest.repositories.*;
+import com.dcfest.services.ParticipantAttendanceServices;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,6 +42,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     private static final String ALPHANUMERIC_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int RANDOM_PART_LENGTH = 16; // Length of the random alphanumeric part
+
+    @Autowired
+    private ParticipantAttendanceServices participantAttendanceServices;
 
     @Autowired
     private NotificationLogRepository notificationLogRepository;
@@ -106,12 +111,22 @@ public class ParticipantServicesImpl implements ParticipantServices {
         }
 
 
+        // Check for enrollment
+        List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
+        CollegeParticipationModel existingCollegeParticipation = collegeParticipationModels.stream().filter(cp -> cp.getCollege().getId().equals(participantDto.getCollegeId())).findAny().orElse(null);
+        if (collegeParticipationModels.isEmpty() || existingCollegeParticipation == null) {
+            this.collegeParticipationRepository.save(new CollegeParticipationModel(
+                    null,
+                    new CollegeModel(participantDto.getCollegeId()),
+                    availableEventModel,
+                    null
+            ));
+        }
         // Check the unique college
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(participantDto.getEventIds().get(0), participantDto.getCollegeId());
         if (participantModels.isEmpty()) { // Unique (New) College participant
 
             int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
-            List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
 
             int slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId()).intValue();
             System.out.println("Slots occupied: " + slotsOccupied);
@@ -447,6 +462,12 @@ public class ParticipantServicesImpl implements ParticipantServices {
         for (EventModel event : participant.getEvents()) {
             event.getParticipants().remove(participant);
             this.eventRepository.save(event);  // Save each event after removing the participant
+        }
+
+        // Remove participant attendance
+        List<ParticipantAttendanceDto> participantAttendanceDtos = this.participantAttendanceServices.getParticipantAttendancesByParticipantId(id);
+        for (ParticipantAttendanceDto participantAttendanceDto: participantAttendanceDtos) {
+            this.participantAttendanceServices.deleteAttendance(participantAttendanceDto.getId());
         }
 
         // Clear the events list in the participant itself to complete the cleanup

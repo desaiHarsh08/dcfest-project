@@ -294,7 +294,7 @@ import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import "../styles/EventParticipationPage.css"; // Import custom CSS
 import { fetchCategories } from "../services/categories-api";
-import { deleteParticipant, fetchParticipantsByEventId } from "../services/participants-api";
+import { deleteParticipant, fetchParticipantsByEventId, updateParticipant } from "../services/participants-api";
 import { fetchEventByAvailableEventId } from "../services/event-apis";
 import ParticipantRow from "../components/event-participation/ParticipantRow";
 import { fetchColleges } from "../services/college-apis";
@@ -414,9 +414,10 @@ const EventParticipationPage = () => {
       return;
     }
     try {
+      console.log("deleting participant:", id);
       const response = await deleteParticipant(id);
-      console.log(response);
-      getParticipants();
+      console.log("in delete:", response);
+      await getParticipants();
     } catch (error) {
       console.error("Something error", error);
     }
@@ -433,17 +434,22 @@ const EventParticipationPage = () => {
   //   handleModalClose();
   // };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     // Update the participant in both filteredParticipants and participants
     const updatedParticipant = selectedParticipant;
+    try {
+      const response = await updateParticipant(updatedParticipant);
+      // Update filteredParticipants state
+      setFilteredParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
 
-    // Update filteredParticipants state
-    setFilteredParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
-
-    // Update participants state
-    setParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
-
-    handleModalClose(); // Close the modal after saving changes
+      // Update participants state
+      setParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
+    } catch (error) {
+      alert("Oops! Unable to save the participant.");
+      return;
+    } finally {
+      handleModalClose(); // Close the modal after saving changes
+    }
   };
 
   const handleInputChange = (e) => {
@@ -695,7 +701,7 @@ const EventParticipationPage = () => {
         </Modal.Header>
         <Modal.Body>
           {selectedParticipant && (
-            <Form className="w-100">
+            <div className="w-100">
               <Form.Group controlId="formName">
                 <Form.Label>Name</Form.Label>
                 <Form.Control type="text" name="name" value={selectedParticipant.name} onChange={handleInputChange} />
@@ -712,7 +718,7 @@ const EventParticipationPage = () => {
                 <Form.Label>Whatsapp Number</Form.Label>
                 <Form.Control type="text" name="whatsappNumber" value={selectedParticipant.whatsappNumber || ""} onChange={handleInputChange} />
               </Form.Group>
-            </Form>
+            </div>
           )}
         </Modal.Body>
         <Modal.Footer>

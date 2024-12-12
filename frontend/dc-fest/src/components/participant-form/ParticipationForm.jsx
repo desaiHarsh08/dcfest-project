@@ -47,11 +47,19 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       .then((data) => {
         if (new Date() > new Date("2024-12-11T14:00:00")) {
           data = data.map((category) => {
-            const availableOtseEvents = category.availableEvents.filter((a) => a.eventRules.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value != 0);
-            category = { ...category, availableEvents: availableOtseEvents };
+            console.log("before, category:", category);
+            const availableOtseEvents = category.availableEvents.filter((a) => {
+              const otseRule = a.eventRules.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value;
+              console.log(otseRule);
 
+              return otseRule != 0;
+            });
+
+            category = { ...category, availableEvents: availableOtseEvents };
+            console.log("in map, ", category);
             return category;
           });
+          console.log(data);
           setCategories(data);
         } else {
           setCategories(data);

@@ -19,6 +19,8 @@ public interface ParticipantAttendanceServices {
 
     List<ParticipantAttendanceDto> getAllAttendances();
 
+    List<ParticipantAttendanceDto> getParticipantAttendancesByParticipantId(Long participantId);
+
     ScannedQrcodeResponse scanQrcode(String qrData);
 
     ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId);

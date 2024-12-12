@@ -1,6 +1,7 @@
 package com.dcfest.repositories;
 
 import com.dcfest.models.ParticipantAttendanceModel;
+import com.dcfest.models.ParticipantModel;
 import com.dcfest.models.RoundModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,8 @@ public interface ParticipantAttendanceRepository extends JpaRepository<Participa
     List<ParticipantAttendanceModel> findByQrcode(String qrcode);
 
     List<ParticipantAttendanceModel> findByRound(RoundModel round);
+
+    List<ParticipantAttendanceModel> findByParticipant(ParticipantModel participant);
 
     @Query("SELECT COUNT(DISTINCT p.qrcode) FROM ParticipantAttendanceModel p WHERE p.round.id = :roundId")
     int countTeam(@Param("roundId") Long roundId);

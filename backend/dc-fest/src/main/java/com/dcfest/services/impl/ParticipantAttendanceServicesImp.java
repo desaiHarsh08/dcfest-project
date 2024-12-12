@@ -202,6 +202,16 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     }
 
     @Override
+    public  List<ParticipantAttendanceDto> getParticipantAttendancesByParticipantId(Long participantId) {
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByParticipant(new ParticipantModel(participantId));
+        if (participantAttendanceModels.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return participantAttendanceModels.stream().map(this::participantAttendanceModelToDto).collect(Collectors.toList());
+    }
+
+    @Override
     public InputStreamSource generateQrcode(Long collegeId, Long availableEventId, Long roundId) {
 //        System.out.println("in generate qrcode");
 //        System.out.println(collegeId);
@@ -480,12 +490,11 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         return null;
     }
 
-
-
-    // TODO
     @Override
     public boolean deleteAttendance(Long id) {
-        return false;
+        ParticipantAttendanceDto foundParticipantAttendanceDto = this.getAttendanceById(id);
+        this.participantAttendanceRepository.deleteById(id);
+        return true;
     }
 
     private ParticipantAttendanceDto participantAttendanceModelToDto(ParticipantAttendanceModel participantAttendanceModel) {
