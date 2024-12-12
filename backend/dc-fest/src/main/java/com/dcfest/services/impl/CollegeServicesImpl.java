@@ -143,7 +143,7 @@ public class CollegeServicesImpl implements CollegeServices {
         // Save the changes
         foundCollegeModel = this.collegeRepository.save(foundCollegeModel);
 
-//        // Notify the college and their representative
+////        // Notify the college and their representative
         List<CollegeRepresentativeDto> collegeRepresentativeDtos = this.collegeRepresentativeService.getRepresentativesByCollege(collegeDto.getId());
         for (CollegeRepresentativeDto collegeRepresentativeDto: collegeRepresentativeDtos) {
             this.emailServices.sendResetPasswordEmail(

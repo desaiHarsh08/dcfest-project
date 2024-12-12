@@ -165,6 +165,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
 
 
+
+
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
         participantModel.setCollege(collegeModel);
@@ -172,16 +174,24 @@ public class ParticipantServicesImpl implements ParticipantServices {
         participantModel.getEvents().add(eventModel);
         participantModel.setHandPreference(participantDto.getHandPreference());
         String group;
-        if (availableEventModel.getType().equals(EventType.TEAM)) {
-            group = collegeModel.getIcCode() + "_T" + (this.participantRepository.count() + 1);
+        if (participantModels.isEmpty()) {
+            long count = 0;
+            if (participantDto.getEntryType().equals(EntryType.NORMAL)) {
+                count = this.participantRepository.countByEventIdAndEntryType(eventModel.getId(), EntryType.NORMAL);
+                group = collegeModel.getIcCode() + "_" + (count + 1);
+            }
+            else {
+                count = this.participantRepository.countByEventIdAndEntryType(eventModel.getId(), EntryType.OTSE);
+                group = collegeModel.getIcCode() + "_OTSE_" + (count + 1);
+            }
         }
         else {
-            group = collegeModel.getIcCode() + "_P" + (this.participantRepository.count() + 1);
+            group = participantModels.get(0).getGroup();
         }
-        participantModel.setGroup(group);
 
-//        String qrData = this.generateAlphanumericUUID();
-//        participantModel.setQrcode(qrData);
+
+
+        participantModel.setGroup(group);
 
         // Save the participant
         participantModel = this.participantRepository.save(participantModel);
@@ -355,6 +365,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
         ParticipantModel foundParticipantModel = this.participantRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No `PARTICIPANT` exist for id: " + id));
 
+
+
+
         return this.participantModelToDto(foundParticipantModel);
     }
 
@@ -496,10 +509,82 @@ public class ParticipantServicesImpl implements ParticipantServices {
         }
     }
 
+    @Override
+    public boolean correctGroupNameForParticipants() {
+        List<CollegeModel> collegeModels = this.collegeRepository.findAll();
+        List<CollegeModel> filteredColleges = new ArrayList<>();
+        for (CollegeModel collegeModel: collegeModels) {
+            if (collegeModel.isDetailsUploaded()) {
+                filteredColleges.add(collegeModel);
+            }
+        }
+
+        List<AvailableEventModel> availableEventModels = this.availableEventRepository.findAll();
+
+        List<EventModel> eventModels = this.eventRepository.findAll();
+
+        System.out.println("Total events: " + eventModels.size());
+        int eventCount = 0;
+        for (EventModel eventModel: eventModels) {
+            System.out.println("doing event: " + (++eventCount) + "/" + eventModels.size());
+
+            AvailableEventModel availableEventModel = availableEventModels.stream().filter(a -> a.getId().equals(eventModel.getAvailableEvent().getId())).findFirst().orElse(null);
+            if (availableEventModel == null) {
+                continue;
+            }
+            eventModel.setAvailableEvent(availableEventModel);
+            List<CollegeModel> participatedCollege =  this.getParticipatedCollegesByEvent(eventModel, filteredColleges);
+            for (int i = 0, c = 0; i < participatedCollege.size(); i++) {
+                CollegeModel collegeModel = participatedCollege.get(i);
+
+                String group;
+
+                List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), collegeModel.getId());
+                if (participantModels.isEmpty()) {
+                    continue;
+                }
+                group = collegeModel.getIcCode() + "_" + (++c);
+
+                for (ParticipantModel participantModel: participantModels) {
+                    participantModel.setGroup(group);
+                    this.participantRepository.save(participantModel);
+
+                    System.out.println("College: " + (i + 1) + "/" + participatedCollege.size() + ", participants size: " + participantModels.size());
+                }
+
+
+                System.out.println("done college: " + (i + 1));
+            }
+
+
+        }
+
+        return true;
+    }
+
+    private List<CollegeModel> getParticipatedCollegesByEvent(EventModel eventModel, List<CollegeModel> givenCollegeModels) {
+        List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(eventModel.getAvailableEvent());
+        if (collegeParticipationModels.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<CollegeModel> collegeModels = new ArrayList<>();
+        for (CollegeParticipationModel collegeParticipationModel: collegeParticipationModels) {
+            CollegeModel collegeModel = givenCollegeModels.stream().filter(c -> c.getId().equals(collegeParticipationModel.getCollege().getId())).findFirst().orElse(null);
+            if (collegeModel == null) {
+                continue;
+            }
+            collegeModels.add(collegeModel);
+        }
+
+        return collegeModels;
+    }
+
     private ParticipantDto participantModelToDto(ParticipantModel participantModel) {
         if (participantModel == null) {
             return null;
         }
+
         ParticipantDto participantDto = this.modelMapper.map(participantModel, ParticipantDto.class);
         participantDto.setCollegeId(participantModel.getCollege().getId());
         // participantDto.setEvents(new ArrayList<>());

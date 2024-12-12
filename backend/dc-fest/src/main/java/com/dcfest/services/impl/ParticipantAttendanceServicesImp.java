@@ -1,5 +1,6 @@
 package com.dcfest.services.impl;
 
+import com.dcfest.constants.EntryType;
 import com.dcfest.constants.RoundType;
 import com.dcfest.dtos.*;
 import com.dcfest.exceptions.ResourceNotFoundException;
@@ -253,9 +254,6 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             throw new RuntimeException("Failed to generate QR code", e);
         }
 
-        // Create the attendance for the participants
-        List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel);
-
         CollegeParticipationModel existingCollegeParticipationModel = new CollegeParticipationModel();
         List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
         int collegeParticipationIndex = 0;
@@ -268,18 +266,31 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         }
 
 
+        String groupNumber = collegeModel.getIcCode() + "_" + String.format("%03d", collegeParticipationIndex + 1);
 
+//        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findParticipantAttendanceByRoundIdAndCollegeId(roundId, collegeId);
 
+        String teamNumber;
         int countTeam = this.participantAttendanceRepository.countTeam(roundId);
 
-        String groupNumber = collegeModel.getIcCode() + "_" + String.format("%03d", collegeParticipationIndex + 1);
-        String teamNumber;
+//        if (participantModels.stream().anyMatch(p -> p.getEntryType().equals(EntryType.NORMAL))) {
+//            countTeam = (int) participantAttendanceModels.stream().filter(pa -> !pa.getTeamNumber().contains(EntryType.OTSE.name())).count();
+//        }
+//        else {
+//            countTeam = (int) participantAttendanceModels.stream().filter(pa -> pa.getTeamNumber().contains(EntryType.OTSE.name())).count();
+//        }
+
+
         if (availableEventModel.getCode() != null) {
-            teamNumber = availableEventModel.getCode() + "_" + String.format("%03d", countTeam);
+            teamNumber = availableEventModel.getCode() + "_" + String.format("%03d", ++countTeam);
         }
         else {
-            teamNumber = "N/A" + "_" + String.format("%03d", countTeam);
+            teamNumber = "N/A" + "_" + String.format("%03d", ++countTeam);
         }
+
+
+
+
 
         existingCollegeParticipationModel.setTeamNumber(teamNumber);
         this.collegeParticipationRepository.save(existingCollegeParticipationModel);
@@ -289,6 +300,9 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             participantModel.setGroup(groupNumber);
             this.participantRepository.save(participantModel);
         }
+
+        // Create the attendance for the participants
+        List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel);
 
         // Create the pop
         // Format the LocalDateTime to the required format without milliseconds

@@ -384,13 +384,14 @@ const EventParticipationPage = () => {
   }, [selectedCollege, eventFilter, selectedAvailableEvent]);
 
   const getParticipants = async () => {
+    console.log("eventFilter before going to trycatch:", eventFilter);
     try {
       setLoading(true);
       const event = await fetchEventByAvailableEventId(eventFilter);
       const response = await fetchParticipantsByEventId(event.id);
 
       setParticipants(response);
-      console.log(response);
+      console.log(`response for eventFilter: ${eventFilter}, participants:`, response);
       if (response.length > 0) {
         setSelectedCollege(colleges.find((c) => c.id == response[0].collegeId));
       }
@@ -466,11 +467,13 @@ const EventParticipationPage = () => {
           name: participant.name,
           email: participant.email,
           whatsappNumber: participant.whatsappNumber,
+          hand_preference: participant.handPreference,
           gender: participant.male ? "M" : "F",
           iccode: colleges.find((c) => c.id == participant.collegeId)?.icCode,
           college: colleges.find((c) => c.id === participant.collegeId)?.name,
           category: selectedCategory?.name || "",
           event: selectedAvailableEvent?.title || "",
+          team: participant.Group,
           type: participant.type,
           entry: participant.entryType,
           present: participant.present ? "Present" : "-",
@@ -670,10 +673,12 @@ const EventParticipationPage = () => {
                 <th>ICCODE</th>
                 <th>Category</th>
                 <th>Event</th>
+                <th>Team</th>
                 <th>Participant Name</th>
                 <th>Email</th>
                 <th>Type</th>
                 <th>Entry</th>
+                <th>Hand Preference</th>
                 <th>Actions</th>
               </tr>
             </thead>

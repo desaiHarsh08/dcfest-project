@@ -35,6 +35,11 @@ public class ParticipantController {
         return new ResponseEntity<>(participantServices.slotsOccupied(eventId), HttpStatus.OK);
     }
 
+    @GetMapping("/correct-group-names")
+    public ResponseEntity<?> correctGroupNames() {
+        return new ResponseEntity<>(participantServices.correctGroupNameForParticipants(), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ParticipantDto> getParticipantById(@PathVariable Long id) {
         ParticipantDto participant = participantServices.getParticipantById(id);

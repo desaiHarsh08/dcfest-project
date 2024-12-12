@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ParticipantServices {
 
+    boolean correctGroupNameForParticipants();
+
     ParticipantDto createParticipant(ParticipantDto participantDto);
 
     PageResponse<ParticipantDto> getAllParticipants(int pageNumber);

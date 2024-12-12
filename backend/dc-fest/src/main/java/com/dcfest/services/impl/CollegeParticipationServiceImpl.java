@@ -134,6 +134,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
         CollegeParticipationModel existCollegeParticipationModel = this.participationRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No college_participation exist for id: " + id)
         );
+        System.out.println(existCollegeParticipationModel);
         // Fetch the event from available_event
         EventModel eventModel = this.eventRepository.findByAvailableEvent(new AvailableEventModel(existCollegeParticipationModel.getAvailableEvent().getId())).orElse(null);
         if (eventModel == null) {

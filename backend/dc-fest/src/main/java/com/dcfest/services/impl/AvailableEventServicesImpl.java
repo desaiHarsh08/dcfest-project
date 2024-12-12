@@ -324,7 +324,10 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         for (RoundDto roundDto : availableEventDto.getRounds()) {
             this.roundServices.deleteRound(roundDto.getId());
         }
-        // Delete all the colleges
+        // Delete all the judges
+        for (JudgeDto judgeDto: availableEventDto.getJudges()) {
+            this.judgeServices.deleteJudge(judgeDto.getId());
+        }
 
         // Delete the college_participations
         List<CollegeParticipationDto> collegeParticipationDtos = this.collegeParticipationService.getByAvailableEvent(id);

@@ -3,6 +3,7 @@ package com.dcfest.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import com.dcfest.constants.EntryType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,6 +28,10 @@ public interface ParticipantRepository extends JpaRepository<ParticipantModel, L
 
     @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId AND p.college.id = :collegeId")
     List<ParticipantModel> findByEvent_IdAndCollegeId(@Param("eventId") Long eventId, @Param("collegeId") Long collegeId);
+
+    @Query("SELECT COUNT(p) FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId AND p.entryType = :entryType")
+    long countByEventIdAndEntryType(@Param("eventId") Long eventId, @Param("entryType") EntryType entryType);
+
 
     @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId")
     List<ParticipantModel> findByEvents_Id(@Param("eventId") Long eventId);

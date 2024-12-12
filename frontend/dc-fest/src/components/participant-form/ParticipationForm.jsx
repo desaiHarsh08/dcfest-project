@@ -22,7 +22,7 @@ const participantObj = {
   male: true,
   collegeId: null,
   type: "PERFORMER",
-  entryType: new Date() > new Date("2024-12-11T14:00:00") ? "OTSE" : "NORMAL",
+  entryType: "NORMAL",
   eventIds: [],
   handPreference: "RIGHT_HANDED",
 };
@@ -40,6 +40,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   const [showAlert, setShowAlert] = useState(false);
   const [validated, setValidated] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [actualParticipatedColleges, setActualParticipatedColleges] = useState([]);
 
   // Fetch categories on initial load
   useEffect(() => {
@@ -85,7 +86,10 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     if (!selectedCollege) {
       fetchColleges()
         .then((data) => {
-          setColleges(data);
+          const participatedColleges = data.filter((c) => c.detailsUploaded);
+          console.log("participatedColleges:", participatedColleges);
+          setColleges(participatedColleges);
+          setActualParticipatedColleges(participatedColleges);
 
           if (iccode) {
             const tmpSelectedCollege = data.find((ele) => ele.icCode === iccode);
@@ -105,10 +109,36 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
   // Set default participants based on the selected event rules
   useEffect(() => {
-    if (selectedAvailableEvent) {
-      handleSetDefaultParticipants(selectedAvailableEvent);
+    (async () => {
+      if (selectedAvailableEvent && actualParticipatedColleges.length > 0) {
+        await handleFilterColleges();
+        handleSetDefaultParticipants(selectedAvailableEvent);
+      }
+    })();
+  }, [selectedAvailableEvent, actualParticipatedColleges]);
+
+  const handleFilterColleges = async () => {
+    const event = await getEvent(selectedAvailableEvent?.id);
+    if (!event) {
+      alert("Error retrieving event details.");
+      return;
     }
-  }, [selectedAvailableEvent]);
+    const filteredColleges = [];
+    for (let i = 0; i < actualParticipatedColleges.length; i++) {
+      try {
+        const res = await fetchParticipantsByEventIdAndCollegeId(event.id, actualParticipatedColleges[i].id);
+        if (res.length == 0) {
+          filteredColleges.push(actualParticipatedColleges[i]);
+        }
+      } catch (error) {
+        alert("Error loading colleges.");
+        return;
+      }
+    }
+    console.log("in handleFilterColleges(), filtered college:", filteredColleges);
+    setColleges(filteredColleges);
+    setSelectedCollege(filteredColleges[0]);
+  };
 
   // Revalidate details whenever participants change
   useEffect(() => {
@@ -429,7 +459,14 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                       <h2>Participants Details</h2>
                       <div id="participants-container" className="d-flex flex-column gap-2">
                         {participants.map((participant, index) => (
-                          <ParticipantFields key={`participant-${index}`} participant={participant} participantIndex={index} onChange={handleChange} selectedAvailableEvent={selectedAvailableEvent} />
+                          <ParticipantFields
+                            key={`participant-${index}`}
+                            participant={participant}
+                            participantIndex={index}
+                            onChange={handleChange}
+                            selectedAvailableEvent={selectedAvailableEvent}
+                            iccode={iccode}
+                          />
                         ))}
                       </div>
                       <div>

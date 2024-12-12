@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Badge, Form } from "react-bootstrap";
 
-const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent }) => {
+const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent, iccode }) => {
   useEffect(() => {}, [selectedAvailableEvent]);
 
   return (
@@ -35,7 +35,7 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
         />
       </Form.Group>
 
-      <Form.Group className="mb-5">
+      <Form.Group className="mb-3">
         <Form.Select
           aria-label="Default select example"
           name="type"
@@ -62,7 +62,13 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
           <option value={"RIGHT_HANDED"}>RIGHT_HANDED</option>
         </Form.Select>
       </Form.Group>
-      <div className="mb-3">{new Date() > new Date("2024-12-11T14:00:00") && <Badge bg="danger">OTSE</Badge>}</div>
+      <Form.Group className="mb-5">
+        <Form.Label>Entry Type</Form.Label>
+        <Form.Select aria-label="Default select example" name="entryType" disabled={!!iccode} value={participant.entryType} onChange={(e) => onChange(e, participantIndex)}>
+          <option value={"NORMAL"}>NORMAL</option>
+          <option value={"OTSE"}>OTSE</option>
+        </Form.Select>
+      </Form.Group>
     </div>
   );
 };
