@@ -100,7 +100,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
               setSelectedCollege(data[0]);
             }
           } else {
-            setSelectedCollege(data[0]?.id);
+            setSelectedCollege(data[0]);
           }
         })
         .catch((err) => console.error("Error fetching colleges:", err));
@@ -322,17 +322,21 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     // Check participants if already registered
     try {
       const res = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
+      console.log("checking from db whether exist: ", res);
       if (res.length > 0) {
         if (participants[0].entryType == "NORMAL" && res.filter((p) => p.entryType == "NORMAL").length > 0) {
-          alert("Your college had already added the participants, you may edit the details now!");
+          alert("Your college had already added the participants as `NORMAL` entry, you may edit the details now!");
+          return;
         } else if (participants[0].entryType == "OTSE" && res.filter((p) => p.entryType == "OTSE").length > 0) {
-          alert("Your college had already added the participants, you may edit the details now!");
+          alert("Your college had already added the participants for `OTSE` entry, you may edit the details now!");
+          return;
         }
 
         if (iccode) {
           navigate(-1);
+          return;
         }
-        return;
+        
       }
     } catch (error) {
       console.log("error in fetchParticipantsByEventIdAndCollegeId() - ", error);
@@ -352,6 +356,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           collegeId: selectedCollege.id,
           eventIds: [event.id],
         };
+        console.log("creating participant:", participantData, "selectedCollege:", selectedCollege);
         await createParticipants(participantData);
         successCount++;
       } catch (error) {
@@ -362,7 +367,9 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     if (successCount > 0) {
       handleSetDefaultParticipants(selectedAvailableEvent);
       alert(`Participants successfully added: ${successCount}`);
-      navigate(-1);
+      if (iccode) {
+        navigate(-1);
+      }
     } else {
       alert("Some erro occured... Please try again");
     }
