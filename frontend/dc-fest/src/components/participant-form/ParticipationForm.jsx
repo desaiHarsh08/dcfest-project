@@ -111,7 +111,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   useEffect(() => {
     (async () => {
       if (selectedAvailableEvent && actualParticipatedColleges.length > 0) {
-        await handleFilterColleges();
+        // await handleFilterColleges();
         handleSetDefaultParticipants(selectedAvailableEvent);
       }
     })();
@@ -312,12 +312,26 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       return;
     }
 
+    for (let i = 0; i < participants.length / 2; i++) {
+      if (participants[i].entryType != participants[participants.length - 1].entryType) {
+        alert("Every participant should have same entry type");
+        return;
+      }
+    }
+
     // Check participants if already registered
     try {
       const res = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
       if (res.length > 0) {
-        alert("Your college had already added the participants, you may edit the details now!");
-        navigate(-1);
+        if (participants[0].entryType == "NORMAL" && res.filter((p) => p.entryType == "NORMAL").length > 0) {
+          alert("Your college had already added the participants, you may edit the details now!");
+        } else if (participants[0].entryType == "OTSE" && res.filter((p) => p.entryType == "OTSE").length > 0) {
+          alert("Your college had already added the participants, you may edit the details now!");
+        }
+
+        if (iccode) {
+          navigate(-1);
+        }
         return;
       }
     } catch (error) {

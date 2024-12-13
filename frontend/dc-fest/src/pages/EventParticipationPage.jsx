@@ -473,7 +473,7 @@ const EventParticipationPage = () => {
           college: colleges.find((c) => c.id === participant.collegeId)?.name,
           category: selectedCategory?.name || "",
           event: selectedAvailableEvent?.title || "",
-          team: participant.Group,
+          team: participant.group,
           type: participant.type,
           entry: participant.entryType,
           present: participant.present ? "Present" : "-",
