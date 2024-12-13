@@ -317,6 +317,7 @@ const EventParticipationPage = () => {
   const [pop, setPop] = useState();
   const [categories, setCategories] = useState([]);
   const [colleges, setColleges] = useState([]);
+  const [group, setGroup] = useState("");
 
   // Fetch participants when eventFilter changes
   useEffect(() => {
@@ -377,11 +378,11 @@ const EventParticipationPage = () => {
     fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    if (selectedCollege && eventFilter && selectedAvailableEvent) {
-      fetchPop();
-    }
-  }, [selectedCollege, eventFilter, selectedAvailableEvent]);
+  //   useEffect(() => {
+  //     if (selectedCollege && eventFilter && selectedAvailableEvent) {
+  //       fetchPop();
+  //     }
+  //   }, [selectedCollege, eventFilter, selectedAvailableEvent]);
 
   const getParticipants = async () => {
     console.log("eventFilter before going to trycatch:", eventFilter);
@@ -513,24 +514,24 @@ const EventParticipationPage = () => {
     return tmpCollegeIds;
   };
 
-  const fetchPop = async () => {
-    if (!selectedCollege || !selectedAvailableEvent || !eventFilter) {
-      return;
-    }
-    console.log(selectedCollege);
-    console.log(selectedAvailableEvent);
-    console.log(eventFilter);
-    console.log(selectedAvailableEvent?.rounds[0]);
-    try {
-      const response = await getPop(selectedCollege.id, selectedAvailableEvent.id, selectedAvailableEvent?.rounds[0].id);
-      console.log(response);
-      setPop(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //   const fetchPop = async () => {
+  //     if (!selectedCollege || !selectedAvailableEvent || !eventFilter) {
+  //       return;
+  //     }
+  //     console.log(selectedCollege);
+  //     console.log(selectedAvailableEvent);
+  //     console.log(eventFilter);
+  //     console.log(selectedAvailableEvent?.rounds[0]);
+  //     try {
+  //       const response = await getPop(selectedCollege.id, selectedAvailableEvent.id, selectedAvailableEvent?.rounds[0].id);
+  //       console.log(response);
+  //       setPop(response);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
 
-  const handleConfirmParticipants = async () => {
+  const handleConfirmParticipants = async (group) => {
     if (!selectedCollege || !selectedAvailableEvent || !eventFilter) {
       return;
     }
@@ -540,9 +541,10 @@ const EventParticipationPage = () => {
     console.log(selectedAvailableEvent?.rounds[0]);
     try {
       setConfirmParticipation(true);
-      const response = await generateQrcode(selectedCollege.id, selectedAvailableEvent.id, selectedAvailableEvent?.rounds[0].id);
+      const response = await generateQrcode(selectedCollege.id, selectedAvailableEvent.id, selectedAvailableEvent?.rounds[0].id, group);
       console.log(response);
       setPop(response);
+      setGroup(group);
     } catch (error) {
       console.log(error);
     } finally {
@@ -649,7 +651,7 @@ const EventParticipationPage = () => {
           <Button variant="success" disabled={colleges.length == 0 || participants.length == 0} onClick={handleDownload}>
             Download
           </Button>
-          <div>
+          {/* <div>
             {!pop && (
               <Button disabled={filteredParticipants.length == 0 || confirmParticipation} variant="warning" onClick={handleConfirmParticipants}>
                 Confirm Participants
@@ -660,7 +662,7 @@ const EventParticipationPage = () => {
                 Download POP
               </Button>
             )}
-          </div>
+          </div> */}
         </div>
       )}
 
@@ -692,6 +694,8 @@ const EventParticipationPage = () => {
                   participant={participant}
                   handleEdit={handleEdit}
                   handleRemove={handleRemove}
+                  pop={pop}
+                  group={group}
                 />
               ))}
             </tbody>

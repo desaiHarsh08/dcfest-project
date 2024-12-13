@@ -16,6 +16,8 @@ public interface ParticipantAttendanceRepository extends JpaRepository<Participa
 
     List<ParticipantAttendanceModel> findByQrcode(String qrcode);
 
+    List<ParticipantAttendanceModel> findByGroup(String group);
+
     List<ParticipantAttendanceModel> findByRound(RoundModel round);
 
     List<ParticipantAttendanceModel> findByParticipant(ParticipantModel participant);

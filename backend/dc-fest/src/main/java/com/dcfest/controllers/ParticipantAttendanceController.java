@@ -56,7 +56,8 @@ public class ParticipantAttendanceController {
     public ResponseEntity<InputStreamResource> generateQrcode(
             @RequestParam Long collegeId,
             @RequestParam Long availableEventId,
-            @RequestParam Long roundId
+            @RequestParam Long roundId,
+            @RequestParam String group
     ) {
         System.out.println(collegeId);
         System.out.println(availableEventId);
@@ -64,7 +65,7 @@ public class ParticipantAttendanceController {
 
         try {
             // Generate the PDF byte array from the service method
-            InputStreamSource pdf = participantAttendanceServices.generateQrcode(collegeId, availableEventId, roundId);
+            InputStreamSource pdf = participantAttendanceServices.generateQrcode(collegeId, availableEventId, roundId, group);
 
             // Prepare the PDF byte array to be returned as InputStreamResource
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(((ByteArrayResource) pdf).getByteArray());
@@ -106,7 +107,8 @@ public class ParticipantAttendanceController {
     public ResponseEntity<InputStreamResource> getPop(
             @RequestParam Long collegeId,
             @RequestParam Long availableEventId,
-            @RequestParam Long roundId
+            @RequestParam Long roundId,
+            @RequestParam String group
     ) {
         System.out.println(collegeId);
         System.out.println(availableEventId);
@@ -114,7 +116,7 @@ public class ParticipantAttendanceController {
 
         try {
             // Generate the PDF byte array from the service method
-            InputStreamSource pdf = participantAttendanceServices.getPop(roundId, collegeId, availableEventId);
+            InputStreamSource pdf = participantAttendanceServices.getPop(roundId, collegeId, availableEventId, group);
 
             // Prepare the PDF byte array to be returned as InputStreamResource
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(((ByteArrayResource) pdf).getByteArray());

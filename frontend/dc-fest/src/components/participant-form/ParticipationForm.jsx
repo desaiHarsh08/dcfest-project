@@ -327,16 +327,16 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
         if (participants[0].entryType == "NORMAL" && res.filter((p) => p.entryType == "NORMAL").length > 0) {
           alert("Your college had already added the participants as `NORMAL` entry, you may edit the details now!");
           return;
-        } else if (participants[0].entryType == "OTSE" && res.filter((p) => p.entryType == "OTSE").length > 0) {
-          alert("Your college had already added the participants for `OTSE` entry, you may edit the details now!");
-          return;
         }
+        // else if (participants[0].entryType == "OTSE" && res.filter((p) => p.entryType == "OTSE").length > 0) {
+        //   alert("Your college had already added the participants for `OTSE` entry, you may edit the details now!");
+        //   return;
+        // }
 
         if (iccode) {
           navigate(-1);
           return;
         }
-        
       }
     } catch (error) {
       console.log("error in fetchParticipantsByEventIdAndCollegeId() - ", error);

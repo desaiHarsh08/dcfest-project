@@ -29,4 +29,7 @@ public class ParticipantAttendanceModel {
     @JoinColumn(name = "round_id_fk")
     private RoundModel round;
 
+    @Column(name = "group_name")
+    private String group;
+
 }

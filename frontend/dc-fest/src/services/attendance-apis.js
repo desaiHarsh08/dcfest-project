@@ -1,9 +1,9 @@
 import { API } from "../utils/api";
 
-export const generateQrcode = async (collegeId, availableEventId, roundId) => {
+export const generateQrcode = async (collegeId, availableEventId, roundId, group) => {
     try {
         // Make the GET request to fetch the PDF data as a blob
-        const response = await API.get(`/api/attendance/generate-qrcode?collegeId=${collegeId}&availableEventId=${availableEventId}&roundId=${roundId}`, {
+        const response = await API.get(`/api/attendance/generate-qrcode?collegeId=${collegeId}&availableEventId=${availableEventId}&roundId=${roundId}&group=${group}`, {
             responseType: 'arraybuffer', // Make sure to set the responseType to 'arraybuffer' for binary data
             withCredentials: true
         });
@@ -16,10 +16,10 @@ export const generateQrcode = async (collegeId, availableEventId, roundId) => {
     }
 };
 
-export const getPop = async (collegeId, availableEventId, roundId) => {
+export const getPop = async (collegeId, availableEventId, roundId, group) => {
     try {
         // Make the GET request to fetch the PDF data as a blob
-        const response = await API.get(`/api/attendance/get-pop?collegeId=${collegeId}&availableEventId=${availableEventId}&roundId=${roundId}`, {
+        const response = await API.get(`/api/attendance/get-pop?collegeId=${collegeId}&availableEventId=${availableEventId}&roundId=${roundId}&group=${group}`, {
             responseType: 'arraybuffer', // Make sure to set the responseType to 'arraybuffer' for binary data
             withCredentials: true
         });

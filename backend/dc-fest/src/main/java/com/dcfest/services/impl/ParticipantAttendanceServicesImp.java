@@ -86,8 +86,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     private CollegeParticipationRepository collegeParticipationRepository;
 
     @Override
-    public List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel) {
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findParticipantAttendanceByRoundIdAndCollegeId(roundModel.getId(), participantModels.get(0).getCollege().getId());
+    public List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel, String group) {
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroup(group);
         if (participantAttendanceModels.isEmpty()) {
             for (ParticipantModel participantModel: participantModels) {
                 ParticipantAttendanceModel attendanceModel = new ParticipantAttendanceModel(
@@ -95,7 +95,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                         participantModel,
                         qrcodeData,
                         false,
-                        roundModel
+                        roundModel,
+                        group
                 );
                 participantAttendanceModels.add(
                         this.participantAttendanceRepository.save(attendanceModel)
@@ -117,7 +118,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     }
 
     @Override
-    public InputStreamSource getPop(Long roundId, Long collegeId, Long availableEventId) {
+    public InputStreamSource getPop(Long roundId, Long collegeId, Long availableEventId, String group) {
         CollegeModel collegeModel = this.collegeRepository.findById(collegeId).orElseThrow(
                 () -> new ResourceNotFoundException("No college exist for id: " + collegeId)
         );
@@ -138,12 +139,13 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         roundModel.setAvailableEvent(availableEventModel);
 
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), collegeId);
+
         System.out.println(participantModels);
 
 
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findParticipantAttendanceByRoundIdAndCollegeId(
-                roundId, collegeId
-        );
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroup(group);
+        System.out.println(participantModels    );
+        participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group)).collect(Collectors.toList());
 
         if (participantAttendanceModels.isEmpty()) {
             return null;
@@ -159,7 +161,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             throw new RuntimeException("Failed to generate QR code", e);
         }
 
-        String groupNumber = participantModels.get(0).getGroup();
+
         String teamNumber = participantModels.get(0).getTeamNumber();
 
         // Create the pop
@@ -175,7 +177,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         templateData.put("venueName", roundModel.getVenue());
         templateData.put("dateTime", formattedDateTime);
         templateData.put("roundName", roundName);
-        templateData.put("groupNumber", groupNumber); // Example
+        templateData.put("groupNumber", group); // Example
         templateData.put("teamNumber", teamNumber); // Example
 //        System.out.println("img: " + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("qrcodeImage", "data:image/png;base64," + Base64.getEncoder().encodeToString(qrCodeImage));
@@ -213,7 +215,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     }
 
     @Override
-    public InputStreamSource generateQrcode(Long collegeId, Long availableEventId, Long roundId) {
+    public InputStreamSource generateQrcode(Long collegeId, Long availableEventId, Long roundId, String group) {
 //        System.out.println("in generate qrcode");
 //        System.out.println(collegeId);
 //        System.out.println(availableEventId);
@@ -240,6 +242,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         roundModel.setAvailableEvent(availableEventModel);
 
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), collegeId);
+        participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group)).collect(Collectors.toList());
         System.out.println(participantModels);
 
 
@@ -266,7 +269,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         }
 
 
-        String groupNumber = collegeModel.getIcCode() + "_" + String.format("%03d", collegeParticipationIndex + 1);
+
 
 //        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findParticipantAttendanceByRoundIdAndCollegeId(roundId, collegeId);
 
@@ -282,7 +285,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
 
         if (availableEventModel.getCode() != null) {
-            teamNumber = availableEventModel.getCode() + "_" + String.format("%03d", ++countTeam);
+            teamNumber = availableEventModel.getCode() + "_" + String.format("%03d", (++countTeam));
         }
         else {
             teamNumber = "N/A" + "_" + String.format("%03d", ++countTeam);
@@ -297,12 +300,11 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         for (ParticipantModel participantModel: participantModels) {
             participantModel.setTeamNumber(teamNumber);
-            participantModel.setGroup(groupNumber);
             this.participantRepository.save(participantModel);
         }
 
         // Create the attendance for the participants
-        List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel);
+        List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel, group);
 
         // Create the pop
         // Format the LocalDateTime to the required format without milliseconds
@@ -317,8 +319,10 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         templateData.put("venueName", roundModel.getVenue());
         templateData.put("dateTime", formattedDateTime);
         templateData.put("roundName", roundName);
-        templateData.put("groupNumber", groupNumber); // Example
+        templateData.put("groupNumber", group); // Example
         templateData.put("teamNumber", teamNumber); // Example
+        templateData.put("eventMaster", availableEventModel.getEventMaster()); // Example
+        templateData.put("eventMasterPhone", availableEventModel.getEventMasterPhone()); // Example
 //        System.out.println("img: " + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("qrcodeImage", "data:image/png;base64," + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("participants", participantModels);

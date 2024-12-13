@@ -44,10 +44,27 @@
 import { useEffect, useState } from "react";
 import { Badge, Button } from "react-bootstrap";
 import { fetchCollegeById } from "../../services/college-apis";
+import { addAvailableEvent } from "../../services/categories-api";
+import { generateQrcode, getPop } from "../../services/attendance-apis";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ participant, index, category, availableEvent, handleRemove, handleEdit }) => {
+const ParticipantRow = ({ participant, index, group, category, availableEvent, handleRemove, handleEdit }) => {
   const [college, setCollege] = useState();
+  const [pop, setPop] = useState();
+
+  const [confirmParticipation, setConfirmParticipation] = useState(false);
+
+  useEffect(() => {
+    if (college && availableEvent && participant) {
+      fetchPop(college, availableEvent, participant.group);
+    }
+  }, [college && availableEvent && participant]);
+
+  useEffect(() => {
+    if (confirmParticipation) {
+      fetchPop(college, availableEvent, participant.group);
+    }
+  }, [confirmParticipation]);
 
   useEffect(() => {
     fetchCollegeById(participant?.collegeId)
@@ -56,6 +73,57 @@ const ParticipantRow = ({ participant, index, category, availableEvent, handleRe
       })
       .catch((err) => console.log(err));
   }, [participant?.collegeId]);
+
+  useEffect(() => {
+    if (college && participant && availableEvent) {
+      fetchPop();
+    }
+  }, [college, participant, availableEvent]);
+
+  const fetchPop = async (college, availableEvent, group) => {
+    if (!college || !availableEvent || !participant) {
+      return;
+    }
+
+    console.log(college);
+    try {
+      const response = await getPop(college.id, availableEvent.id, availableEvent?.rounds[0].id, group);
+      console.log(response);
+      setPop(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePdfOpen = () => {
+    if (!pop) {
+      return;
+    }
+    console.log(pop);
+    // Assuming `response` is the byte array (PDF content)
+    const pdfBlob = new Blob([pop], { type: "application/pdf" });
+
+    // Create a URL for the Blob
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    // Open the PDF in a new tab
+    window.open(pdfUrl, "_blank");
+  };
+
+  const handleConfirmParticipants = async (group) => {
+    if (!college || !availableEvent) {
+      return;
+    }
+    try {
+      setConfirmParticipation(true);
+      const response = await generateQrcode(college.id, availableEvent.id, availableEvent?.rounds[0].id, group);
+      console.log(response);
+      setPop(response);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setConfirmParticipation(false);
+    }
+  };
 
   return (
     <>
@@ -75,12 +143,27 @@ const ParticipantRow = ({ participant, index, category, availableEvent, handleRe
         </td>
         <td>{participant?.handPreference}</td>
         <td className="d-flex">
-          <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
-            Edit
-          </Button>
           <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
             Remove
           </Button>
+          <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
+            Edit
+          </Button>
+          {
+            <Button
+              variant={pop ? "ghost border border-2" : "warning"}
+              onClick={() => {
+                if (pop) {
+                  handlePdfOpen();
+                } else {
+                  handleConfirmParticipants(participant?.group);
+                }
+              }}
+              disabled={confirmParticipation}
+            >
+              {pop ? "Download" : "Confirm"}
+            </Button>
+          }
         </td>
       </tr>
     </>

@@ -147,7 +147,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDto.getEventIds().get(0));
                 List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream().filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
                 List<Long> collegesIds = new ArrayList<>();
-                for (ParticipantModel participantModel: fiteredParticipantsByType) {
+                for (ParticipantModel participantModel : fiteredParticipantsByType) {
                     if (collegesIds.contains(participantModel.getCollege().getId())) {
                         continue;
                     }
@@ -163,8 +163,29 @@ public class ParticipantServicesImpl implements ParticipantServices {
             }
         }
 
+        if (participantDto.getEntryType().equals(EntryType.OTSE)) {
+            int otseSlotsAvailable = Integer.parseInt(otseSlotsEventRule.getValue());
+            if (otseSlotsAvailable == 0) {
+                throw new OTSESlotsException("No OTSE slots available");
+            }
 
+            // Grab the unique colleges
+            List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDto.getEventIds().get(0));
+            List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream().filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
+            List<Long> collegesIds = new ArrayList<>();
+            for (ParticipantModel participantModel : fiteredParticipantsByType) {
+                if (collegesIds.contains(participantModel.getCollege().getId())) {
+                    continue;
+                }
+                collegesIds.add(participantModel.getCollege().getId());
+            }
 
+            int otseSlotsOccupied = collegesIds.size();
+            if (otseSlotsOccupied + 1 > otseSlotsAvailable) {
+                throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
+            }
+
+        }
 
 
         // Create the participant
@@ -175,18 +196,27 @@ public class ParticipantServicesImpl implements ParticipantServices {
         participantModel.setHandPreference(participantDto.getHandPreference());
         String group;
         if (participantModels.isEmpty()) {
+            System.out.println("here blank participants");
             long count = 0;
             if (participantDto.getEntryType().equals(EntryType.NORMAL)) {
-                count = this.participantRepository.countByEventIdAndEntryType(eventModel.getId(), EntryType.NORMAL);
-                group = collegeModel.getIcCode() + "_" + (count + 1);
+                System.out.println("in normal");
+                group = collegeModel.getIcCode() + "_" + String.format("%03d", 1);;
             }
             else {
+                System.out.println("in otse");
                 count = this.participantRepository.countByEventIdAndEntryType(eventModel.getId(), EntryType.OTSE);
-                group = collegeModel.getIcCode() + "_OTSE_" + (count + 1);
+                group = collegeModel.getIcCode() + "_OTSE_" + String.format("%03d", count + 1);
             }
         }
         else {
-            group = participantModels.get(0).getGroup();
+            System.out.println("");
+            if (participantDto.getEntryType().equals(EntryType.OTSE)) {
+                long count = this.participantRepository.countByEventIdAndEntryType(eventModel.getId(), EntryType.OTSE);
+                group = collegeModel.getIcCode() + "_OTSE_" + String.format("%03d", count + 1);
+            }
+            else {
+                group = participantModels.get(0).getGroup();
+            }
         }
 
 

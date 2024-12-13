@@ -11,11 +11,11 @@ import java.util.List;
 
 public interface ParticipantAttendanceServices {
 
-    List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel);
+    List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel,  String group);
 
     ParticipantAttendanceDto getAttendanceById(Long id);
 
-    InputStreamSource generateQrcode(Long collegeId, Long availableEventId, Long roundId);
+    InputStreamSource generateQrcode(Long collegeId, Long availableEventId, Long roundId, String group);
 
     List<ParticipantAttendanceDto> getAllAttendances();
 
@@ -27,6 +27,6 @@ public interface ParticipantAttendanceServices {
 
     boolean deleteAttendance(Long id);
 
-    InputStreamSource getPop(Long roundId, Long collegeId, Long availableEventId);
+    InputStreamSource getPop(Long roundId, Long collegeId, Long availableEventId, String group);
 
 }
