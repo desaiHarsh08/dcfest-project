@@ -5,7 +5,22 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { addParticipant, createParticipants, fetchSlotsOccupiedForEvent } from "../../services/participants-api";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 
-export default function AddParticipantModal({ handleModalClose, show, setNewParticipant, newParticipant, setGroup, group, participants, handleInputChange, selectedCollege, availableEvent, groups }) {
+export default function AddParticipantModal({
+  handleModalClose,
+  show,
+  setNewParticipant,
+  newParticipant,
+  setGroup,
+  group,
+  participants,
+  setParticipants,
+  filteredParticipants,
+  setFilteredParticipants,
+  handleInputChange,
+  selectedCollege,
+  availableEvent,
+  groups,
+}) {
   const [loadingSave, setLoadingSave] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isValid, setIsValid] = useState(false);
@@ -15,6 +30,10 @@ export default function AddParticipantModal({ handleModalClose, show, setNewPart
   useEffect(() => {
     setNewParticipant((prev) => ({ ...newParticipant, group }));
   }, [group]);
+
+  useEffect(() => {
+    console.log("in ue of a-p, availableEvent:", availableEvent);
+  }, [availableEvent]);
 
   useEffect(() => {
     console.log(availableEvent, participants);
@@ -253,19 +272,26 @@ export default function AddParticipantModal({ handleModalClose, show, setNewPart
 
     const tmpParticipant = {
       ...newParticipant,
-      collegeId: participants[0].collegeId,
+      collegeId: filteredParticipants[0].collegeId,
+      entryType: filteredParticipants[0].entryType,
+      teamNumber: filteredParticipants[0].teamNumber,
+      eventIds: filteredParticipants[0].eventIds,
     };
-    console.log(tmpParticipant);
+    if (tmpParticipant.type == null) {
+      alert("Please provide the valid participant type!");
+      return;
+    }
+    console.log("tmpParticipant:", tmpParticipant);
     setLoadingSave(true);
     try {
       const response = await addParticipant(tmpParticipant);
       console.log(response);
 
-      //   setParticipants([...participants, newParticipant]);
-      //   getParticipants();
+      setParticipants([...participants, response]);
+      setFilteredParticipants([...filteredParticipants, response]);
     } catch (error) {
       console.log(error);
-      alert("Unable to save the changes... please try again later!");
+      alert(error.response.data.message);
     } finally {
       handleModalClose();
       setLoadingSave(false);
@@ -328,10 +354,16 @@ export default function AddParticipantModal({ handleModalClose, show, setNewPart
               <Form.Select
                 aria-label="Default select example"
                 name="type"
-                value={newParticipant?.type}
-                onChange={handleInputChange}
+                value={newParticipant?.type || "NONE"}
+                onChange={(e) => {
+                  setNewParticipant((prev) => ({
+                    ...prev,
+                    type: e.target.value == "NONE" ? null : e.target.value,
+                  }));
+                }}
                 //   disabled={!availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}
               >
+                <option value="NONE">Select the type</option>
                 <option value={"ACCOMPANIST"}>ACCOMPANIST</option>
                 <option value={"PERFORMER"}>PERFORMER</option>
               </Form.Select>

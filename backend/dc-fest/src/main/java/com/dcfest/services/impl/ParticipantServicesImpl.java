@@ -48,6 +48,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
     private ParticipantAttendanceServices participantAttendanceServices;
 
     @Autowired
+    private EventRuleTemplateRepository eventRuleTemplateRepository;
+
+    @Autowired
     private NotificationLogRepository notificationLogRepository;
 
     @Autowired
@@ -249,6 +252,12 @@ public class ParticipantServicesImpl implements ParticipantServices {
         eventModel.setAvailableEvent(availableEventModel);
 
         List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(availableEventModel);
+//        for (EventRuleModel eventRuleModel: eventRuleModels) {
+//            EventRuleTemplateModel eventRuleTemplateModel = this.eventRuleTemplateRepository.findById(eventRuleModel.getEventRuleTemplate().getId()).orElseThrow(
+//                    () ->new IllegalArgumentException("Unable to load the checks")
+//            );
+//            eventRuleModel.setEventRuleTemplate(eventRuleTemplateModel);
+//        }
 
         // Retrieve the REGISTERED_SLOTS_AVAILABLE
         EventRuleModel maxSlotsEventRule = eventRuleModels.stream().filter(ele -> ele.getEventRuleTemplate().getId().equals(6L)).findAny().orElse(null);
@@ -268,14 +277,61 @@ public class ParticipantServicesImpl implements ParticipantServices {
             ));
         }
 
+
+
         // Fetch the participant
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeIdAndGroup(participantDto.getEventIds().get(0), participantDto.getCollegeId(), participantDto.getGroup());
 
+        // Check for max_slots
         if (participantDto.getType().equals(ParticipantType.PERFORMER)) {
-            if (participantModels.stream().filter(p -> p.getType().equals(ParticipantType.PERFORMER)).count() + 1 > Integer.parseInt(maxSlotsEventRule.getValue())) {
+            EventRuleModel performerRule = eventRuleModels.stream().filter(e -> e.getEventRuleTemplate().getId().equals(10L)).findAny().orElse(null);
+            System.out.println("max_slots:" + Integer.parseInt(performerRule.getValue()));
+            System.out.println("con: " + participantModels.stream().filter(p -> p.getType().equals(ParticipantType.PERFORMER) && p.getGroup().equals(participantDto.getGroup())).count());
+            if (participantModels.stream().filter(p -> p.getType().equals(ParticipantType.PERFORMER) && p.getGroup().equals(participantDto.getGroup())).count() + 1 > Integer.parseInt(performerRule.getValue())) {
                 throw new IllegalArgumentException("Performer can't be added now!");
             }
         }
+
+        // Check for accompanist
+        if (participantDto.getType().equals(ParticipantType.ACCOMPANIST)) {
+            System.out.println(eventRuleModels);
+            System.out.println("in accompanist: -");
+            for (EventRuleModel eventRuleModel: eventRuleModels) {
+                System.out.println(eventRuleModel.getAvailableEvent() + "\t" + eventRuleModel.getEventRuleTemplate());
+            }
+            EventRuleModel accompanistRule = eventRuleModels.stream().filter(e -> e.getEventRuleTemplate().getId().equals(3L)).findAny().orElse(null);
+            if (accompanistRule == null) {
+                throw new IllegalArgumentException("Accompanist can't be added!");
+            }
+            if (accompanistRule != null) {
+                if (participantModels.stream().filter(p -> p.getType().equals(ParticipantType.ACCOMPANIST)  && p.getGroup().equals(participantDto.getGroup())).count() + 1 > Integer.parseInt(accompanistRule.getValue())) {
+                    throw new IllegalArgumentException("Accompanist can't be added now!");
+                }
+            }
+
+        }
+
+        // Check for gender
+        if (participantDto.isMale()) {
+
+            EventRuleModel maleRule = eventRuleModels.stream().filter(e -> e.getEventRuleTemplate().getId().equals(11L)).findAny().orElse(null);
+            if (maleRule != null) {
+                if (participantModels.stream().filter(p -> p.isMale() && p.getGroup().equals(participantDto.getGroup())).count() + 1 > Integer.parseInt(maleRule.getValue())) {
+                    throw new IllegalArgumentException("MALE_PARTICIPANT can't be added now!");
+                }
+            }
+
+        }
+        else {
+            EventRuleModel femaleRule = eventRuleModels.stream().filter(e -> e.getEventRuleTemplate().getId().equals(12L)).findAny().orElse(null);
+            if (femaleRule != null) {
+                if (participantModels.stream().filter(p -> !p.isMale() && p.getGroup().equals(participantDto.getGroup())).count() + 1 > Integer.parseInt(femaleRule.getValue())) {
+                    throw new IllegalArgumentException("FEMALE_PARTICIPANT can't be added now!");
+                }
+            }
+
+        }
+
 
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);

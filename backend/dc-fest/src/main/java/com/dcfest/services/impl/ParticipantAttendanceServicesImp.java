@@ -179,6 +179,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         templateData.put("roundName", roundName);
         templateData.put("groupNumber", group); // Example
         templateData.put("teamNumber", teamNumber); // Example
+        templateData.put("eventMaster", availableEventModel.getEventMaster());
+        templateData.put("eventMasterPhone", availableEventModel.getEventMasterPhone());
 //        System.out.println("img: " + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("qrcodeImage", "data:image/png;base64," + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("participants", participantModels);
@@ -321,6 +323,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         templateData.put("roundName", roundName);
         templateData.put("groupNumber", group); // Example
         templateData.put("teamNumber", teamNumber); // Example
+        System.out.println("in p-a-s-i" + availableEventModel.getEventMaster());
+        System.out.println("in p-a-s-i" + availableEventModel.getEventMasterPhone());
         templateData.put("eventMaster", availableEventModel.getEventMaster()); // Example
         templateData.put("eventMasterPhone", availableEventModel.getEventMasterPhone()); // Example
 //        System.out.println("img: " + Base64.getEncoder().encodeToString(qrCodeImage));

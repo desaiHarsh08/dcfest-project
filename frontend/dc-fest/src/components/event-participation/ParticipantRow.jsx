@@ -102,9 +102,11 @@ const ParticipantRow = ({ participant, index, group, category, availableEvent, h
         </td>
         <td>{participant?.handPreference}</td>
         <td className="d-flex">
-          <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
-            Remove
-          </Button>
+          {participant?.id && (
+            <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
+              Remove
+            </Button>
+          )}
           <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
             Edit
           </Button>

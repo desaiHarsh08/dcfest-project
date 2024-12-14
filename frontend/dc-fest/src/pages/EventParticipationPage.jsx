@@ -504,6 +504,9 @@ const EventParticipationPage = () => {
           handleModalClose={() => setShowAddModal(false)}
           newParticipant={newParticipant}
           setNewParticipant={setNewParticipant}
+          setParticipants={setParticipants}
+          filteredParticipants={filteredParticipants}
+          setFilteredParticipants={setFilteredParticipants}
           participants={filteredParticipants.filter((p) => p.group == group)}
           setGroup={setGroup}
           group={group}
