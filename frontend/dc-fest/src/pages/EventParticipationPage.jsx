@@ -332,11 +332,11 @@ const EventParticipationPage = () => {
   return (
     <Container className="mt-4">
       <h1 className="text-center mb-4">Event Participation List</h1>
-      <p>
+      {/* <p>
         Total Teams: {getTeams()?.length} /{" "}
         {Number(selectedAvailableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name == "REGISTERED_SLOTS_AVAILABLE")?.value) +
           Number(selectedAvailableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value)}
-      </p>
+      </p> */}
       {/* Dropdowns for filtering participants */}
       <div className="mb-4 filter-dropdowns d-flex gap-2">
         <Form.Select

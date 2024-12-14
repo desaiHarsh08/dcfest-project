@@ -441,7 +441,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
 
     @Override
-    public ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId) {
+    public ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId, boolean status) {
         // Fetch RoundModel and AvailableEventModel
         RoundModel roundModel = this.roundRepository.findById(roundId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid round_id: " + roundId));
@@ -470,7 +470,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         if (participantAttendanceOptional.isPresent()) {
             ParticipantAttendanceModel participantAttendanceModel = participantAttendanceOptional.get();
             System.out.println("in db: " + participantAttendanceModel.isPresent());
-            participantAttendanceModel.setPresent(!participantAttendanceModel.isPresent());
+            participantAttendanceModel.setPresent(status);
             System.out.println("after change: " + participantAttendanceModel.isPresent());
             participantModel.setPresent(participantAttendanceModel.isPresent());
 

@@ -23,7 +23,7 @@ public interface ParticipantAttendanceServices {
 
     ScannedQrcodeResponse scanQrcode(String qrData);
 
-    ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId);
+    ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId, boolean status);
 
     boolean deleteAttendance(Long id);
 

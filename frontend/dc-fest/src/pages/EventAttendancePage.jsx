@@ -15,6 +15,8 @@ const EventAttendancePage = () => {
   const [showScanner, setShowScanner] = useState(true); // Controls the visibility of the scanner
   const [qrData, setQrData] = useState();
   const [scannedQrcodeResponse, setScannedQrcodeResponse] = useState();
+  const [presentParticipantIds, setPresentParticipantIds] = useState([]);
+  const [round, setRound] = useState();
 
   const qrcodeReaderRef = useRef(null);
 
@@ -69,18 +71,54 @@ const EventAttendancePage = () => {
       console.log("qrdata:", data);
       const response = await scanQrcode(data);
       setScannedQrcodeResponse(response);
+      const tmpPresentIds = [];
+      for (let i = 0; i < response.participants.length; i++) {
+        if (response.participants[i].present) {
+          tmpPresentIds.push(response.participants[i].id);
+        }
+      }
+      setPresentParticipantIds(tmpPresentIds);
       console.log("scanned qrcode response:", response);
+      console.log(response.availableEvent.rounds.find((r) => r.id == response.roundId));
+      setRound(response.availableEvent.rounds.find((r) => r.id == response.roundId));
     } catch (error) {
       console.log(error);
+      alert("Invalid Qrcode...!");
+      setScannedQrcodeResponse(undefined);
+      setShowScanner(true);
+      setQrData(undefined);
     }
   };
 
-  const handleMarkPresent = async (participantId) => {
+  const handleSelectAll = (e) => {
+    const { checked, value } = e.target;
+    console.log(value, checked);
+    let newPresentParticipantIds = [];
+    const newScannedQrcodeResponse = { ...scannedQrcodeResponse };
+    const newParticipants = [...newScannedQrcodeResponse.participants];
+    for (let i = 0; i < newParticipants.length; i++) {
+      newParticipants[i].present = checked;
+      if (checked) {
+        if (!newPresentParticipantIds.includes(newParticipants[i].id)) {
+          newPresentParticipantIds.push(newParticipants[i].id);
+        }
+      } else {
+        newPresentParticipantIds = newPresentParticipantIds.filter((p) => newParticipants[i].id != p.id);
+      }
+    }
+
+    newScannedQrcodeResponse.participants = newParticipants;
+    setScannedQrcodeResponse(newScannedQrcodeResponse);
+
+    setPresentParticipantIds(newPresentParticipantIds);
+  };
+
+  const handleMarkPresent = async (participantId, status) => {
     if (!participantId || !scannedQrcodeResponse) {
       return;
     }
     try {
-      const response = await markAttendanceForParticipant(scannedQrcodeResponse?.roundId, scannedQrcodeResponse?.participants[0].collegeId, participantId);
+      const response = await markAttendanceForParticipant(scannedQrcodeResponse?.roundId, scannedQrcodeResponse?.participants[0].collegeId, participantId, status);
       console.log("mark attendance:", response);
 
       try {
@@ -110,23 +148,45 @@ const EventAttendancePage = () => {
     }
   };
 
+  const handleSave = async () => {
+    const newScannedQrcodeResponse = { ...scannedQrcodeResponse };
+    const newParticipants = [...scannedQrcodeResponse.participants];
+    for (let i = 0; i < newParticipants.length; i++) {
+      if (presentParticipantIds.includes(newParticipants[i].id)) {
+        newParticipants[i].present = true;
+      } else {
+        newParticipants[i].present = false;
+      }
+    }
+
+    for (let i = 0; i < newParticipants.length; i++) {
+      try {
+        await handleMarkPresent(newParticipants[i].id, newParticipants[i].present);
+      } catch (error) {
+        console.log("error in marking attedance:", error);
+        return;
+      }
+    }
+
+    newScannedQrcodeResponse.participants = newParticipants;
+    setScannedQrcodeResponse(newScannedQrcodeResponse);
+    alert("Attendance Saved Successfully!");
+  };
+
   return (
     <Container fluid className="p-0">
       <motion.div
-      initial={{ y: -50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      style={{ backgroundColor: "#4cc08a"}}
-      className="text-white d-flex justify-content-center align-items-center mb-3"
-    >
-      <p
-        className="m-0 py-2 d-flex align-items-center"
-        style={{ fontSize: "18px", fontWeight: "bold" }}
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        style={{ backgroundColor: "#4cc08a" }}
+        className="text-white d-flex justify-content-center align-items-center mb-3"
       >
-        <FaClipboardList className="me-2" style={{ fontSize: "23px" }} />
-       Participants Attendance Desk
-      </p>
-    </motion.div>
+        <p className="m-0 py-2 d-flex align-items-center" style={{ fontSize: "18px", fontWeight: "bold" }}>
+          <FaClipboardList className="me-2" style={{ fontSize: "23px" }} />
+          Participants Attendance Desk
+        </p>
+      </motion.div>
       {showScanner && <h1 className="title text-center fs-2">Event Attendance</h1>}
 
       {showScanner && (
@@ -166,8 +226,12 @@ const EventAttendancePage = () => {
       )}
 
       {scannedQrcodeResponse && (
-        <Row>
-          <Col md={3}>
+        <>
+          <h3>
+            {scannedQrcodeResponse?.availableEvent?.title} | {round?.roundType}
+          </h3>
+          <Row>
+            {/* <Col md={3}>
             <Card className="border-0 shadow-sm py-3" style={{ background: "linear-gradient(135deg,#007bff,#004080)" }}>
               <Card.Img
                 variant="top"
@@ -263,47 +327,66 @@ const EventAttendancePage = () => {
                 </div>
               </Card.Body>
             </Card>
-          </Col>
+          </Col> */}
 
-          <Col>
-            <Table bordered hover responsive className="table-striped">
-              <thead>
-                <tr>
-                  <th>Sr No.</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Type</th>
-                  <th>Entry</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scannedQrcodeResponse?.participants.length > 0 &&
-                  scannedQrcodeResponse?.participants.map((participant, index) => (
-                    <tr key={participant.id}>
-                      <td>{index + 1}.</td>
-                      <td>{participant.name}</td>
-                      <td>{participant.email}</td>
-                      <td style={{ minWidth: "147px" }}>{participant.whatsappNumber}</td>
-                      <td>
-                        <Badge bg={participant.type != "PERFORMER" ? "warning" : "info"}>{participant.type}</Badge>
-                      </td>
-                      <td>
-                        <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant.entryType}</Badge>
-                      </td>
-                      <td>
-                        <Button variant={participant.present ? "success" : "danger"} onClick={() => handleMarkPresent(participant?.id)}>
-                          {participant.present ? "Present" : "Absent"}
-                        </Button>
-                        {participant.present}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
+            <Col className="container">
+              <Button variant="success" onClick={handleSave}>
+                Save
+              </Button>
+              <Table bordered hover responsive className="table-striped">
+                <thead>
+                  <tr>
+                    <th className="d-flex align-items-center gap-2 justify-content-center">
+                      <input type="checkbox" onChange={handleSelectAll} />
+                      <p className="m-0">Select</p>
+                    </th>
+                    <th>Sr No.</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Type</th>
+                    <th>Entry</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scannedQrcodeResponse?.participants.length > 0 &&
+                    scannedQrcodeResponse?.participants.map((participant, index) => (
+                      <tr key={participant.id}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            onChange={(e) => {
+                              let newPresentParticipantIds = [...presentParticipantIds];
+                              if (e.target.checked) {
+                                if (!newPresentParticipantIds.includes(participant.id)) {
+                                  newPresentParticipantIds.push(participant.id);
+                                }
+                              } else {
+                                newPresentParticipantIds = newPresentParticipantIds.filter((pid) => pid != participant.id);
+                              }
+
+                              setPresentParticipantIds(newPresentParticipantIds);
+                            }}
+                            checked={presentParticipantIds.includes(participant?.id)}
+                          />
+                        </td>
+                        <td>{index + 1}.</td>
+                        <td>{participant.name}</td>
+                        <td>{participant.email}</td>
+                        <td style={{ minWidth: "147px" }}>{participant.whatsappNumber}</td>
+                        <td>
+                          <Badge bg={participant.type != "PERFORMER" ? "warning" : "info"}>{participant.type}</Badge>
+                        </td>
+                        <td>
+                          <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant.entryType}</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+        </>
       )}
     </Container>
   );

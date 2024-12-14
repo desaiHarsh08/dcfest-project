@@ -95,10 +95,11 @@ public class ParticipantAttendanceController {
     public ResponseEntity<ParticipantAttendanceDto> markAttendance(
             @RequestParam Long roundId,
             @RequestParam Long collegeId,
-            @RequestParam Long participantId
+            @RequestParam Long participantId,
+            @RequestParam boolean status
     ) {
         return new ResponseEntity<>(
-                this.participantAttendanceServices.markAttendance(roundId, collegeId, participantId),
+                this.participantAttendanceServices.markAttendance(roundId, collegeId, participantId, status),
                 HttpStatus.OK
         );
     }
