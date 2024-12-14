@@ -1,294 +1,3 @@
-/* eslint-disable no-unused-vars */
-// import { useEffect, useState } from "react";
-// import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
-// import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
-// import "../styles/EventParticipationPage.css"; // Import custom CSS
-// import { fetchCategories } from "../services/categories-api";
-// import { deleteParticipant, fetchParticipantsByEventId } from "../services/participants-api";
-// import { fetchEventByAvailableEventId } from "../services/event-apis";
-// import ParticipantRow from "../components/event-participation/ParticipantRow";
-// import { fetchColleges } from "../services/college-apis";
-// import * as XLSX from "xlsx";
-
-// const EventParticipationPage = () => {
-//   const [participants, setParticipants] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState(null);
-//   const [selectedParticipant, setSelectedParticipant] = useState(null);
-//   const [selectedCollege, setSelectedCollege] = useState(null);
-//   const [selectedCategory, setSelectedCategory] = useState(null);
-//   const [selectedAvailableEvent, setAvailableEvent] = useState(null);
-//   const [showEditModal, setShowEditModal] = useState(false);
-//   const [eventFilter, setEventFilter] = useState("");
-//   const [categoryFilter, setCategoryFilter] = useState("");
-
-//   const [categories, setCategories] = useState([]);
-//   const [colleges, setColleges] = useState([]);
-
-//   const getParticipants = async () => {
-//     try {
-//       setLoading(true);
-//       const event = await fetchEventByAvailableEventId(eventFilter);
-//       const participantsData = await fetchParticipantsByEventId(event.id);
-//       setParticipants(participantsData);
-//     } catch (err) {
-//       console.error("Error fetching participants:", err);
-//       setError("Failed to load participants.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   }
-//   // Fetch participants when eventFilter changes
-//   useEffect(() => {
-//     if (eventFilter) {
-//       getParticipants()
-//     }
-//   }, [eventFilter,]);
-
-//   useEffect(() => {
-//     fetchColleges().then(data => {
-//       console.log(data)
-//       setColleges(data)
-//     }).catch(err => {
-//       console.log(err)
-//     })
-//   }, [])
-
-//   // Fetch categories and initialize filters
-//   useEffect(() => {
-//     const fetchInitialData = async () => {
-//       try {
-//         setLoading(true);
-//         const categoriesData = await fetchCategories();
-//         setCategories(categoriesData);
-
-//         if (categoriesData.length > 0) {
-//           const firstCategory = categoriesData[0];
-//           setCategoryFilter(firstCategory.id);
-//           setSelectedCategory(firstCategory);
-
-//           if (firstCategory.availableEvents?.length > 0) {
-//             const firstEvent = firstCategory.availableEvents[0];
-//             setEventFilter(firstEvent.id);
-//             setAvailableEvent(firstEvent);
-//           }
-//         }
-//       } catch (err) {
-//         console.error("Error fetching categories:", err);
-//         setError("Failed to load categories.");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchInitialData();
-//   }, []);
-
-//   const handleEdit = (participant, college) => {
-//     setSelectedParticipant(participant);
-//     setSelectedCollege(college);
-//     setShowEditModal(true);
-//   };
-
-//   const handleRemove = async (id) => {
-//     const isConfirm = confirm("Are you sure you want to delete this participant.")
-//     if (!isConfirm) {
-//       return
-//     }
-//     try {
-//       const response = await deleteParticipant(id)
-//       console.log(response)
-//       getParticipants()
-//     } catch (error) {
-//       console.error("Something error", err)
-//     }
-//   };
-
-//   const handleModalClose = () => {
-//     setShowEditModal(false);
-//     setSelectedParticipant(null);
-//   };
-
-//   const handleSaveChanges = () => {
-//     setParticipants((prev) => prev.map((participant) => (participant.id === selectedParticipant.id ? selectedParticipant : participant)));
-//     handleModalClose();
-//   };
-
-//   const handleInputChange = (e) => {
-//     const { name, value } = e.target;
-//     setSelectedParticipant((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   if (error) {
-//     return (
-//       <Container className="mt-4">
-//         <Alert variant="danger">{error}</Alert>
-//       </Container>
-//     );
-//   }
-
-//   const handleFormatData = () => {
-//     let formattedData = [];
-//     participants.forEach((participant, index) => {
-//       const eventsData = participant.eventIds.map((eventId) => {
-//         return {
-//           srno: index + 1,
-//           name: participant.name,
-//           email: participant.email,
-//           whatsappNumber: participant.whatsappNumber,
-//           gender: participant.male ? "M" : "F",
-//           iccode: colleges.find(c => c.id == participant.collegeId)?.icCode,
-//           college: colleges.find((c) => c.id === participant.collegeId)?.name,
-//           category: selectedCategory?.name || "",
-//           event: selectedAvailableEvent?.title || "",
-//           type: participant.type,
-//           entry: participant.entryType,
-//           present: participant.present ? "Present" : "-",
-//         };
-//       });
-//       formattedData = [...formattedData, ...eventsData];
-//     });
-
-//     return formattedData;
-//   };
-
-//   const handleDownload = () => {
-//     if (!participants.length) {
-//       alert("No data available for download.");
-//       return;
-//     }
-
-//     const formattedParticipants = handleFormatData();
-
-//     const worksheet = XLSX.utils.json_to_sheet(formattedParticipants);
-//     const workbook = XLSX.utils.book_new();
-//     XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
-//     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-
-//     saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `${selectedAvailableEvent?.slug}-participants.xlsx`);
-//   };
-
-//   return (
-//     <Container className="mt-4">
-//       <h1 className="text-center mb-4">Event Participation List</h1>
-
-//       {/* Dropdowns for filtering participants */}
-//       <div className="mb-4 filter-dropdowns">
-//         <Form.Select
-//           className="category-dropdown"
-//           value={categoryFilter}
-//           onChange={(e) => {
-//             const tmpSelectedCategory = categories.find((c) => c.id == e.target.value);
-//             setCategoryFilter(e.target.value);
-//             setSelectedCategory(tmpSelectedCategory);
-
-//             if (tmpSelectedCategory) {
-//               const firstEvent = tmpSelectedCategory.availableEvents[0];
-//               setEventFilter(firstEvent.id);
-//               setAvailableEvent(firstEvent);
-//             }
-//           }}
-//         >
-//           {categories.map((category, categoryIndex) => (
-//             <option key={`category-${categoryIndex}`} value={category.id}>
-//               {category.name}
-//             </option>
-//           ))}
-//         </Form.Select>
-
-//         <Form.Select
-//           className="event-dropdown me-2"
-//           value={eventFilter}
-//           onChange={(e) => {
-//             setEventFilter(e.target.value);
-
-//             const tmpAvailableEvent = selectedCategory?.availableEvents?.find((ele) => ele.id == e.target.value);
-//             setAvailableEvent(tmpAvailableEvent);
-//           }}
-//         >
-//           {selectedCategory?.availableEvents?.map((availableEvent, availableEventIndex) => (
-//             <option key={`availableEvent-${availableEventIndex}`} value={availableEvent.id}>
-//               {availableEvent.title}
-//             </option>
-//           ))}
-//         </Form.Select>
-//       </div>
-//       <Button variant="success" disabled={colleges.length == 0 || participants.length == 0} onClick={handleDownload}>Download</Button>
-
-//       {participants.length > 0 && (
-//         <div className="mb-5 pb-5">
-//           <Table striped bordered hover responsive>
-//             <thead>
-//               <tr>
-//                 <th>#</th>
-//                 <th>Participant Name</th>
-//                 <th>ICCODE</th>
-//                 {/* <th>Group/Participant Id</th> */}
-//                 <th>Email</th>
-//                 <th>Category</th>
-//                 <th>Event</th>
-//                 <th>Actions</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {participants.map((participant, index) => (
-//                 <ParticipantRow
-//                   key={participant.id}
-//                   category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
-//                   index={index}
-//                   availableEvent={selectedAvailableEvent}
-//                   participant={participant}
-//                   handleEdit={handleEdit}
-//                   handleRemove={handleRemove}
-//                 />
-//               ))}
-//             </tbody>
-//           </Table>
-//         </div>
-//       )}
-
-//       {/* Edit Modal */}
-//       <Modal show={showEditModal} onHide={handleModalClose}>
-//         <Modal.Header closeButton>
-//           <Modal.Title>Edit Participant</Modal.Title>
-//         </Modal.Header>
-//         <Modal.Body>
-//           {selectedParticipant && (
-//             <Form className="w-100">
-//               <Form.Group controlId="formName">
-//                 <Form.Label>Name</Form.Label>
-//                 <Form.Control type="text" name="name" value={selectedParticipant.name} onChange={handleInputChange} />
-//               </Form.Group>
-//               <Form.Group controlId="formCollege">
-//                 <Form.Label>ICCODE</Form.Label>
-//                 <Form.Control type="text" name="icCode" value={selectedCollege?.icCode || ""} style={{ backgroundColor: "aliceblue" }} />
-//               </Form.Group>
-//               <Form.Group controlId="formEmail">
-//                 <Form.Label>Email</Form.Label>
-//                 <Form.Control type="email" name="email" value={selectedParticipant.email} onChange={handleInputChange} />
-//               </Form.Group>
-//               <Form.Group controlId="formEvent">
-//                 <Form.Label>Whatsapp Number</Form.Label>
-//                 <Form.Control type="text" name="whatsappNumber" value={selectedParticipant.whatsappNumber || ""} onChange={handleInputChange} />
-//               </Form.Group>
-//             </Form>
-//           )}
-//         </Modal.Body>
-//         <Modal.Footer>
-//           <Button variant="secondary" onClick={handleModalClose}>
-//             Close
-//           </Button>
-//           <Button variant="primary" onClick={handleSaveChanges}>
-//             Save Changes
-//           </Button>
-//         </Modal.Footer>
-//       </Modal>
-//     </Container>
-//   );
-// };
-
-// export default EventParticipationPage;
-
 import { useEffect, useState } from "react";
 import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
@@ -300,6 +9,7 @@ import ParticipantRow from "../components/event-participation/ParticipantRow";
 import { fetchColleges } from "../services/college-apis";
 import * as XLSX from "xlsx";
 import { generateQrcode, getPop } from "../services/attendance-apis";
+import AddParticipantModal from "../components/event-participation/AddParticipantModal";
 
 const EventParticipationPage = () => {
   const [confirmParticipation, setConfirmParticipation] = useState(false);
@@ -318,6 +28,9 @@ const EventParticipationPage = () => {
   const [categories, setCategories] = useState([]);
   const [colleges, setColleges] = useState([]);
   const [group, setGroup] = useState("");
+  const [groups, setGroups] = useState([]);
+  const [newParticipant, setNewParticipant] = useState();
+  const [showAddModal, setShowAddModal] = useState();
 
   // Fetch participants when eventFilter changes
   useEffect(() => {
@@ -419,7 +132,12 @@ const EventParticipationPage = () => {
       console.log("deleting participant:", id);
       const response = await deleteParticipant(id);
       console.log("in delete:", response);
-      await getParticipants();
+      //   await getParticipants();
+      const newParticipants = participants.filter((p) => p.id != id);
+      setParticipants(newParticipants);
+
+      const newFilteredParticipants = filteredParticipants.filter((p) => p.id != id);
+      setFilteredParticipants(newFilteredParticipants);
     } catch (error) {
       console.error("Something error", error);
     }
@@ -502,16 +220,16 @@ const EventParticipationPage = () => {
     saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `${selectedAvailableEvent?.slug}-participants.xlsx`);
   };
 
-  const getTotalColleges = () => {
-    const tmpCollegeIds = [];
+  const getTeams = () => {
+    const tmpTeams = [];
     for (let i = 0, c = 0; i < participants.length; i++) {
-      if (tmpCollegeIds.includes(participants[i].collegeId)) {
+      if (tmpTeams.includes(participants[i].group)) {
         continue;
       }
-      tmpCollegeIds.push(participants[i].collegeId);
+      tmpTeams.push(participants[i].collegeId);
     }
 
-    return tmpCollegeIds;
+    return tmpTeams;
   };
 
   //   const fetchPop = async () => {
@@ -574,11 +292,50 @@ const EventParticipationPage = () => {
     );
   }
 
+  useEffect(() => {
+    if (filteredParticipants.length > 0) {
+      getGroups(filteredParticipants);
+    }
+  }, [filteredParticipants]);
+
+  const getGroups = (participants) => {
+    console.log(participants);
+    const groupsArr = [];
+    for (let i = 0; i < participants.length; i++) {
+      if (groupsArr.includes(participants[i].group)) {
+        continue;
+      }
+      groupsArr.push(participants[i].group);
+    }
+
+    console.log("groupsArr:", groupsArr);
+
+    setGroups(groupsArr);
+    setGroup(groupsArr[0]);
+
+    return groupsArr;
+  };
+
+  const handleNewParticipantChange = (e) => {
+    const { name, value } = e.target;
+    console.log(`in change, ${name}: ${value}`);
+    setNewParticipant((prev) => {
+      if (name == "male") {
+        console.log({ ...prev, male: Boolean(value) });
+        return { ...prev, male: Boolean(value) };
+      }
+      console.log({ ...prev, [name]: value });
+      return { ...prev, [name]: value };
+    });
+  };
+
   return (
     <Container className="mt-4">
       <h1 className="text-center mb-4">Event Participation List</h1>
       <p>
-        Total Colleges: {getTotalColleges()?.length} / {selectedAvailableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name == "REGISTERED_SLOTS_AVAILABLE")?.value}
+        Total Teams: {getTeams()?.length} /{" "}
+        {Number(selectedAvailableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name == "REGISTERED_SLOTS_AVAILABLE")?.value) +
+          Number(selectedAvailableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value)}
       </p>
       {/* Dropdowns for filtering participants */}
       <div className="mb-4 filter-dropdowns d-flex gap-2">
@@ -651,18 +408,16 @@ const EventParticipationPage = () => {
           <Button variant="success" disabled={colleges.length == 0 || participants.length == 0} onClick={handleDownload}>
             Download
           </Button>
-          {/* <div>
-            {!pop && (
-              <Button disabled={filteredParticipants.length == 0 || confirmParticipation} variant="warning" onClick={handleConfirmParticipants}>
-                Confirm Participants
-              </Button>
-            )}
-            {pop && (
-              <Button variant="danger" onClick={handlePdfOpen} disabled={filteredParticipants.length == 0}>
-                Download POP
-              </Button>
-            )}
-          </div> */}
+          <div>
+            <Button
+              variant="warning"
+              onClick={() => {
+                setShowAddModal(true);
+              }}
+            >
+              Add More Participants
+            </Button>
+          </div>
         </div>
       )}
 
@@ -685,19 +440,22 @@ const EventParticipationPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredParticipants.map((participant, index) => (
-                <ParticipantRow
-                  key={participant.id}
-                  category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
-                  index={index}
-                  availableEvent={selectedAvailableEvent}
-                  participant={participant}
-                  handleEdit={handleEdit}
-                  handleRemove={handleRemove}
-                  pop={pop}
-                  group={group}
-                />
-              ))}
+              {groups.map((grp) => {
+                const tmpParticipants = filteredParticipants.filter((p) => p.group == grp);
+                return tmpParticipants.map((participant, index) => (
+                  <ParticipantRow
+                    key={`${participant.id}`}
+                    category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
+                    index={index}
+                    availableEvent={selectedAvailableEvent}
+                    participant={participant}
+                    handleEdit={handleEdit}
+                    handleRemove={handleRemove}
+                    pop={pop}
+                    group={group}
+                  />
+                ));
+              })}
             </tbody>
           </Table>
         </div>
@@ -739,6 +497,21 @@ const EventParticipationPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+      {selectedCollege && selectedAvailableEvent && groups && filteredParticipants && (
+        <AddParticipantModal
+          availableEvent={selectedAvailableEvent}
+          handleInputChange={handleNewParticipantChange}
+          handleModalClose={() => setShowAddModal(false)}
+          newParticipant={newParticipant}
+          setNewParticipant={setNewParticipant}
+          participants={filteredParticipants.filter((p) => p.group == group)}
+          setGroup={setGroup}
+          group={group}
+          selectedCollege={selectedCollege}
+          show={showAddModal}
+          groups={groups}
+        />
+      )}
     </Container>
   );
 };

@@ -16,6 +16,7 @@ import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.models.*;
 import com.dcfest.repositories.*;
 import com.dcfest.services.ParticipantAttendanceServices;
+import org.bouncycastle.est.ESTSourceConnectionListener;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -82,14 +83,14 @@ public class ParticipantServicesImpl implements ParticipantServices {
     private EventRuleRepository eventRuleRepository;
 
     @Override
-    public ParticipantDto createParticipant(ParticipantDto participantDto) {
-        CollegeModel collegeModel = this.collegeRepository.findById(participantDto.getCollegeId()).orElseThrow(
+    public List<ParticipantDto> createParticipants(List<ParticipantDto> participantDtos) {
+        CollegeModel collegeModel = this.collegeRepository.findById(participantDtos.get(0).getCollegeId()).orElseThrow(
                 () -> new IllegalArgumentException("Please provide the valid college id")
         );
 
-        EventModel eventModel = this.eventRepository.findById(participantDto.getEventIds().get(0)).orElseThrow(
+        EventModel eventModel = this.eventRepository.findById(participantDtos.get(0).getEventIds().get(0)).orElseThrow(
                 () -> new IllegalArgumentException("Please provide the valid event_id"));
-        eventModel.setId(participantDto.getEventIds().get(0));
+        eventModel.setId(participantDtos.get(0).getEventIds().get(0));
 
         AvailableEventModel availableEventModel = this.availableEventRepository
                 .findById(eventModel.getAvailableEvent().getId()).orElseThrow(
@@ -113,17 +114,18 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         // Check for enrollment
         List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
-        CollegeParticipationModel existingCollegeParticipation = collegeParticipationModels.stream().filter(cp -> cp.getCollege().getId().equals(participantDto.getCollegeId())).findAny().orElse(null);
+        CollegeParticipationModel existingCollegeParticipation = collegeParticipationModels.stream().filter(cp -> cp.getCollege().getId().equals(participantDtos.get(0).getCollegeId())).findAny().orElse(null);
         if (collegeParticipationModels.isEmpty() || existingCollegeParticipation == null) {
             this.collegeParticipationRepository.save(new CollegeParticipationModel(
                     null,
-                    new CollegeModel(participantDto.getCollegeId()),
+                    new CollegeModel(participantDtos.get(0).getCollegeId()),
                     availableEventModel,
                     null
             ));
         }
+
         // Check the unique college
-        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(participantDto.getEventIds().get(0), participantDto.getCollegeId());
+        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(participantDtos.get(0).getEventIds().get(0), participantDtos.get(0).getCollegeId());
         if (participantModels.isEmpty()) { // Unique (New) College participant
 
             int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
@@ -135,7 +137,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
 //                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy"); // Define the date format
 //                LocalDate comparisonDate = LocalDate.parse("10 Dec, 2024", formatter);
 // LocalDate.now().isAfter(comparisonDate)
-                if (participantDto.getEntryType().equals(EntryType.NORMAL)) {
+                if (participantDtos.get(0).getEntryType().equals(EntryType.NORMAL)) {
                     throw new RegisteredSlotsAvailableException("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
                 }
                 int otseSlotsAvailable = Integer.parseInt(otseSlotsEventRule.getValue());
@@ -144,7 +146,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 }
 
                 // Grab the unique colleges
-                List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDto.getEventIds().get(0));
+                List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDtos.get(0).getEventIds().get(0));
                 List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream().filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
                 List<Long> collegesIds = new ArrayList<>();
                 for (ParticipantModel participantModel : fiteredParticipantsByType) {
@@ -163,30 +165,117 @@ public class ParticipantServicesImpl implements ParticipantServices {
             }
         }
 
-        if (participantDto.getEntryType().equals(EntryType.OTSE)) {
+        List<String> groups = new ArrayList<>();
+
+        if (participantDtos.get(0).getEntryType().equals(EntryType.OTSE)) {
             int otseSlotsAvailable = Integer.parseInt(otseSlotsEventRule.getValue());
             if (otseSlotsAvailable == 0) {
                 throw new OTSESlotsException("No OTSE slots available");
             }
 
             // Grab the unique colleges
-            List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDto.getEventIds().get(0));
+            List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(participantDtos.get(0).getEventIds().get(0));
             List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream().filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
-            List<Long> collegesIds = new ArrayList<>();
+
+
+
             for (ParticipantModel participantModel : fiteredParticipantsByType) {
-                if (collegesIds.contains(participantModel.getCollege().getId())) {
+                if (groups.contains(participantModel.getGroup())) {
                     continue;
                 }
-                collegesIds.add(participantModel.getCollege().getId());
+                groups.add(participantModel.getGroup());
             }
 
-            int otseSlotsOccupied = collegesIds.size();
+            System.out.println(groups);
+
+            int otseSlotsOccupied = groups.size();
             if (otseSlotsOccupied + 1 > otseSlotsAvailable) {
                 throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
             }
 
         }
 
+        String group;
+
+        long count = 0;
+        if (participantDtos.get(0).getEntryType().equals(EntryType.NORMAL)) {
+            System.out.println("in normal");
+            group = collegeModel.getIcCode() + "_" + String.format("%02d", 1);
+        }
+        else {
+            System.out.println("in otse");
+            count = groups.size();
+            group = collegeModel.getIcCode() + "_OTSE_" + String.format("%02d", count + 1);
+        }
+
+        // Create the participants
+        List<ParticipantModel> savedParticipantModels = new ArrayList<>();
+        for (ParticipantDto participantDto: participantDtos) {
+            ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
+            participantModel.setCollege(collegeModel);
+            participantModel.setEntryType(participantModel.getEntryType());
+            participantModel.getEvents().add(eventModel);
+            participantModel.setHandPreference(participantDto.getHandPreference());
+            participantModel.setGroup(group);
+
+            // Save the participant
+            participantModel = this.participantRepository.save(participantModel);
+
+            // Save the events
+            eventModel.getParticipants().add(participantModel);
+            this.eventRepository.save(eventModel);
+
+            savedParticipantModels.add(participantModel);
+        }
+
+        return savedParticipantModels.stream().map(this::participantModelToDto).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public ParticipantDto addParticipant(ParticipantDto participantDto) {
+        CollegeModel collegeModel = this.collegeRepository.findById(participantDto.getCollegeId()).orElseThrow(
+                () -> new IllegalArgumentException("Please provide the valid college id")
+        );
+
+        EventModel eventModel = this.eventRepository.findById(participantDto.getEventIds().get(0)).orElseThrow(
+                () -> new IllegalArgumentException("Please provide the valid event_id"));
+        eventModel.setId(participantDto.getEventIds().get(0));
+
+        AvailableEventModel availableEventModel = this.availableEventRepository
+                .findById(eventModel.getAvailableEvent().getId()).orElseThrow(
+                        () -> new IllegalArgumentException(
+                                "Invalid `AVAILABLE_EVENT` id provided: " + eventModel.getAvailableEvent().getId()));
+        eventModel.setAvailableEvent(availableEventModel);
+
+        List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(availableEventModel);
+
+        // Retrieve the REGISTERED_SLOTS_AVAILABLE
+        EventRuleModel maxSlotsEventRule = eventRuleModels.stream().filter(ele -> ele.getEventRuleTemplate().getId().equals(6L)).findAny().orElse(null);
+        if (maxSlotsEventRule == null) {
+            throw new RegisteredSlotsAvailableException("Unable to get the Maximum slots available");
+        }
+
+        // Check for enrollment
+        List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
+        CollegeParticipationModel existingCollegeParticipation = collegeParticipationModels.stream().filter(cp -> cp.getCollege().getId().equals(participantDto.getCollegeId())).findAny().orElse(null);
+        if (collegeParticipationModels.isEmpty() || existingCollegeParticipation == null) {
+            this.collegeParticipationRepository.save(new CollegeParticipationModel(
+                    null,
+                    new CollegeModel(participantDto.getCollegeId()),
+                    availableEventModel,
+                    null
+            ));
+        }
+
+        // Fetch the participant
+        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeIdAndGroup(participantDto.getEventIds().get(0), participantDto.getCollegeId(), participantDto.getGroup());
+
+        if (participantDto.getType().equals(ParticipantType.PERFORMER)) {
+            if (participantModels.stream().filter(p -> p.getType().equals(ParticipantType.PERFORMER)).count() + 1 > Integer.parseInt(maxSlotsEventRule.getValue())) {
+                throw new IllegalArgumentException("Performer can't be added now!");
+            }
+        }
 
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
@@ -194,34 +283,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         participantModel.setEntryType(participantModel.getEntryType());
         participantModel.getEvents().add(eventModel);
         participantModel.setHandPreference(participantDto.getHandPreference());
-        String group;
-        if (participantModels.isEmpty()) {
-            System.out.println("here blank participants");
-            long count = 0;
-            if (participantDto.getEntryType().equals(EntryType.NORMAL)) {
-                System.out.println("in normal");
-                group = collegeModel.getIcCode() + "_" + String.format("%03d", 1);;
-            }
-            else {
-                System.out.println("in otse");
-                count = this.participantRepository.countByEventIdAndEntryType(eventModel.getId(), EntryType.OTSE);
-                group = collegeModel.getIcCode() + "_OTSE_" + String.format("%03d", count + 1);
-            }
-        }
-        else {
-            System.out.println("");
-            if (participantDto.getEntryType().equals(EntryType.OTSE)) {
-                long count = this.participantRepository.countByEventIdAndEntryType(eventModel.getId(), EntryType.OTSE);
-                group = collegeModel.getIcCode() + "_OTSE_" + String.format("%03d", count + 1);
-            }
-            else {
-                group = participantModels.get(0).getGroup();
-            }
-        }
-
-
-
-        participantModel.setGroup(group);
+        participantModel.setGroup(participantDto.getGroup());
 
         // Save the participant
         participantModel = this.participantRepository.save(participantModel);
@@ -229,28 +291,6 @@ public class ParticipantServicesImpl implements ParticipantServices {
         eventModel.getParticipants().add(participantModel);
         this.eventRepository.save(eventModel);
 
-        
-        
-//        byte[] qrCodeImage = null;
-//        try {
-//            qrCodeImage = generateQRCodeImage(qrData, 200, 200);
-//        } catch (Exception e) {
-//            // Log the exception or handle it as needed
-//            e.printStackTrace(); // This logs the exception
-//            throw new RuntimeException("Failed to generate QR code", e);
-//        }
-
-        // Notify the participant
-//        String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle()
-//                + " - Umang DCFest 2024";
-//        String body = this.generateMailBody(participantModel, eventModel);
-//        if (body != null) {
-//            this.emailServices.sendSimpleMessageWithAttachment(participantModel.getEmail(),
-//                    subject,
-//                    body,
-//                    qrCodeImage,
-//                    "QRCode_Participant_" + participantModel.getId() + ".png");
-//        }
 
         return this.participantModelToDto(participantModel);
     }
@@ -556,7 +596,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         System.out.println("Total events: " + eventModels.size());
         int eventCount = 0;
         for (EventModel eventModel: eventModels) {
-            System.out.println("doing event: " + (++eventCount) + "/" + eventModels.size());
+//            System.out.println("doing event: " + (++eventCount) + "/" + eventModels.size());
 
             AvailableEventModel availableEventModel = availableEventModels.stream().filter(a -> a.getId().equals(eventModel.getAvailableEvent().getId())).findFirst().orElse(null);
             if (availableEventModel == null) {
@@ -567,23 +607,87 @@ public class ParticipantServicesImpl implements ParticipantServices {
             for (int i = 0, c = 0; i < participatedCollege.size(); i++) {
                 CollegeModel collegeModel = participatedCollege.get(i);
 
-                String group;
-
                 List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), collegeModel.getId());
                 if (participantModels.isEmpty()) {
                     continue;
                 }
-                group = collegeModel.getIcCode() + "_" + (++c);
 
-                for (ParticipantModel participantModel: participantModels) {
-                    participantModel.setGroup(group);
-                    this.participantRepository.save(participantModel);
-
-                    System.out.println("College: " + (i + 1) + "/" + participatedCollege.size() + ", participants size: " + participantModels.size());
+                List<ParticipantModel> normalParticipants = participantModels.stream().filter(p -> p.getEntryType().equals(EntryType.NORMAL)).toList();
+                for (ParticipantModel participantModel: normalParticipants) {
+                    participantModel.setGroup(
+                            collegeModel.getIcCode() + "_" + String.format("%02d", 1)
+                    );
+                    participantModel = this.participantRepository.save(participantModel);
+                    System.out.println(participantModel.getGroup());
                 }
 
+                List<ParticipantModel> otseParticipants = participantModels.stream().filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
+                for (ParticipantModel participantModel : otseParticipants) {
+                    String group = participantModel.getGroup();
+                    int count = 0;
 
-                System.out.println("done college: " + (i + 1));
+//                    System.out.println(participantModel.getGroup());
+
+                    if (participantModel.getGroup().contains(collegeModel.getIcCode() + "_" + 'T')) {
+                        System.out.println("iccode_T: " + participantModel.getGroup());
+                    }
+
+                    try {
+                        if (group.contains("_OTSE_")) {
+                            // Safely extract substring and parse to integer
+                            if (group.length() > 12) {
+                                count = 1;
+                            } else {
+//                                System.out.println(participantModel.getGroup());
+                                throw new IllegalArgumentException("Invalid group format: " + group);
+                            }
+                        } else {
+                            // Safely extract substring and parse to integer
+                            if (group.length() > 7) {
+                                count = Integer.parseInt(group.substring(7));
+                            }
+                            else if (group.length() == 7) {
+                                count = Integer.parseInt(String.valueOf(group.charAt(6)));
+                            }
+                            else {
+
+                                throw new IllegalArgumentException("Invalid group format: " + group);
+                            }
+                        }
+
+                        // Set the modified group
+                        participantModel.setGroup(collegeModel.getIcCode() + "_OTSE_" + String.format("%02d", count));
+                        participantModel = this.participantRepository.save(participantModel);
+//                        System.out.println(participantModel.getGroup());
+
+                    } catch (Exception e) {
+                        // Handle invalid group format or parsing errors
+                        System.err.println("Error processing group: " + group + ". " + e.getMessage());
+                    }
+                }
+
+//                for (ParticipantModel participantModel: participantModels) {
+//                    if (participantModel.getEntryType().equals(EntryType.NORMAL)) {
+//                        // Extract the count from the group (IC000_count)
+//                        int count = Integer.parseInt(participantModel.getGroup().substring(7));
+//                        participantModel.setGroup(
+//                                collegeModel.getIcCode() + "_" + String.format("%02d", count)
+//                        );
+//                    }
+//                    else {
+//
+//                    }
+//                    participantModel.setGroup(group);
+//
+//
+//                    p
+//                    this.participantRepository.save(participantModel);
+//
+//                    System.out.println("College: " + (i + 1) + "/" + participatedCollege.size() + ", participants size: " + participantModels.size());
+//                }
+
+
+//                System.out.println("done college: " + (i + 1));
             }
 
 

@@ -285,10 +285,10 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
 
         if (availableEventModel.getCode() != null) {
-            teamNumber = availableEventModel.getCode() + "_" + String.format("%03d", (++countTeam));
+            teamNumber = availableEventModel.getCode() + "_" + String.format("%02d", (++countTeam));
         }
         else {
-            teamNumber = "N/A" + "_" + String.format("%03d", ++countTeam);
+            teamNumber = "N/A" + "_" + String.format("%02d", ++countTeam);
         }
 
 

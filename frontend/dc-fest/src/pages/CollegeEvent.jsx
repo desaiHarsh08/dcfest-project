@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Badge, Card, ListGroup, Modal, Form } from "react-bootstrap";
 import Navbar from "../components/Navbar/Navbar";
 import { Link, useParams } from "react-router-dom";
-import { createParticipants, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent, updateParticipant } from "../services/participants-api";
+import { addParticipant, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent, updateParticipant } from "../services/participants-api";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
@@ -96,7 +96,7 @@ const CollegeEvent = () => {
   };
   const handleDelete = async (id) => {
     if (new Date() > new Date("2024-12-11T14:00:00")) {
-        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
+      alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
       return;
     }
     const tmpParticipant = participants.find((p) => p.id == id);
@@ -324,7 +324,7 @@ const CollegeEvent = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (new Date() > new Date("2024-12-11T14:00:00")) {
-        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
+      alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
       return;
     }
     console.log("Im in handle Save", isValid);
@@ -360,7 +360,7 @@ const CollegeEvent = () => {
   const handleAdd = async (e) => {
     e.preventDefault();
     if (new Date() > new Date("2024-12-11T14:00:00")) {
-        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
+      alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
       return;
     }
 
@@ -388,7 +388,7 @@ const CollegeEvent = () => {
     console.log(newParticipant);
     setLoadingSave(true);
     try {
-      const response = await createParticipants(newParticipant);
+      const response = await addParticipant(newParticipant);
       console.log(response);
 
       setParticipants([...participants, newParticipant]);

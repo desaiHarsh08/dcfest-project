@@ -11,6 +11,17 @@ export const createParticipants = async (participants) => {
     return response.data;
 };
 
+export const addParticipant = async (participant) => {
+    const response = await API.post(`/api/participants/add-participant`, participant, {
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    return response.data;
+};
+
 export const fetchParticipantsByEventId = async (eventId) => {
     const response = await API.get(`/api/participants/event/${eventId}`, {
         withCredentials: true,

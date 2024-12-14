@@ -9,7 +9,9 @@ public interface ParticipantServices {
 
     boolean correctGroupNameForParticipants();
 
-    ParticipantDto createParticipant(ParticipantDto participantDto);
+    List<ParticipantDto> createParticipants(List<ParticipantDto> participantDto);
+
+    ParticipantDto addParticipant(ParticipantDto participantDto);
 
     PageResponse<ParticipantDto> getAllParticipants(int pageNumber);
 

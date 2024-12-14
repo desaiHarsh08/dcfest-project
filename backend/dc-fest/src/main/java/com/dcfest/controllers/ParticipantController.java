@@ -19,9 +19,15 @@ public class ParticipantController {
     private ParticipantServices participantServices;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ParticipantDto> createParticipant(@RequestBody ParticipantDto participantDto) {
-        ParticipantDto createdParticipant = participantServices.createParticipant(participantDto);
-        return new ResponseEntity<>(createdParticipant, HttpStatus.CREATED);
+    public ResponseEntity<List<ParticipantDto>> createParticipants(@RequestBody List<ParticipantDto> participantDtos) {
+        List<ParticipantDto> createdParticipants = participantServices.createParticipants(participantDtos);
+        return new ResponseEntity<>(createdParticipants, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/add-participant")
+    public ResponseEntity<ParticipantDto> addParticipant(@RequestBody ParticipantDto participantDto) {
+        ParticipantDto addedParticipant = participantServices.addParticipant(participantDto);
+        return new ResponseEntity<>(addedParticipant, HttpStatus.CREATED);
     }
 
     @GetMapping

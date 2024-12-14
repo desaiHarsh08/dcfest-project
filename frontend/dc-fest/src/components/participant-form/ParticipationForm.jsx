@@ -328,10 +328,6 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           alert("Your college had already added the participants as `NORMAL` entry, you may edit the details now!");
           return;
         }
-        // else if (participants[0].entryType == "OTSE" && res.filter((p) => p.entryType == "OTSE").length > 0) {
-        //   alert("Your college had already added the participants for `OTSE` entry, you may edit the details now!");
-        //   return;
-        // }
 
         if (iccode) {
           navigate(-1);
@@ -348,33 +344,31 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     }
 
     setLoading(true);
-    let successCount = 0;
+    const participantsArr = [];
     for (const participant of participants) {
-      try {
-        const participantData = {
-          ...participant,
-          collegeId: selectedCollege.id,
-          eventIds: [event.id],
-        };
-        console.log("creating participant:", participantData, "selectedCollege:", selectedCollege);
-        await createParticipants(participantData);
-        successCount++;
-      } catch (error) {
-        alert(error.response.data.message);
-        console.error("Error creating participant:", error.response.data.message);
-      }
+      const participantData = {
+        ...participant,
+        collegeId: selectedCollege.id,
+        eventIds: [event.id],
+      };
+      participantsArr.push(participantData);
     }
-    if (successCount > 0) {
+
+    try {
+      console.log("creating participant:", participantsArr, "selectedCollege:", selectedCollege);
+      const res = await createParticipants(participantsArr);
+      console.log(res);
+      alert(`Participants successfully added: ${res.length}`);
+    } catch (error) {
+      alert(error.response.data.message);
+      console.error("Error creating participant:", error.response.data.message);
+    } finally {
+      setLoading(false);
       handleSetDefaultParticipants(selectedAvailableEvent);
-      alert(`Participants successfully added: ${successCount}`);
       if (iccode) {
         navigate(-1);
       }
-    } else {
-      alert("Some erro occured... Please try again");
     }
-
-    setLoading(false);
   };
 
   const handleAddParticipant = () => {
