@@ -86,8 +86,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     private CollegeParticipationRepository collegeParticipationRepository;
 
     @Override
-    public List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel, String group) {
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroup(group);
+    public List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel, String group, String teamNumber) {
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroupAndRound(group, roundModel);
         if (participantAttendanceModels.isEmpty()) {
             for (ParticipantModel participantModel: participantModels) {
                 ParticipantAttendanceModel attendanceModel = new ParticipantAttendanceModel(
@@ -96,7 +96,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                         qrcodeData,
                         false,
                         roundModel,
-                        group
+                        group,
+                        teamNumber
                 );
                 participantAttendanceModels.add(
                         this.participantAttendanceRepository.save(attendanceModel)
@@ -143,7 +144,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         System.out.println(participantModels);
 
 
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroup(group);
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroupAndRound(group, new RoundModel(roundId));
         System.out.println(participantModels    );
         participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group)).collect(Collectors.toList());
 
@@ -163,6 +164,9 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
 
         String teamNumber = participantModels.get(0).getTeamNumber();
+        for (ParticipantModel participantModel: participantModels) {
+            System.out.println(participantModel.getTeamNumber());
+        }
 
         // Create the pop
         // Format the LocalDateTime to the required format without milliseconds
@@ -306,7 +310,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         }
 
         // Create the attendance for the participants
-        List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel, group);
+        List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel, group, teamNumber);
 
         // Create the pop
         // Format the LocalDateTime to the required format without milliseconds
@@ -488,10 +492,14 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
 
             // Generate the scorecard
-            ScoreCardDto scoreCardDto = new ScoreCardDto();
-            if (!this.scoreCardRepository.findByCollegeParticipationAndRound(collegeParticipationModel, roundModel).isPresent()) {
+            String team = participantModel.getGroup();
+            System.out.println("team: " + team);
+            List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByCollegeParticipationAndRoundAndTeamNumber(collegeParticipationModel, roundModel, team);
+            if (scoreCardModels.isEmpty()) {
+                ScoreCardDto scoreCardDto = new ScoreCardDto();
                 scoreCardDto.setCollegeParticipationId(collegeParticipationModel.getId());
                 scoreCardDto.setRoundId(roundModel.getId());
+                scoreCardDto.setTeamNumber(team);
 
                 // Initialize score parameters with meaningful values (consider updating them later)
                 List<ScoreParameterDto> scoreParameterDtos = new ArrayList<>();
@@ -503,7 +511,12 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 // Create the scorecard
                 this.scoreCardServices.createScoreCard(scoreCardDto);
             }
-
+            else {
+                for (ScoreCardModel scoreCardModel: scoreCardModels) {
+                    scoreCardModel.setTeamNumber(team);
+                    this.scoreCardRepository.save(scoreCardModel);
+                }
+            }
             // Return the DTO representation of the updated participant attendance
             return this.participantAttendanceModelToDto(participantAttendanceModel);
         }

@@ -20,7 +20,7 @@ const TeamCard = ({ index, team, handleInputChange, calculateTotalScore }) => {
   return (
     <tr key={index}>
       <td>{index + 1}</td>
-      <td>{collegeParticipation?.teamNumber}</td>
+      <td>{team?.teamNumber}</td>
       {team?.scoreParameters.map((scoreParameter, scoreParameterIndex) => (
         <td key={`scoreParameter-${scoreParameterIndex}`}>
           <div className="parameter-input">

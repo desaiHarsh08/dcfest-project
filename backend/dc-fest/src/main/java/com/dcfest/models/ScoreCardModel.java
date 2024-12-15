@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "score_cards", uniqueConstraints = {@UniqueConstraint(columnNames = {"college_participation_id_fk", "round_id_fk"})})
+@Table(name = "score_cards")
 @Getter
 @Setter
 @ToString
@@ -23,6 +23,8 @@ public class ScoreCardModel {
     @ManyToOne(targetEntity = RoundModel.class)
     @JoinColumn(name = "round_id_fk")
     private RoundModel round;
+
+    private String teamNumber;
 
     public ScoreCardModel(Long id) {
         this.id = id;

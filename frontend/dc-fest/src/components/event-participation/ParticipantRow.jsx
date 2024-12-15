@@ -44,6 +44,7 @@ const ParticipantRow = ({ participant, index, group, category, availableEvent, h
       return;
     }
 
+    console.log("in fetchPop(), ", college, availableEvent?.title, group)
     console.log(college);
     try {
       const response = await getPop(college.id, availableEvent.id, availableEvent?.rounds[0].id, group);

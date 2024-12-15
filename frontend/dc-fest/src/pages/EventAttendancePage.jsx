@@ -70,6 +70,7 @@ const EventAttendancePage = () => {
     try {
       console.log("qrdata:", data);
       const response = await scanQrcode(data);
+      console.log(response)
       setScannedQrcodeResponse(response);
       const tmpPresentIds = [];
       for (let i = 0; i < response.participants.length; i++) {

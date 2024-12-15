@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ParticipantAttendanceServices {
 
-    List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel,  String group);
+    List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel,  String group, String teamNumber);
 
     ParticipantAttendanceDto getAttendanceById(Long id);
 

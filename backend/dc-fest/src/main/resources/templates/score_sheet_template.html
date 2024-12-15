@@ -166,9 +166,8 @@
 
           <!-- Center Text -->
           <div style="text-align: center; display: inline-block">
-            <h5 style="margin: 5px 0">The Bhawanipur Education Society College</h5>
-            <h5 style="margin: 5px 0">UMANG 2024</h5>
-            <h5 style="margin: 5px 0">Proof of Participants</h5>
+            <h5 style="margin: 5px 0; text-transform: uppercase">THE BHAWANIPUR EDUCATION SOCIETY COLLEGE</h5>
+            <h5 style="margin: 5px 0">UMANG 2024 SCORESHEET</h5>
           </div>
 
           <!-- Right Logo -->
@@ -240,8 +239,8 @@
           <table style="width: 100%; border-collapse: collapse; table-layout: fixed">
             <thead>
               <tr>
-                <th style="padding: 8px; text-align: center; border: 0.4px solid black">Slot No.</th>
-                <th style="padding: 8px; text-align: center; border: 0.4px solid black">Team No.</th>
+                <th class="slot-no" style="padding: 8px; text-align: center; border: 0.4px solid black; width: 64px">Slot No.</th>
+                <th style="width: 100px; padding: 8px; text-align: center; border: 0.4px solid black">Team No.</th>
                 <th style="padding: 8px; text-align: center; border: 0.4px solid black; padding: 0">
                   <p style="margin: 0; border-bottom: 0.4px solid black; height: 20px">Parameter 1</p>
                   <p style="margin: 0; height: 20px" th:text="${param1}"></p>
@@ -277,7 +276,45 @@
           </table>
         </section>
       </main>
-      <div class="footer"></div>
+      <footer class="footer" style="padding: 0 24px">
+        <section style="text-align: left">
+          <h2>Note:</h2>
+          <ol style="padding: 0 16px">
+            <li>Disqualified Candidates will be marked as “D”.</li>
+            <li>Score are on the scale of 0-25 (0 being the lowest, 25 being the highest).</li>
+            <li>The scoring must be out of 100. (25 marks per judging criteria).</li>
+          </ol>
+        </section>
+        <section style="text-align: left">
+          <h2>FINAL RANK HOLDER</h2>
+          <div style="display: table; width: 100%">
+            <!-- Left Column (list items) -->
+            <ul style="padding: 0; list-style: none; display: table-cell; vertical-align: top; width: 50%">
+              <li>1st:</li>
+              <li style="margin: 12px 0">2nd:</li>
+              <li style="margin: 12px 0">3rd:</li>
+            </ul>
+
+            <!-- Right Column (signature area) -->
+            <div style="display: table-cell; vertical-align: middle">
+              <p style="display: table-cell; margin-bottom: 5px">SIGNATURE OF PCS VOLUNTEER:</p>
+              <p style="width: 100px; display: table-cell; border-bottom: 1px solid"></p>
+            </div>
+          </div>
+
+          <div style="display: table; vertical-align: middle; width: 100%">
+            <div style="display: table-cell; width: 50%">
+              <p style="display: table-cell">SIGNATURE OF JUDGE :</p>
+              <p style="width: 100px; border-bottom: 1px solid; display: table-cell"></p>
+            </div>
+            <div style="display: table-cell">
+              <p style="display: table-cell">SIGNATURE OF EVENT MASTER :</p>
+
+              <p style="width: 100px; border-bottom: 1px solid; display: table-cell"></p>
+            </div>
+          </div>
+        </section>
+      </footer>
     </div>
   </body>
 </html>

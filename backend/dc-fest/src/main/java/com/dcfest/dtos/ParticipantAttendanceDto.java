@@ -21,4 +21,6 @@ public class ParticipantAttendanceDto {
 
     private String group;
 
+    private String teamNumber;
+
 }

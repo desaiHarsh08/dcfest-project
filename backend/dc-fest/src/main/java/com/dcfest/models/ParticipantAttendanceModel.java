@@ -32,4 +32,7 @@ public class ParticipantAttendanceModel {
     @Column(name = "group_name")
     private String group;
 
+    @Column(name = "team_number")
+    private String teamNumber;
+
 }

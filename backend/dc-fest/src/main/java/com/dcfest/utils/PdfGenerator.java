@@ -127,7 +127,7 @@ public class PdfGenerator {
                 + "@page { margin: 0; size: A4 portrait; }"
                 + "body { font-family: Arial, sans-serif; }"
                 + ".h-33 { height: 33%; }"
-                + "footer { position: fixed; bottom: 0; right: 0; text-align: right; width: 100%; font-size: 12px; }"
+                + ".slot-no { width: 64px }"
                 + "@page { margin-bottom: 10px; margin-top: 70px; margin-left: 17px; margin-right: 14px; }"  // For space for page number
                 + "</style>";
 

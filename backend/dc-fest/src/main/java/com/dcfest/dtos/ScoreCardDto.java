@@ -20,4 +20,5 @@ public class ScoreCardDto {
 
     private List<ScoreParameterDto> scoreParameters = new ArrayList<>();
 
+    private String teamNumber;
 }

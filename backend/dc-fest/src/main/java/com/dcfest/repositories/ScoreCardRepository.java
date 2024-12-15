@@ -12,7 +12,9 @@ import java.util.Optional;
 @Repository
 public interface ScoreCardRepository extends JpaRepository<ScoreCardModel, Long> {
 
-    Optional<ScoreCardModel> findByCollegeParticipationAndRound(CollegeParticipationModel collegeParticipation, RoundModel round);
+    List<ScoreCardModel> findByCollegeParticipationAndRound(CollegeParticipationModel collegeParticipation, RoundModel round);
+
+    List<ScoreCardModel> findByCollegeParticipationAndRoundAndTeamNumber(CollegeParticipationModel collegeParticipation, RoundModel round, String teamNumber);
 
     List<ScoreCardModel> findByRound(RoundModel round);
 
