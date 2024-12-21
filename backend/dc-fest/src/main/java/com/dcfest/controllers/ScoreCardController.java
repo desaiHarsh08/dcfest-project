@@ -51,6 +51,14 @@ public class ScoreCardController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/promote-team")
+    public ResponseEntity<ScoreCardDto> handlePromoteTeam(@RequestBody ScoreCardDto scoreCardDto) {
+        return new ResponseEntity<>(
+                this.scoreCardService.handlePromoteTeam(scoreCardDto),
+                HttpStatus.OK
+        );
+    }
+
     @GetMapping("/get-scorecard-sheet")
     public ResponseEntity<InputStreamResource> getPop(
             @RequestParam Long availableEventId,

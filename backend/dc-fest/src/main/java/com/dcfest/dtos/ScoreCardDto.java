@@ -1,5 +1,6 @@
 package com.dcfest.dtos;
 
+import com.dcfest.models.RoundModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,11 @@ public class ScoreCardDto {
     private List<ScoreParameterDto> scoreParameters = new ArrayList<>();
 
     private String teamNumber;
+
+    private Long promotedRoundId;
+
+    private Integer rank;
+
+    private Integer slot;
+
 }

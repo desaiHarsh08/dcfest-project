@@ -6,6 +6,8 @@ import com.dcfest.constants.ParticipantType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -27,4 +29,5 @@ public class ParticipantDto {
     private ParticipantType type = ParticipantType.PERFORMER;
     private EntryType entryType = EntryType.NORMAL;
     private HandPreferenceType handPreference = HandPreferenceType.RIGHT_HANDED;
+    private List<PromotedRoundDto> promotedRoundDtos = new ArrayList<>();
 }

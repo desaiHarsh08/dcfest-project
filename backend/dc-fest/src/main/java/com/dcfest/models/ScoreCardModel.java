@@ -26,6 +26,15 @@ public class ScoreCardModel {
 
     private String teamNumber;
 
+    @ManyToOne(targetEntity = RoundModel.class)
+    @JoinColumn(name = "promoted_round_id_fk")
+    private RoundModel promotedRound;
+
+    @Column(name = "rank_number")
+    private Integer rank;
+
+    private Integer slot;
+
     public ScoreCardModel(Long id) {
         this.id = id;
     }

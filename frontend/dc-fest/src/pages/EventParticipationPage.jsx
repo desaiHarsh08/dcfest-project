@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
@@ -10,14 +13,22 @@ import { fetchColleges } from "../services/college-apis";
 import * as XLSX from "xlsx";
 import { generateQrcode, getPop } from "../services/attendance-apis";
 import AddParticipantModal from "../components/event-participation/AddParticipantModal";
+import { useNavigate } from "react-router-dom";
 
 const EventParticipationPage = () => {
-  const [confirmParticipation, setConfirmParticipation] = useState(false);
+    const navigate = useNavigate();
+//   const [confirmParticipation, setConfirmParticipation] = useState(false);
   const [participants, setParticipants] = useState([]);
   const [filteredParticipants, setFilteredParticipants] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [refetchPop, setRefetchPop] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState({
+    name: "",
+    email: "",
+    whatsappNumber: "",
+    present: false,
+  });
   const [selectedCollege, setSelectedCollege] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedAvailableEvent, setAvailableEvent] = useState(null);
@@ -55,6 +66,12 @@ const EventParticipationPage = () => {
   }, []);
 
   useEffect(() => {
+    if (filteredParticipants.length > 0) {
+      getGroups(filteredParticipants);
+    }
+  }, [filteredParticipants]);
+
+  useEffect(() => {
     if (selectedCollege && participants.length > 0) {
       setFilteredParticipants(participants.filter((p) => p.collegeId == selectedCollege.id));
     }
@@ -69,7 +86,6 @@ const EventParticipationPage = () => {
         setCategories(categoriesData);
 
         if (categoriesData.length > 0) {
-          //   const firstCategory = categoriesData.find((c) => c.name == "TEST_CATEGORY");
           const firstCategory = categoriesData[0];
           setCategoryFilter(firstCategory.id);
           setSelectedCategory(firstCategory);
@@ -90,12 +106,7 @@ const EventParticipationPage = () => {
 
     fetchInitialData();
   }, []);
-
-  //   useEffect(() => {
-  //     if (selectedCollege && eventFilter && selectedAvailableEvent) {
-  //       fetchPop();
-  //     }
-  //   }, [selectedCollege, eventFilter, selectedAvailableEvent]);
+  
 
   const getParticipants = async () => {
     console.log("eventFilter before going to trycatch:", eventFilter);
@@ -103,7 +114,7 @@ const EventParticipationPage = () => {
       setLoading(true);
       const event = await fetchEventByAvailableEventId(eventFilter);
       const response = await fetchParticipantsByEventId(event.id);
-
+        console.log("participants:", response)
       setParticipants(response);
       console.log(`response for eventFilter: ${eventFilter}, participants:`, response);
       if (response.length > 0) {
@@ -148,33 +159,30 @@ const EventParticipationPage = () => {
     setSelectedParticipant(null);
   };
 
-  // const handleSaveChanges = () => {
-  //   setFilteredParticipants((prev) => prev.map((participant) => (participant.id == selectedParticipant.id ? selectedParticipant : participant)));
-  //   setParticipants((prev) => prev.map((p => )))
-  //   handleModalClose();
-  // };
-
   const handleSaveChanges = async () => {
-    // Update the participant in both filteredParticipants and participants
     const updatedParticipant = selectedParticipant;
     try {
       const response = await updateParticipant(updatedParticipant);
-      // Update filteredParticipants state
       setFilteredParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
 
-      // Update participants state
       setParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
     } catch (error) {
       alert("Oops! Unable to save the participant.");
       return;
     } finally {
       handleModalClose(); // Close the modal after saving changes
+      setRefetchPop(prev => !prev); // Set refetchPop to true to refetch the POP
     }
   };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setSelectedParticipant((prev) => ({ ...prev, [name]: value }));
+    
+const handleInputChange = (e) => {
+    const { name, value, checked, type } = e.target;
+    setSelectedParticipant((prev) => {
+      if (type === "checkbox") {
+        return { ...prev, [name]: checked };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleFormatData = () => {
@@ -232,58 +240,6 @@ const EventParticipationPage = () => {
     return tmpTeams;
   };
 
-  //   const fetchPop = async () => {
-  //     if (!selectedCollege || !selectedAvailableEvent || !eventFilter) {
-  //       return;
-  //     }
-  //     console.log(selectedCollege);
-  //     console.log(selectedAvailableEvent);
-  //     console.log(eventFilter);
-  //     console.log(selectedAvailableEvent?.rounds[0]);
-  //     try {
-  //       const response = await getPop(selectedCollege.id, selectedAvailableEvent.id, selectedAvailableEvent?.rounds[0].id);
-  //       console.log(response);
-  //       setPop(response);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-
-  const handleConfirmParticipants = async (group) => {
-    if (!selectedCollege || !selectedAvailableEvent || !eventFilter) {
-      return;
-    }
-    console.log(selectedCollege);
-    console.log(selectedAvailableEvent);
-    console.log(eventFilter);
-    console.log(selectedAvailableEvent?.rounds[0]);
-    try {
-      setConfirmParticipation(true);
-      const response = await generateQrcode(selectedCollege.id, selectedAvailableEvent.id, selectedAvailableEvent?.rounds[0].id, group);
-      console.log(response);
-      setPop(response);
-      setGroup(group);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setConfirmParticipation(false);
-    }
-  };
-
-  const handlePdfOpen = () => {
-    if (!pop) {
-      return;
-    }
-    console.log(pop);
-    // Assuming `response` is the byte array (PDF content)
-    const pdfBlob = new Blob([pop], { type: "application/pdf" });
-
-    // Create a URL for the Blob
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    // Open the PDF in a new tab
-    window.open(pdfUrl, "_blank");
-  };
-
   if (error) {
     return (
       <Container className="mt-4">
@@ -292,11 +248,7 @@ const EventParticipationPage = () => {
     );
   }
 
-  useEffect(() => {
-    if (filteredParticipants.length > 0) {
-      getGroups(filteredParticipants);
-    }
-  }, [filteredParticipants]);
+  
 
   const getGroups = (participants) => {
     console.log(participants);
@@ -330,7 +282,10 @@ const EventParticipationPage = () => {
   };
 
   return (
-    <Container className="mt-4">
+    <Container fluid className="mt-4">
+        <button onClick={() => navigate(-1)} style={{ marginBottom: "1rem" }} className="btn btn-secondary">
+        Go Back
+      </button>
       <h1 className="text-center mb-4">Event Participation List</h1>
       {/* <p>
         Total Teams: {getTeams()?.length} /{" "}
@@ -426,6 +381,7 @@ const EventParticipationPage = () => {
           <Table striped bordered hover responsive>
             <thead>
               <tr>
+                <th>Status</th>
                 <th>#</th>
                 <th>ICCODE</th>
                 <th>Category</th>
@@ -440,8 +396,11 @@ const EventParticipationPage = () => {
               </tr>
             </thead>
             <tbody>
-              {groups.map((grp) => {
-                const tmpParticipants = filteredParticipants.filter((p) => p.group == grp);
+
+            {/* without Aplhabetical sorted the participant names */}
+
+              {/* {groups.map((grp) => {
+                let tmpParticipants = filteredParticipants.filter((p) => p.group == grp);
                 return tmpParticipants.map((participant, index) => (
                   <ParticipantRow
                     key={`${participant.id}`}
@@ -455,7 +414,31 @@ const EventParticipationPage = () => {
                     group={group}
                   />
                 ));
-              })}
+              })} */}
+
+{/* Alphabtical order of participant names */}
+{groups.map((grp) => {
+  let tmpParticipants = filteredParticipants
+    .filter((p) => p.group === grp)
+    .sort((a, b) => a.name.localeCompare(b.name)); // Sort by name in alphabetical order
+
+  return tmpParticipants.map((participant, index) => (
+    <ParticipantRow
+      key={`${participant.id}`}
+      category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
+      index={index}
+      availableEvent={selectedAvailableEvent}
+      participant={participant}
+      handleEdit={handleEdit}
+      handleRemove={handleRemove}
+      filteredParticipants={filteredParticipants}
+      refetchPop={refetchPop}
+      pop={pop}
+      group={grp} // Changed to use `grp` instead of `group` to match the map variable
+    />
+  ));
+})}
+
             </tbody>
           </Table>
         </div>
@@ -484,6 +467,35 @@ const EventParticipationPage = () => {
               <Form.Group controlId="formEvent">
                 <Form.Label>Whatsapp Number</Form.Label>
                 <Form.Control type="text" name="whatsappNumber" value={selectedParticipant.whatsappNumber || ""} onChange={handleInputChange} />
+              </Form.Group>
+              <Form.Group controlId="formGender">
+  <Form.Label>Gender</Form.Label>
+  <div className="d-flex align-items-center gap-2">
+    <Form.Check 
+      type="radio" 
+      label="Male" 
+      name="gender" 
+      value="male" 
+      checked={selectedParticipant.male === true} 
+      onChange={() => setSelectedParticipant(prev => ({ ...prev, male: true }))} 
+    />
+    <Form.Check 
+      type="radio" 
+      label="Female" 
+      name="gender" 
+      value="female" 
+      checked={selectedParticipant.male === false} 
+      onChange={() => setSelectedParticipant(prev => ({ ...prev, male: false }))} 
+    />
+  </div>
+</Form.Group>
+              <Form.Group controlId="formEvent" className="d-flex align-items-center gap-2">
+                <Form.Label>Attendance</Form.Label>
+            <div className="d-flex align-items-center justify-content-center gap-2">
+              <Form.Check type="checkbox" name="present" checked={selectedParticipant.present} onChange={handleInputChange} />
+              <p>{selectedParticipant.present ? "Present" : "Absent"}</p>
+              {console.log("selectedParticipant.present:", selectedParticipant.present)}
+            </div>
               </Form.Group>
             </div>
           )}

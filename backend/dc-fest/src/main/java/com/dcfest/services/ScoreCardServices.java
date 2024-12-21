@@ -24,4 +24,6 @@ public interface ScoreCardServices {
 
     List<ScoreCardDto> getScoresForCollegeParticipations(Long availableEventId, Long roundId);
 
+    ScoreCardDto handlePromoteTeam(ScoreCardDto scoreCardDto);
+
 }

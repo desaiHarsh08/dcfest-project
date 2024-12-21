@@ -94,7 +94,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                         null,
                         participantModel,
                         qrcodeData,
-                        false,
+                        true,
                         roundModel,
                         group,
                         teamNumber
@@ -164,7 +164,11 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
 
         String teamNumber = participantModels.get(0).getTeamNumber();
+        List<ParticipantModel> actualParticipants = new ArrayList<>();
         for (ParticipantModel participantModel: participantModels) {
+            if (participantModel.isPresent()) {
+                actualParticipants.add(participantModel);
+            }
             System.out.println(participantModel.getTeamNumber());
         }
 
@@ -187,7 +191,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         templateData.put("eventMasterPhone", availableEventModel.getEventMasterPhone());
 //        System.out.println("img: " + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("qrcodeImage", "data:image/png;base64," + Base64.getEncoder().encodeToString(qrCodeImage));
-        templateData.put("participants", participantModels);
+        templateData.put("participants", actualParticipants);
 
         // Render the HTML template
         String htmlContent = pdfService.renderHtmlTemplate("pop_template", templateData);
@@ -306,11 +310,12 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         for (ParticipantModel participantModel: participantModels) {
             participantModel.setTeamNumber(teamNumber);
+            participantModel.setPresent(true);
             this.participantRepository.save(participantModel);
         }
 
         // Create the attendance for the participants
-        List<ParticipantAttendanceDto> participantAttendanceDtos = this.createAttendance(qrData, participantModels, roundModel, group, teamNumber);
+        this.createAttendance(qrData, participantModels, roundModel, group, teamNumber);
 
         // Create the pop
         // Format the LocalDateTime to the required format without milliseconds

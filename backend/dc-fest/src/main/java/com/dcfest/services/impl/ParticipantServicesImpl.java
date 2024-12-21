@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 
 import com.dcfest.constants.*;
 import com.dcfest.dtos.ParticipantAttendanceDto;
+import com.dcfest.dtos.PromotedRoundDto;
 import com.dcfest.exceptions.OTSESlotsException;
 import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.models.*;
@@ -46,6 +47,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Autowired
     private ParticipantAttendanceServices participantAttendanceServices;
+
+    @Autowired
+    private PromotedRoundRepository promotedRoundRepository;
 
     @Autowired
     private EventRuleTemplateRepository eventRuleTemplateRepository;
@@ -779,6 +783,16 @@ public class ParticipantServicesImpl implements ParticipantServices {
         participantDto.setCollegeId(participantModel.getCollege().getId());
         // participantDto.setEvents(new ArrayList<>());
         participantDto.setEntryType(participantModel.getEntryType());
+        List<PromotedRoundModel> promotedRoundModels = this.promotedRoundRepository.findByParticipant(participantModel);
+        for (PromotedRoundModel promotedRoundModel: promotedRoundModels) {
+            PromotedRoundDto promotedRoundDto = new PromotedRoundDto();
+            promotedRoundDto.setId(promotedRoundDto.getId());
+            promotedRoundDto.setParticipantId(participantDto.getId());
+            promotedRoundDto.setRoundId(promotedRoundModel.getRound().getId());
+
+            participantDto.getPromotedRoundDtos().add(promotedRoundDto);
+        }
+
 
         // Convert the list of EventModel to a list of event IDs
         List<Long> eventIds = participantModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());

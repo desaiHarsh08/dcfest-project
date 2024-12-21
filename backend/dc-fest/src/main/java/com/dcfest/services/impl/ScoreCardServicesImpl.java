@@ -2,6 +2,7 @@ package com.dcfest.services.impl;
 
 import com.dcfest.constants.RoundType;
 import com.dcfest.dtos.CollegeParticipationDto;
+import com.dcfest.dtos.PromotedRoundDto;
 import com.dcfest.dtos.ScoreCardDto;
 import com.dcfest.dtos.ScoreParameterDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
@@ -29,6 +30,9 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private PromotedRoundRepository promotedRoundRepository;
 
     @Autowired
     private PdfService pdfService;
@@ -109,7 +113,10 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
                 null,
                 new CollegeParticipationModel(scoreCardDto.getCollegeParticipationId()),
                 new RoundModel(scoreCardDto.getRoundId()),
-                scoreCardDto.getTeamNumber()
+                scoreCardDto.getTeamNumber(),
+                null,
+                null,
+                null
         );
 
         scoreCard = scoreCardRepository.save(scoreCard);
@@ -169,6 +176,7 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
             System.out.println(groups);
 
             List<ScoreCardDto> scoreCardDtos = this.getScoreCardByCollegeParticipationIdAndRoundId(collegeParticipationModel.getId(), roundId);
+            scoreCardDtos = this.sortScoreCardsBySlot(scoreCardDtos);
             System.out.println(scoreCardDtos.size());
             for (ScoreCardDto scoreCardDto: scoreCardDtos) {
                 ScoreCardTeamDto scoreCardTeamDto = new ScoreCardTeamDto();
@@ -212,6 +220,8 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
 
         }
 
+
+
         EventCategoryModel eventCategoryModel = this.eventCategoryRepository.findById(availableEventModel.getEventCategory().getId()).orElseThrow(
                 () -> new IllegalArgumentException("Unable to find category: " + availableEventModel.getEventCategory().getId())
         );
@@ -247,6 +257,12 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         return new ByteArrayResource(pdfBytes);
     }
 
+    public List<ScoreCardDto> sortScoreCardsBySlot(List<ScoreCardDto> scoreCards) {
+        // Sort the list based on the slot field in ascending order
+        Collections.sort(scoreCards, Comparator.comparing(ScoreCardDto::getSlot));
+        return scoreCards;
+    }
+
     public List<ScoreCardDto> getScoreCardByCollegeParticipationIdAndRoundId(Long collegeParticipationId, Long roundId) {
         List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByCollegeParticipationAndRound(new CollegeParticipationModel(collegeParticipationId), new RoundModel(roundId));
         if (scoreCardModels.isEmpty()) {
@@ -260,15 +276,20 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         ScoreCardModel scoreCard = scoreCardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ScoreCard not found for id: " + id));
 
-        scoreCard.setCollegeParticipation(
-                collegeParticipationRepository.findById(scoreCardDto.getCollegeParticipationId())
-                        .orElseThrow(() -> new RuntimeException("College Participation not found!"))
-        );
-        scoreCard.setRound(
-                roundRepository.findById(scoreCardDto.getRoundId())
-                        .orElseThrow(() -> new RuntimeException("Round not found!"))
-        );
+        // Update the fields
+        if (scoreCardDto.getPromotedRoundId() != null) {
+            scoreCard.setPromotedRound(new RoundModel(scoreCardDto.getPromotedRoundId()));
+        }
+        scoreCard.setRank(scoreCardDto.getRank());
+        scoreCard.setSlot(scoreCard.getSlot());
+
+        // Save the changes
         scoreCard = scoreCardRepository.save(scoreCard);
+
+        // Update the score_parameters
+        for (ScoreParameterDto scoreParameterDto: scoreCardDto.getScoreParameters()) {
+            this.scoreParameterServices.updateScoreParameter(scoreParameterDto.getId(), scoreParameterDto);
+        }
 
         return mapToDto(scoreCard);
     }
@@ -302,6 +323,66 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         return true;
     }
 
+    @Override
+    public ScoreCardDto handlePromoteTeam(ScoreCardDto scoreCardDto) {
+
+        ScoreCardModel scoreCardModel = this.scoreCardRepository.findById(scoreCardDto.getId()).orElseThrow(
+                () -> new ResourceNotFoundException("No scorecard exist for id: " + scoreCardDto.getId())
+        );
+        CollegeParticipationModel collegeParticipationModel = this.collegeParticipationRepository.findById(scoreCardModel.getCollegeParticipation().getId()).orElseThrow(
+                () -> new ResourceNotFoundException("No collegeParticipation exist for id: " + scoreCardModel.getCollegeParticipation())
+        );
+        scoreCardModel.setCollegeParticipation(collegeParticipationModel);
+
+        RoundModel roundModel;
+        if (scoreCardDto.getPromotedRoundId() == null) {
+            roundModel = this.roundRepository.findById(scoreCardDto.getRoundId()).orElse(null);
+        }
+        else {
+            roundModel = this.roundRepository.findById(scoreCardDto.getPromotedRoundId()).orElse(null);
+        }
+
+        scoreCardModel.setRound(roundModel);
+
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(roundModel.getAvailableEvent().getId()).orElseThrow(
+                () -> new IllegalArgumentException("Unable to load the available_event")
+        );
+        EventModel eventModel = this.eventRepository.findByAvailableEvent(availableEventModel).orElseThrow(
+                () -> new IllegalArgumentException("Unable to load the event")
+        );
+        List<ParticipantModel> participantModels =  this.participantRepository.findByEvent_IdAndCollegeIdAndGroup(
+                eventModel.getId(),
+                collegeParticipationModel.getCollege().getId(),
+                scoreCardModel.getTeamNumber()
+        );
+        System.out.println(scoreCardModel.getTeamNumber());
+        for (ParticipantModel participantModel: participantModels) {
+            if (scoreCardDto.getPromotedRoundId() != null) {
+                if (this.promotedRoundRepository.findByParticipantAndRound(participantModel, roundModel).isPresent()) {
+                    continue;
+                }
+                PromotedRoundModel promotedRoundModel = new PromotedRoundModel();
+                promotedRoundModel.setParticipant(participantModel);
+                promotedRoundModel.setRound(new RoundModel(scoreCardDto.getPromotedRoundId()));
+
+                this.promotedRoundRepository.save(promotedRoundModel);
+            }
+            else {
+                PromotedRoundModel existingPromotedRoundModel = this.promotedRoundRepository.findByParticipantAndRound(participantModel, roundModel).orElse(null);
+                if (existingPromotedRoundModel != null) {
+                    this.promotedRoundRepository.delete(existingPromotedRoundModel);
+                }
+            }
+
+        }
+
+        scoreCardModel.setTeamNumber(participantModels.get(0).getGroup());
+        scoreCardModel.setPromotedRound(new RoundModel(scoreCardDto.getPromotedRoundId()));
+        this.scoreCardRepository.save(scoreCardModel);
+
+        return this.mapToDto(scoreCardModel);
+    }
+
     private ScoreCardDto mapToDto(ScoreCardModel scoreCard) {
         if (scoreCard == null) {
             return null;
@@ -314,6 +395,11 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         dto.setRoundId(scoreCard.getRound().getId());
         dto.setTeamNumber(scoreCard.getTeamNumber());
         dto.setScoreParameters(this.scoreParameterServices.getScoreParametersByScoreCardId(scoreCard.getId()));
+        if (scoreCard.getPromotedRound() != null) {
+            dto.setPromotedRoundId(scoreCard.getPromotedRound().getId());
+        }
+        dto.setRank(scoreCard.getRank());
+        dto.setSlot(scoreCard.getSlot());
 
         return dto;
     }

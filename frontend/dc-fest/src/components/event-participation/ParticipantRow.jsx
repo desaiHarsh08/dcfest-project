@@ -7,7 +7,7 @@ import { fetchCollegeById } from "../../services/college-apis";
 import { generateQrcode, getPop } from "../../services/attendance-apis";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ participant, index, group, category, availableEvent, handleRemove, handleEdit }) => {
+const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, group, category, availableEvent, handleRemove, handleEdit }) => {
   const [college, setCollege] = useState();
   const [pop, setPop] = useState();
 
@@ -17,13 +17,13 @@ const ParticipantRow = ({ participant, index, group, category, availableEvent, h
     if (college && availableEvent && participant) {
       fetchPop(college, availableEvent, participant.group);
     }
-  }, [college && availableEvent && participant]);
+  }, [college, availableEvent, refetchPop, participant]);
 
   useEffect(() => {
     if (confirmParticipation) {
       fetchPop(college, availableEvent, participant.group);
     }
-  }, [confirmParticipation]);
+  }, [confirmParticipation, filteredParticipants, refetchPop]);
 
   useEffect(() => {
     fetchCollegeById(participant?.collegeId)
@@ -37,18 +37,14 @@ const ParticipantRow = ({ participant, index, group, category, availableEvent, h
     if (college && participant && availableEvent) {
       fetchPop();
     }
-  }, [college, participant, availableEvent]);
+  }, [college, participant,refetchPop, availableEvent]);
 
   const fetchPop = async (college, availableEvent, group) => {
     if (!college || !availableEvent || !participant) {
       return;
     }
-
-    console.log("in fetchPop(), ", college, availableEvent?.title, group)
-    console.log(college);
     try {
       const response = await getPop(college.id, availableEvent.id, availableEvent?.rounds[0].id, group);
-      console.log(response);
       setPop(response);
     } catch (error) {
       console.log(error);
@@ -88,6 +84,9 @@ const ParticipantRow = ({ participant, index, group, category, availableEvent, h
   return (
     <>
       <tr key={participant?.id}>
+        <td>
+            <input type="checkbox" checked={participant.present} />
+        </td>
         <td>{index + 1}</td>
         <td>{college?.icCode}</td>
         <td>{category?.name}</td>
