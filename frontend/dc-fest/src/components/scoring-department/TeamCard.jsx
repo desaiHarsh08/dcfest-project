@@ -1,50 +1,68 @@
 /* eslint-disable react/prop-types */
 
-import { useEffect, useState } from "react";
-import { fetchParticipationById } from "../../services/college-participation-apis";
+import { FaEdit, FaHashtag, FaListOl, FaSave, FaStar, FaTrophy } from "react-icons/fa";
+import { Button, Modal, Form } from "react-bootstrap";
+import { useState } from "react";
 
 /* eslint-disable no-unused-vars */
-const TeamCard = ({ index, team, handleInputChange, calculateTotalScore }) => {
-  console.log("team:", team);
-  const [collegeParticipation, setCollegeParticipation] = useState();
+const TeamCard = ({ index, team, teams, setTeams, onTeamChange }) => {
+  const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    fetchParticipationById(team?.collegeParticipationId)
-      .then((data) => {
-        console.log(data);
-        setCollegeParticipation(data);
-      })
-      .catch((err) => console.log(err));
-  }, []);
+  const handleEditClick = () => {
+    setShowModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
 
   return (
-    <tr key={index}>
-      <td>{index + 1}</td>
-      <td>{team?.teamNumber}</td>
-      {team?.scoreParameters.map((scoreParameter, scoreParameterIndex) => (
-        <td key={`scoreParameter-${scoreParameterIndex}`}>
-          <div className="parameter-input">
-            <input
-              type="text"
-              value={scoreParameter?.points}
-              name="points"
-              onBlur={() => {
-                if (typeof scoreParameter?.points == "number" && (scoreParameter?.points < 0 || scoreParameter?.points > 25)) {
-                  alert("Points can either be empyt or D or in range 0-25.");
-                }
-              }}
-              onChange={(e) => handleInputChange(e, index, scoreParameterIndex)}
-            />
-          </div>
+    <>
+      <tr key={index}>
+        <td>{team?.slot ? `${team?.slot}` : '-'}</td>
+        <td>{team?.teamNumber || "If you see this message, then please do save the attendance again!"}</td>
+        <td>{team?.points || '-'}</td>
+        <td>{team?.rank || '-'}</td>
+        <td>
+          <Button variant="danger" disabled={team?.teamNumber == null}  type="button" size="sm" onClick={handleEditClick}>
+            <FaEdit className="fs-3"/>
+          </Button>
         </td>
-      ))}
-      <td>
-        <p>{calculateTotalScore(team)}/100</p>
-      </td>
-      <td>
-        <p>-</p>
-      </td>
-    </tr>
+      </tr>
+
+      
+        <Modal show={showModal} onHide={handleModalClose} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Team Details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form className="w-100">
+              <Form.Group controlId="formSlot">
+                <Form.Label><FaHashtag /> Slot</Form.Label>
+                <Form.Control type="text" value={team.slot} name="slot" onChange={(e) => onTeamChange(e, index)} />
+              </Form.Group>
+              <Form.Group controlId="formTeamNumber">
+                <Form.Label><FaListOl /> Team Number</Form.Label>
+                <Form.Control type="text" value={team.teamNumber} readOnly style={{background:"aliceblue"}} />
+              </Form.Group>
+              <Form.Group controlId="formPoints">
+                <Form.Label><FaStar /> Points</Form.Label>
+                <Form.Control type="text" value={team.points} readOnly style={{background:"aliceblue"}}/>
+              </Form.Group>
+              <Form.Group controlId="formRank">
+                <Form.Label><FaTrophy /> Rank</Form.Label>
+                <Form.Control type="text" value={team.rank} readOnly style={{background:"aliceblue"}}/>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleModalClose}>
+              <FaSave/> Save
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      
+    </>
   );
 };
 

@@ -17,6 +17,7 @@ const FilterEvents = ({ categories, categoryFilter, setCategoryFilter, setSelect
               setEventFilter(firstEvent.id);
               setAvailableEvent(firstEvent);
               setSelectedRound(firstEvent.rounds[0]);
+              
             }
           }}
         >

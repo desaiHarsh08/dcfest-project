@@ -197,7 +197,7 @@
 //           <Button variant="success">
 //             Score Entry
 //           </Button>
-          
+
 //           </div>
 //         )}
 //       </div>
@@ -236,9 +236,6 @@
 
 // export default ScoringDepartment;
 
-
-
-
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
@@ -253,6 +250,7 @@ import { Button, Form } from "react-bootstrap";
 import FilterEvents from "../components/scoring-department/FilterEvents";
 import ScoreSheetTable from "../components/scoring-department/ScoreSheetTable";
 import ScoreEntryTable from "../components/scoring-department/ScoreEntryTable";
+import { FaClipboardList, FaDownload } from "react-icons/fa";
 
 const ScoringDepartment = () => {
   const navigate = useNavigate();
@@ -272,28 +270,35 @@ const ScoringDepartment = () => {
 
   useEffect(() => {
     if (selectedAvailableEvent && selectedRound) {
-        for(let i = 0; i < selectedAvailableEvent.rounds.length; i++) {
-            if(selectedAvailableEvent.rounds[i].id == selectedRound.id) {
-                if (i > 0) {
-                    getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedAvailableEvent.rounds[0].id)
-                    .then((data) => {
-                    console.log("fetching data for first round:", data);
-                    setTeams(data);
-                    })
-                    .catch((err) => console.log(err));
-                }
-                else {
-                    getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedAvailableEvent.rounds[0].id)
-                    .then((data) => {
-                    console.log(data);
-                    setTeams(data);
-                    })
-                    .catch((err) => console.log(err));
-                }
-                break;
-            }
-        }
-      
+        getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedRound.id)
+              .then((data) => {
+                console.log("fetching data for first round:", data);
+                data.sort((a, b) => a.slot - b.slot);
+                setTeams(data);
+              })
+              .catch((err) => console.log(err));
+    //   for (let i = 0; i < selectedAvailableEvent.rounds.length; i++) {
+    //     if (selectedAvailableEvent.rounds[i].id == selectedRound.id) {
+    //       if (i > 0) {
+    //         getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedAvailableEvent.rounds[0].id)
+    //           .then((data) => {
+    //             console.log("fetching data for first round:", data);
+    //             data.sort((a, b) => a.slot - b.slot);
+    //             setTeams(data);
+    //           })
+    //           .catch((err) => console.log(err));
+    //       } else {
+    //         getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedAvailableEvent.rounds[0].id)
+    //           .then((data) => {
+    //             console.log(data);
+    //             data.sort((a, b) => a.slot - b.slot);
+    //             setTeams(data);
+    //           })
+    //           .catch((err) => console.log(err));
+    //       }
+    //       break;
+    //     }
+    //   }
     }
   }, [selectedAvailableEvent, selectedRound]);
 
@@ -450,37 +455,27 @@ const ScoringDepartment = () => {
           setSelectedCategory={setSelectedCategory}
         />
         {selectedAvailableEvent && selectedRound && (
-            <div>
-          <Button variant="success" onClick={() => fetchScoreSheet(selectedAvailableEvent?.id, selectedRound?.id)}>
-            Download
-          </Button>
-          <Button variant={scoreEntryFlag ? "info" :"light"} className={`${!scoreEntryFlag && "border"}`} onClick={() => setScoreEntryFlag((prev) => !prev)}>
-            Score Entry
-          </Button>
-          
+          <div>
+            {teams.length > 0 && !teams?.some((team) => team.slot == null) && (
+              <Button variant="success" onClick={() => fetchScoreSheet(selectedAvailableEvent?.id, selectedRound?.id)}>
+                <FaDownload /> Download
+              </Button>
+            )}
+            <Button variant={scoreEntryFlag ? "info" : "light"} className={`${!scoreEntryFlag && "border"}`} onClick={() => setScoreEntryFlag((prev) => !prev)}>
+              <FaClipboardList /> Score Entry
+            </Button>
           </div>
         )}
       </div>
 
       <ScoreDetails selectedCategory={selectedCategory} selectedAvailableEvent={selectedAvailableEvent} selectedRound={selectedRound} />
       {scoreEntryFlag ? (
-        <ScoreEntryTable  selectedAvailableEvent={selectedAvailableEvent} selectedRound={selectedRound} selectedCategory={selectedCategory} teams={teams} setTeams={setTeams} />
+        <ScoreEntryTable selectedAvailableEvent={selectedAvailableEvent} selectedRound={selectedRound} selectedCategory={selectedCategory} teams={teams} setTeams={setTeams} />
       ) : (
-          <ScoreSheetTable 
-              parameters={parameters}
-              onParameterChange={handleParameterChange}
-              teams={teams}
-              onCalculateTotalScore={calculateTotalScore}
-              onTeamChange={handleTeamChange}
-          />
-
+        <ScoreSheetTable teams={teams} setTeams={setTeams} />
       )}
     </div>
   );
 };
 
 export default ScoringDepartment;
-
-
-
-

@@ -5,9 +5,10 @@ import { Badge, Button } from "react-bootstrap";
 import { fetchCollegeById } from "../../services/college-apis";
 
 import { generateQrcode, getPop } from "../../services/attendance-apis";
+import { FaCheck, FaDownload, FaEdit, FaRemoveFormat, FaTrash } from "react-icons/fa";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, group, category, availableEvent, handleRemove, handleEdit }) => {
+const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
   const [college, setCollege] = useState();
   const [pop, setPop] = useState();
 
@@ -37,17 +38,18 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
     if (college && participant && availableEvent) {
       fetchPop();
     }
-  }, [college, participant,refetchPop, availableEvent]);
+  }, [college, participant,refetchPop, selectedRound, availableEvent]);
 
   const fetchPop = async (college, availableEvent, group) => {
     if (!college || !availableEvent || !participant) {
       return;
     }
     try {
-      const response = await getPop(college.id, availableEvent.id, availableEvent?.rounds[0].id, group);
+      const response = await getPop(college.id, availableEvent.id, selectedRound?.id, group);
       setPop(response);
     } catch (error) {
       console.log(error);
+      setPop(null);
     }
   };
 
@@ -71,7 +73,7 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
     }
     try {
       setConfirmParticipation(true);
-      const response = await generateQrcode(college.id, availableEvent.id, availableEvent?.rounds[0].id, group);
+      const response = await generateQrcode(college.id, availableEvent.id, selectedRound.id, group);
       console.log(response);
       setPop(response);
     } catch (error) {
@@ -104,11 +106,11 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
         <td className="d-flex">
           {participant?.id && (
             <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
-              Remove
+               <FaTrash/>   Remove
             </Button>
           )}
           <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
-            Edit
+            <FaEdit/> Edit
           </Button>
           {index == 0 && (
             <Button
@@ -122,8 +124,8 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
               }}
               disabled={confirmParticipation}
             >
-              {pop ? "Download" : "Confirm"}
-            </Button>
+              {pop ? <FaDownload /> : <FaCheck />} {pop ? "Download" : "Confirm"}
+              </Button>
           )}
         </td>
       </tr>

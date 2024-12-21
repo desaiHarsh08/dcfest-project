@@ -62,6 +62,7 @@ const ScoreEntryTable = ({selectedAvailableEvent, selectedRound, selectedCategor
     const handleSave = async () => {
         for (let i = 0; i < teams.length; i++) {
             try {
+                console.log(teams[i]);
                 const response = await handlePromoteTeam(teams[i]);
                 console.log(response);
             } catch (error) {
@@ -79,6 +80,7 @@ const ScoreEntryTable = ({selectedAvailableEvent, selectedRound, selectedCategor
             <th>Sr. No</th>
             <th>Team Number</th>
             <th>Rank</th>
+            {teams?.some(ele => ele.points != null) &&<th>Points</th>}
             <th>Qualified For</th>
           </tr>
         </thead>
@@ -90,15 +92,16 @@ const ScoreEntryTable = ({selectedAvailableEvent, selectedRound, selectedCategor
               <td>
                 <input type="number" value={team?.rank} onChange={(e) => handleTeamRankChange(e, teamIndex)} /> 
               </td>
+              {teams?.some(ele => ele.points != null) &&<td>{team?.points}</td>}
               <td className="d-flex align-items-center h-100 pt-3">
-                <input type="checkbox" value={!!team?.promotedRoundId}  onChange={(e) =>handleTeamPromoted(e, teamIndex)} />
+                <input type="checkbox" checked={!!team?.promotedRoundId}  onChange={(e) =>handleTeamPromoted(e, teamIndex)} />
                 <p className="m-0">{selectedAvailableEvent?.rounds?.find(r=> r.id == team?.promotedRoundId)?.roundType}</p>
                 </td>
             </tr>
           ))}
         </tbody>
       </Table>
-      <Button type="button" onClick={handleSave}>Save</Button>
+      <Button type="button" disabled={teams?.some(team => team?.teamNumber == null)} onClick={handleSave}>Save</Button>
     </div>
   );
 };

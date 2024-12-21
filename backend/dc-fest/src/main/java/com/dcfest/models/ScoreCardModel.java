@@ -35,6 +35,8 @@ public class ScoreCardModel {
 
     private Integer slot;
 
+    private Integer points;
+
     public ScoreCardModel(Long id) {
         this.id = id;
     }

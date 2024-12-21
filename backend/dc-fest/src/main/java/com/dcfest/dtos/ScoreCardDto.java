@@ -29,4 +29,6 @@ public class ScoreCardDto {
 
     private Integer slot;
 
+    private Integer points;
+
 }

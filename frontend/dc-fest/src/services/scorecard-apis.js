@@ -18,6 +18,15 @@ export const handlePromoteTeam = async (scorecard) => {
     return response.data;
 };
 
+export const updateTeam = async (scorecard) => {
+    const response = await API.put(`/api/scorecards/${scorecard.id}`, scorecard, {
+        withCredentials: true,
+        responseType: 'arraybuffer',
+    });
+
+    return response.data;
+};
+
 export const getCollegeParticipationForScoreCard = async (availableEventId, roundId) => {
     console.log('fetching getCollegeParticipationForScoreCard()')
     const response = await API.get(`/api/scorecards/get-college-participations?availableEventId=${availableEventId}&roundId=${roundId}`, {

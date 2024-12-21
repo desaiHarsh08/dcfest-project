@@ -210,8 +210,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
             group = collegeModel.getIcCode() + "_" + String.format("%02d", 1);
         }
         else {
-            System.out.println("in otse");
-            count = groups.size();
+            System.out.println("in otse, groups: " + groups);
+            count = groups.stream().filter(grp -> grp.contains(collegeModel.getIcCode() + "_OTSE")).toList().size();
             group = collegeModel.getIcCode() + "_OTSE_" + String.format("%02d", count + 1);
         }
 
