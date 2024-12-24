@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ParticipantServices {
 
+    boolean disableParticipation(String group, boolean status);
+
     boolean correctGroupNameForParticipants();
 
     List<ParticipantDto> createParticipants(List<ParticipantDto> participantDto);

@@ -807,6 +807,16 @@ public class ParticipantServicesImpl implements ParticipantServices {
         return participantDto;
     }
 
+    public boolean disableParticipation(String group, boolean status) {
+        List<ParticipantModel> participantModels = this.participantRepository.findByGroup(group);
+        for (ParticipantModel participantModel: participantModels) {
+            participantModel.setDisableParticipation(status);
+            this.participantRepository.save(participantModel);
+        }
+
+        return true;
+    }
+
     private UserDto userModelToDto(UserModel userModel) {
         if (userModel == null) {
             return null;

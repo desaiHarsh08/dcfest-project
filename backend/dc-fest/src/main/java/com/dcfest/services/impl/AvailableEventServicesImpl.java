@@ -1,5 +1,6 @@
 package com.dcfest.services.impl;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -8,10 +9,12 @@ import java.util.stream.Collectors;
 
 import com.dcfest.dtos.*;
 import com.dcfest.models.*;
+import com.dcfest.notifications.whatsapp.WhatsAppService;
 import com.dcfest.repositories.*;
 import com.dcfest.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.dcfest.exceptions.ResourceNotFoundException;
@@ -19,8 +22,15 @@ import com.dcfest.exceptions.ResourceNotFoundException;
 @Service
 public class AvailableEventServicesImpl implements AvailableEventServices {
 
+    @Value("${close_reg_phone}")
+    private String closeRegPhone;
+
+
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private WhatsAppService whatsAppService;
 
     @Autowired
     private AvailableEventRepository availableEventRepository;
@@ -197,7 +207,6 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         foundAvailableEventModel.setOneLiner(availableEventDto.getOneLiner());
         foundAvailableEventModel.setDescription(availableEventDto.getDescription());
         foundAvailableEventModel.setType(availableEventDto.getType());
-        foundAvailableEventModel.setCloseRegistration(availableEventDto.isCloseRegistration());
         foundAvailableEventModel.setCode(availableEventDto.getCode());
         foundAvailableEventModel.setEventMaster(availableEventDto.getEventMaster());
         foundAvailableEventModel.setEventMasterPhone(availableEventDto.getEventMasterPhone());
@@ -265,47 +274,26 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
 
     @Override
-    public void postCloseRegistrationProcess(AvailableEventModel availableEventModel, List<EventRuleDto> eventRuleDtos) {
-        EventDto eventDto = this.eventServices.getEventByAvailableEventId(availableEventModel.getId());
-        if (eventDto == null) {
-            return;
-        }
-        // Fetch all the participants
-        List<ParticipantModel> allParticipantModels = this.participantRepository.findByEvents_Id(eventDto.getId());
-        // Fetch colleges participated
-        List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
-        // Sort by college's name
-        collegeParticipationModels.sort(Comparator.comparing(college -> college.getCollege().getName()));
-        // Assign the teamNumber to the participants
-        int count = 0;
-        EventRuleDto registeredAvailableSlotsRule = eventRuleDtos.stream().filter(e -> e.getEventRuleTemplate().getId().equals(6L)).findFirst().orElseThrow(
-                () -> new IllegalArgumentException("unable to find the registered_slots_available_rule")
+    public AvailableEventDto postCloseRegistrationProcess(Long availableEventId) {
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId).orElseThrow(
+                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId)
         );
-        EventRuleDto otseSlotsRule = eventRuleDtos.stream().filter(e -> e.getEventRuleTemplate().getName().equals("OTSE_SLOTS")).findFirst().orElseThrow(
-                () -> new IllegalArgumentException("unable to find the otse_slots_rule")
+
+        availableEventModel.setCloseRegistration(true);
+        availableEventModel = this.availableEventRepository.save(availableEventModel);
+
+        List<Object> messageArr = new ArrayList<>();
+        messageArr.add(availableEventModel.getTitle());
+
+
+        this.whatsAppService.sendWhatsAppMessage(
+                closeRegPhone,
+                messageArr,
+                "umang_reg_off",
+                null
         );
-        for (CollegeParticipationModel collegeParticipationModel: collegeParticipationModels) {
 
-            if (count >= (Integer.parseInt(registeredAvailableSlotsRule.getValue()) + Integer.parseInt(otseSlotsRule.getValue()))) {
-                break;
-            }
-            count = count + 1;
-            // Fetch the college details: -
-            CollegeModel collegeModel = this.collegeRepository.findById(collegeParticipationModel.getCollege().getId()).orElse(null);
-            if (collegeModel == null) {
-                continue;
-            }
-            // Generate the team_number
-            String teamNumber = collegeModel.getIcCode() + "_" + String.format("%02d", count);
-            // Set the team_number
-            allParticipantModels = allParticipantModels.stream().map(p -> {
-                if (p.getCollege().getId().equals(collegeModel.getId()) && p.getEvents().stream().anyMatch(e -> e.getId().equals(eventDto.getId()))) {
-                    p.setTeamNumber(teamNumber);
-                }
-                return p;
-            }).toList();
-        }
-
+        return this.availableEventModelToDto(availableEventModel);
     }
 
     @Override

@@ -67,6 +67,8 @@ public class ParticipantModel {
     @Enumerated(EnumType.STRING)
     private HandPreferenceType handPreference = HandPreferenceType.RIGHT_HANDED;
 
+    private Boolean disableParticipation;
+
     public ParticipantModel(Long id) {
         this.id = id;
     }

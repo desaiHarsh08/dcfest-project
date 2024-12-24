@@ -23,5 +23,4 @@ public interface CollegeParticipationService {
     boolean deleteParticipation(Long id);
     List<CollegeParticipationDto> getInterestedColleges();
 
-
 }

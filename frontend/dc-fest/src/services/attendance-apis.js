@@ -42,6 +42,7 @@ export const scanQrcode = async (qrData) => {
 };
 
 export const markAttendanceForParticipant = async (roundId, collegeId, participantId, status) => {
+    console.log(roundId, collegeId, participantId, status);
     const response = await API.get(`/api/attendance/mark-attendance?roundId=${roundId}&collegeId=${collegeId}&participantId=${participantId}&status=${status}`, {
         withCredentials: true
     });

@@ -6,13 +6,16 @@ import { fetchCollegeById } from "../../services/college-apis";
 
 import { generateQrcode, getPop } from "../../services/attendance-apis";
 import { FaCheck, FaDownload, FaEdit, FaRemoveFormat, FaTrash } from "react-icons/fa";
+import { fetchParticipationByCollegeIdAndAvailableEventId } from "../../services/college-participation-apis";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ refetchPop, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
+const ParticipantRow = ({ refetchPop, collegeParticipation, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
   const [college, setCollege] = useState();
   const [pop, setPop] = useState();
 
   const [confirmParticipation, setConfirmParticipation] = useState(false);
+
+  console.log("participant:", participant);
 
   useEffect(() => {
     if (college && availableEvent && participant) {
@@ -84,52 +87,54 @@ const ParticipantRow = ({ refetchPop, handleAttendance, participant, filteredPar
   };
 
   return (
-    <>
-      <tr key={participant?.id}>
-        <td>
-          <input type="checkbox" checked={participant.present} onChange={(e) => handleAttendance(e, participant)} />
-        </td>
-        <td>{index + 1}</td>
-        <td>{college?.icCode}</td>
-        <td>{category?.name}</td>
-        <td>{availableEvent?.title}</td>
-        <td>{participant?.group}</td>
-        <td>{participant?.name}</td>
-        <td>{participant?.email}</td>
-        <td>
-          <Badge variant={participant?.type == "PERFORMER" ? "primary" : "warning"}>{participant?.type}</Badge>
-        </td>
-        <td>
-          <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant?.entryType}</Badge>
-        </td>
-        <td>{participant?.handPreference}</td>
-        <td className="d-flex">
-          {participant?.id && (
-            <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
-              <FaTrash /> Remove
+    !participant?.disableParticipation && (
+      <>
+        <tr key={participant?.id}>
+          <td>
+            <input type="checkbox" checked={participant.present} onChange={(e) => handleAttendance(e, participant)} />
+          </td>
+          <td>{index + 1}</td>
+          <td>{college?.icCode}</td>
+          <td>{category?.name}</td>
+          <td>{availableEvent?.title}</td>
+          <td>{participant?.group}</td>
+          <td>{participant?.name}</td>
+          <td>{participant?.email}</td>
+          <td>
+            <Badge variant={participant?.type == "PERFORMER" ? "primary" : "warning"}>{participant?.type}</Badge>
+          </td>
+          <td>
+            <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant?.entryType}</Badge>
+          </td>
+          <td>{participant?.handPreference}</td>
+          <td className="d-flex">
+            {participant?.id && (
+              <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
+                <FaTrash /> Remove
+              </Button>
+            )}
+            <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
+              <FaEdit /> Edit
             </Button>
-          )}
-          <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
-            <FaEdit /> Edit
-          </Button>
-          {index == 0 && (
-            <Button
-              variant={pop ? "ghost border border-2" : "warning"}
-              onClick={() => {
-                if (pop) {
-                  handlePdfOpen();
-                } else {
-                  handleConfirmParticipants(participant?.group);
-                }
-              }}
-              disabled={confirmParticipation}
-            >
-              {pop ? <FaDownload /> : <FaCheck />} {pop ? "Download" : "Confirm"}
-            </Button>
-          )}
-        </td>
-      </tr>
-    </>
+            {index == 0 && !participant?.disableParticipation && (
+              <Button
+                variant={pop ? "ghost border border-2" : "warning"}
+                onClick={() => {
+                  if (pop) {
+                    handlePdfOpen();
+                  } else {
+                    handleConfirmParticipants(participant?.group);
+                  }
+                }}
+                disabled={confirmParticipation}
+              >
+                {pop ? <FaDownload /> : <FaCheck />} {pop ? "Download" : "Confirm"}
+              </Button>
+            )}
+          </td>
+        </tr>
+      </>
+    )
   );
 };
 

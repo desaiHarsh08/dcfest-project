@@ -1,11 +1,12 @@
 /* eslint-disable no-unused-vars */
 import CategoryList from "../components/categories/CategoryList";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { fetchCategories } from "../services/categories-api";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "../styles/CategoriesPage.css";
 import { useDispatch } from "react-redux";
 import { setCategories as reduxSetCategories } from "../app/slices/categoriesSlice"
+import { AuthContext } from "../providers/AuthProvider";
 
 const CategoriesPage = () => {
   const { iccode } = useParams();

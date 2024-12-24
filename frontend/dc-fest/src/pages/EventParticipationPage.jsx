@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import "../styles/EventParticipationPage.css"; // Import custom CSS
@@ -14,8 +14,12 @@ import * as XLSX from "xlsx";
 import { generateQrcode, getPop } from "../services/attendance-apis";
 import AddParticipantModal from "../components/event-participation/AddParticipantModal";
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaDownload, FaPlus } from "react-icons/fa";
-import { updateAvailableEvent } from "../services/available-events-apis";
+import { FaCalendarAlt, FaClock, FaDownload, FaPlus } from "react-icons/fa";
+import { closeAvailableEvent, updateAvailableEvent } from "../services/available-events-apis";
+
+import DisableTeamModal from "../components/event-participation/DisableTeamModal";
+import { AuthContext } from "../providers/AuthProvider";
+
 
 const EventParticipationPage = () => {
   const navigate = useNavigate();
@@ -25,6 +29,7 @@ const EventParticipationPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refetchPop, setRefetchPop] = useState(false);
+  const [collegeParticipation, setCollegeParticipation] = useState();
   const [selectedParticipant, setSelectedParticipant] = useState({
     name: "",
     email: "",
@@ -36,6 +41,7 @@ const EventParticipationPage = () => {
   const [selectedAvailableEvent, setAvailableEvent] = useState(null);
   const [selectedRound, setSelectedRound] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDisableTeamModal, setShowDisableTeamModal] = useState(false);
   const [eventFilter, setEventFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [pop, setPop] = useState();
@@ -45,6 +51,14 @@ const EventParticipationPage = () => {
   const [groups, setGroups] = useState([]);
   const [newParticipant, setNewParticipant] = useState();
   const [showAddModal, setShowAddModal] = useState();
+
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!user?.type == "ADMIN" || !user?.type == "REGISTRATION_DESK") {
+      navigate(-1);
+    }
+  }, [user, navigate]);
 
   // Fetch participants when eventFilter changes
   useEffect(() => {
@@ -73,6 +87,17 @@ const EventParticipationPage = () => {
       getGroups(filteredParticipants);
     }
   }, [filteredParticipants]);
+
+//   useEffect(() => {
+//     if (selectedAvailableEvent && selectedCollege) {
+//       fetchParticipationByCollegeIdAndAvailableEventId(selectedCollege.id, selectedAvailableEvent.id)
+//         .then((data) => {
+//           console.log("college_participation:", data);
+//           setCollegeParticipation(data);
+//         })
+//         .catch((err) => console.log(err));
+//     }
+//   }, [selectedAvailableEvent, selectedCollege]);
 
   useEffect(() => {
     if (selectedCollege && participants.length > 0) {
@@ -159,14 +184,14 @@ const EventParticipationPage = () => {
       return;
     }
 
-    const minParticipants = selectedAvailableEvent.eventRules.find(rule => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value ;
-    const toDeleteParticipant = filteredParticipants.find(p => p.id == id);
+    const minParticipants = selectedAvailableEvent.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value;
+    const toDeleteParticipant = filteredParticipants.find((p) => p.id == id);
     console.log("deleteParticipant:", toDeleteParticipant);
     console.log("minParticipants:", minParticipants);
-    console.log("filteredParticipants:", filteredParticipants.filter(ele => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group ).length);
-    if (toDeleteParticipant.type == 'PERFORMER' && filteredParticipants.filter(ele => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group ).length <= minParticipants) {
-        alert("Minimum participants required for this event is " + minParticipants);
-        return;
+    console.log("filteredParticipants:", filteredParticipants.filter((ele) => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group).length);
+    if (toDeleteParticipant.type == "PERFORMER" && filteredParticipants.filter((ele) => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group).length <= minParticipants) {
+      alert("Minimum participants required for this event is " + minParticipants);
+      return;
     }
 
     try {
@@ -324,14 +349,22 @@ const EventParticipationPage = () => {
   const handleCloseRegistration = async (selectedAvailableEvent) => {
     const newAvailableEvent = { ...selectedAvailableEvent, closeRegistration: true };
     try {
-        const response = await updateAvailableEvent(newAvailableEvent);
-        console.log("closed reg, response:", response);
-        setAvailableEvent(newAvailableEvent);
-        alert("Registration closed successfully.");
+      const response = await closeAvailableEvent(newAvailableEvent.id);
+      console.log("closed reg, response:", response);
+      setAvailableEvent(newAvailableEvent);
+      alert("Registration closed successfully.");
     } catch (error) {
-        alert("Oops! Unable to close the registration.");
+      alert("Oops! Unable to close the registration.");
     }
-  }
+  };
+
+  const handleDisableParticipation = async (collegeParticipationId, status) => {
+    try {
+      const response = await disableParticipation(collegeParticipationId, status);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Container fluid className="mt-4">
@@ -444,11 +477,10 @@ const EventParticipationPage = () => {
             >
               <FaPlus /> Add More Participants
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => handleCloseRegistration(selectedAvailableEvent)}
-              disabled={selectedAvailableEvent?.closeRegistration}
-            >
+            <Button variant="info" onClick={() => setShowDisableTeamModal(true)}>
+              Remove Team
+            </Button>
+            <Button variant="secondary" onClick={() => handleCloseRegistration(selectedAvailableEvent)} disabled={selectedAvailableEvent?.closeRegistration}>
               {selectedAvailableEvent?.closeRegistration ? "Closed" : "Close Registration?"}
             </Button>
           </div>
@@ -502,6 +534,7 @@ const EventParticipationPage = () => {
                   return tmpParticipants.map((participant, index) => (
                     <ParticipantRow
                       key={`${participant.id}`}
+                      collegeParticipation={collegeParticipation}
                       selectedRound={selectedRound}
                       category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
                       index={index}
@@ -605,6 +638,8 @@ const EventParticipationPage = () => {
           groups={groups}
         />
       )}
+
+      <DisableTeamModal showDisableTeamModal={showDisableTeamModal} handleModalClose={() => setShowDisableTeamModal(false)} participants={participants} setParticipants={setParticipants} filteredParticipants={filteredParticipants} setFilteredParticipants={setFilteredParticipants} />
     </Container>
   );
 };

@@ -3,6 +3,7 @@ import "../styles/Home.css";
 import { AuthProvider } from "../providers/AuthProvider";
 import HomeLayout from "../components/layout/HomeLayout";
 const Home = () => {
+
   return (
     <AuthProvider>
       <div className="overflow-hidden vh-100">

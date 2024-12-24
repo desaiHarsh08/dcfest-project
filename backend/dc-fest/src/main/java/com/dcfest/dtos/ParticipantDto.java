@@ -30,4 +30,5 @@ public class ParticipantDto {
     private EntryType entryType = EntryType.NORMAL;
     private HandPreferenceType handPreference = HandPreferenceType.RIGHT_HANDED;
     private List<PromotedRoundDto> promotedRoundDtos = new ArrayList<>();
+    private Boolean disableParticipation;
 }

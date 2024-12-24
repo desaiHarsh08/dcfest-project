@@ -24,7 +24,7 @@ public interface AvailableEventServices {
 
     boolean deleteAvailableEvent(Long id);
 
-    void postCloseRegistrationProcess(AvailableEventModel availableEventModel, List<EventRuleDto> eventRuleDtos);
+    AvailableEventDto postCloseRegistrationProcess(Long availableEventId);
 
 
 }

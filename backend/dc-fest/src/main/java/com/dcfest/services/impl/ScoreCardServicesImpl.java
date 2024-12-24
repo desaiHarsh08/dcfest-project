@@ -414,6 +414,9 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
 
                 scoreCardModel.setRank(scoreCardDto.getRank());
             }
+            else {
+                scoreCardModel.setRank(null);
+            }
 
             if (collegeModel.getPoints() == null) {
                 collegeModel.setPoints(Long.valueOf(totalPoints));

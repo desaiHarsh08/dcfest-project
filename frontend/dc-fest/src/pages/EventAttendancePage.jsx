@@ -1,11 +1,13 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import "../styles/EventAttendancePage.css"; // Import custom CSS for animations and styles
 import { Button, Container, Alert, Modal, Row, Col, Card, ListGroup, Badge, Table } from "react-bootstrap"; // Import Bootstrap components
 import { markAttendanceForParticipant, scanQrcode } from "../services/attendance-apis";
 import { FaClipboardList, FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { AuthContext } from "../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 const EventAttendancePage = () => {
   const [scannedData, setScannedData] = useState(null);
   const [attendanceMarked, setAttendanceMarked] = useState(false);
@@ -19,6 +21,16 @@ const EventAttendancePage = () => {
   const [round, setRound] = useState();
 
   const qrcodeReaderRef = useRef(null);
+
+  const { user } = useContext(AuthContext);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user?.type == "ADMIN" || !user?.type == "ATTENDANCE_DESK") {
+      navigate(-1);
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     if (qrcodeReaderRef) {

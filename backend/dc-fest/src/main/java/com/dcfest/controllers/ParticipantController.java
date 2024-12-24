@@ -102,4 +102,13 @@ public class ParticipantController {
         participantServices.deleteParticipantsByCollegesId(collegeId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/disable-participation")
+    public ResponseEntity<?> disableParticipation(@RequestParam String group, @RequestParam boolean status) {
+        return new ResponseEntity<>(
+                participantServices.disableParticipation(group, status),
+                HttpStatus.OK
+        );
+    }
+
 }

@@ -22,11 +22,19 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.stereotype.Service;
 
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Base64;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.security.SecureRandom;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -98,7 +106,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                         null,
                         participantModel,
                         qrcodeData,
-                        true,
+                        participantModel.isPresent(),
                         roundModel,
                         group,
                         teamNumber
@@ -314,9 +322,10 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         for (ParticipantModel participantModel: participantModels) {
             participantModel.setTeamNumber(teamNumber);
-            participantModel.setPresent(true);
             this.participantRepository.save(participantModel);
         }
+
+        participantModels = participantModels.stream().filter(ParticipantModel::isPresent).collect(Collectors.toList());
 
         // Create the attendance for the participants
         this.createAttendance(qrData, participantModels, roundModel, group, teamNumber);
@@ -374,13 +383,39 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             );
             List<Object> messageArr = new ArrayList<>();
             String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
-            messageArr.add(qrCodeBase64);
-            messageArr.add(availableEventModel.getTitle());
-            messageArr.add(roundName);
-            messageArr.add(availableEventModel.getTitle());
+            // Create a temporary file to store the QR code image
 
-            this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "POP_IMG");
-            System.out.println("wa sended to: " + collegeRepresentativeModel.getPhone());
+            // Define the path to the static folder (replace with your actual static folder path)
+            String staticFolderPath = "src/main/resources/static/";
+
+            try (ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeImage)) {
+                // Create the file in the static folder with a unique name (e.g., qrCode.png)
+                File staticFolder = new File(staticFolderPath);
+                if (!staticFolder.exists()) {
+                    staticFolder.mkdirs();  // Ensure the folder exists
+                }
+
+                String fileName = "qrCode" + LocalDateTime.now() + ".png";
+                File qrCodeFile = new File(staticFolder, fileName);
+
+                // Write the byte array to the file in the static folder
+                java.nio.file.Files.copy(bis, qrCodeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                // Prepare the message content
+                messageArr.add(availableEventModel.getTitle());
+                messageArr.add(roundName);
+                messageArr.add(availableEventModel.getTitle());
+                messageArr.add(roundName);
+
+                // Send the WhatsApp message with the QR code file
+                this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "popqr", "http://localhost:5003" + fileName);
+                System.out.println("WhatsApp message sent to: " + collegeRepresentativeModel.getPhone());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
         }
 
         InputStreamSource attachmentSource = new ByteArrayResource(pdfBytes);
@@ -450,6 +485,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         for (ParticipantAttendanceModel participantAttendanceModel: participantAttendanceModels) {
             ParticipantModel participantModel = this.participantRepository.findById(participantAttendanceModel.getParticipant().getId()).orElse(null);
             if (participantModel != null) {
+                System.out.println("pop:" + participantModel.getTeamNumber());
+//                this.participantRepository.save(participantModel);
                 participantDtos.add(this.participantModelToDto(participantModel));
             }
         }
@@ -472,6 +509,10 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
     @Override
     public ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId, boolean status) {
+        System.out.println(roundId);
+        System.out.println(collegeId);
+        System.out.println(participantId);
+        System.out.println(status);
         // Fetch RoundModel and AvailableEventModel
         RoundModel roundModel = this.roundRepository.findById(roundId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid round_id: " + roundId));
@@ -494,7 +535,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         ParticipantModel participantModel = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new IllegalArgumentException("No participant found for id: " + participantId)
         );
-        System.out.println("fetched participantModel:" + participantModel);
+        System.out.println("fetched participantModel:" + participantModel.getGroup());
 
         // If the attendance record is found
         if (participantAttendanceOptional.isPresent()) {
@@ -504,18 +545,33 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             System.out.println("after change: " + participantAttendanceModel.isPresent());
             participantModel.setPresent(participantAttendanceModel.isPresent());
 
-
+            EventModel eventModel = this.eventRepository.findByAvailableEvent(availableEventModel).orElseThrow(
+                    () -> new IllegalArgumentException("Unable to load event")
+            );
+            List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeIdAndGroup(
+                    eventModel.getId(),
+                    collegeId,
+                    participantModel.getGroup()
+            );
 
             // Save the updated attendance record
             participantAttendanceModel = this.participantAttendanceRepository.save(participantAttendanceModel);
+
             System.out.println("in db participant-atte after save:" + participantAttendanceModel);
+
+            String popNumber = participantModel.getTeamNumber();
+
             participantModel = this.participantRepository.save(participantModel);
-            int slot = Integer.parseInt(participantAttendanceModel.getTeamNumber().substring(participantAttendanceModel.getTeamNumber().length() - 2));
+            System.out.println("participantModel: " + participantModel);
+            System.out.println("participantModels: " + participantModels);
+            int slot = Integer.parseInt(popNumber.substring(popNumber.length() - 2));
             System.out.println("in db participant after save:" + participantModel);
 
 
             // Generate the scorecard
             String team = participantModel.getGroup();
+
+
             System.out.println("team: " + team);
             List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByCollegeParticipationAndRoundAndTeamNumber(collegeParticipationModel, roundModel, team);
             if (scoreCardModels.isEmpty()) {

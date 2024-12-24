@@ -54,6 +54,12 @@ public class AvailableEventController {
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
+    @GetMapping("/close-reg/{id}")
+    public ResponseEntity<AvailableEventDto> doCloseRegistration(@PathVariable Long id) {
+        AvailableEventDto event = availableEventServices.postCloseRegistrationProcess(id);
+        return new ResponseEntity<>(event, HttpStatus.OK);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<AvailableEventDto> updateAvailableEvent(@RequestBody AvailableEventDto availableEventDto) {
         AvailableEventDto updatedEvent = availableEventServices.updateAvailableEvent(availableEventDto);

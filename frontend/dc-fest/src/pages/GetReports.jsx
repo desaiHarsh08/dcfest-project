@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { Container, Row, Col, Button, Card } from "react-bootstrap";
@@ -9,6 +9,8 @@ import { fetchCategories } from "../services/categories-api";
 import { fetchAllParticipations } from "../services/college-participation-apis";
 import { fetchParticipantsByEventIdAndCollegeId } from "../services/participants-api";
 import { fetchColleges } from "../services/college-apis";
+import { AuthContext } from "../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 const GetReports = () => {
   //   const [loadingId, setLoadingId] = useState(null);
@@ -22,6 +24,17 @@ const GetReports = () => {
   //   const [loadingDownLoad, setLoadingDownLoad] = useState(false);
   const [categories, setCategories] = useState();
   const [colleges, setColleges] = useState([]);
+
+  const navigate = useNavigate();
+
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!user?.type == "ADMIN") {
+      navigate(-1);
+    }
+  }, [user, navigate]);
+
 
   useEffect(() => {
     fetchAvailableEvents()

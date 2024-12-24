@@ -39,6 +39,14 @@ export const deleteAvailableEvent = async (id) => {
     return response.data;
 };
 
+export const closeAvailableEvent = async (id) => {
+    const response = await API.get(`/api/available-events/close-reg/${id}`, {
+        withCredentials: true
+    });
+    
+    return response.data;
+};
+
 export const updateAvailableEvent = async (availableEvent) => {
     const response = await API.put(`/api/available-events/${availableEvent.id}`, availableEvent, {
         withCredentials: true

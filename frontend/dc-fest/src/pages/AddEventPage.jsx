@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { addAvailableEvent, fetchCategories } from "../services/categories-api";
 import EventInfo from "../components/event-details-form/EventInfo";
 import EventRules from "../components/event-details-form/EventRules";
@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import PreviewModal from "../components/event-details-form/PreviewModal";
 import { fetchAvailableEventsBySlug } from "../services/available-events-apis";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../providers/AuthProvider";
 
 const RULE_SEQ_NAME = [
   "REGISTERED_SLOTS_AVAILABLE",
@@ -62,6 +63,16 @@ const AddEventPage = () => {
     judges: [],
   });
 
+  const navigate = useNavigate();
+
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!user?.type == "ADMIN") {
+      navigate(-1);
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     fetchCategories()
       .then((data) => {
@@ -82,7 +93,6 @@ const AddEventPage = () => {
     });
   }, []);
 
-  const navigate = useNavigate();
 
   const handleDefaultEventRules = (ruleTemplates) => {
     const eventRules = [];

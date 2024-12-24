@@ -81,3 +81,11 @@ export const deleteParticipant = async (id) => {
 
     return response.data;
 };
+
+export const disableParticipation = async (group, status) => {
+    const response = await API.get(`/api/participants/disable-participation?group=${group}&status=${status}`, {
+        withCredentials: true
+    });
+
+    return response.data;
+};

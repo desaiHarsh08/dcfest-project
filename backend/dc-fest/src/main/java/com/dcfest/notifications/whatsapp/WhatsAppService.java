@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class WhatsAppService {
         this.restTemplate = restTemplate;
     }
 
-    public Map<String, Object> sendWhatsAppMessage(String to, List<Object> messageArr, String templateName) {
+    public Map<String, Object> sendWhatsAppMessage(String to, List<Object> messageArr, String templateName, String filePath) {
         try {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("countryCode", "+91");
@@ -37,7 +38,13 @@ public class WhatsAppService {
             Map<String, Object> template = new HashMap<>();
             template.put("name", templateName);
             template.put("languageCode", "en");
-            template.put("headerValues", List.of("Alert"));
+            if (filePath == null) {
+                template.put("headerValues", List.of("Alert"));
+            }
+            else {
+                template.put("headerValues", List.of(filePath));
+            }
+
             template.put("bodyValues", messageArr);
 
             requestBody.put("template", template);
