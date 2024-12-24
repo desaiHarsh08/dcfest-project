@@ -389,6 +389,7 @@ export default function AddParticipantModal({
                 value={newParticipant?.group}
                 onChange={(e) => {
                   setGroup(e.target.value);
+                  setNewParticipant((prev) => ({ ...prev, group: e.target.value, entryType: e.target.value.includes("OTSE") ? "OTSE" : "NORMAL" }));
                   handleInputChange(e);
                 }}
                 //   disabled={!selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}

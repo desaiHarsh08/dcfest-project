@@ -8,7 +8,7 @@ import { generateQrcode, getPop } from "../../services/attendance-apis";
 import { FaCheck, FaDownload, FaEdit, FaRemoveFormat, FaTrash } from "react-icons/fa";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
+const ParticipantRow = ({ refetchPop, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
   const [college, setCollege] = useState();
   const [pop, setPop] = useState();
 
@@ -38,7 +38,7 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
     if (college && participant && availableEvent) {
       fetchPop();
     }
-  }, [college, participant,refetchPop, selectedRound, availableEvent]);
+  }, [college, participant, refetchPop, selectedRound, availableEvent]);
 
   const fetchPop = async (college, availableEvent, group) => {
     if (!college || !availableEvent || !participant) {
@@ -87,7 +87,7 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
     <>
       <tr key={participant?.id}>
         <td>
-            <input type="checkbox" checked={participant.present} />
+          <input type="checkbox" checked={participant.present} onChange={(e) => handleAttendance(e, participant)} />
         </td>
         <td>{index + 1}</td>
         <td>{college?.icCode}</td>
@@ -106,11 +106,11 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
         <td className="d-flex">
           {participant?.id && (
             <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
-               <FaTrash/>   Remove
+              <FaTrash /> Remove
             </Button>
           )}
           <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
-            <FaEdit/> Edit
+            <FaEdit /> Edit
           </Button>
           {index == 0 && (
             <Button
@@ -125,7 +125,7 @@ const ParticipantRow = ({ refetchPop, participant,filteredParticipants, index, g
               disabled={confirmParticipation}
             >
               {pop ? <FaDownload /> : <FaCheck />} {pop ? "Download" : "Confirm"}
-              </Button>
+            </Button>
           )}
         </td>
       </tr>

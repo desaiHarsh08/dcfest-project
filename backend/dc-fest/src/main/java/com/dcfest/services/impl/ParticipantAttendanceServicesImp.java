@@ -6,6 +6,7 @@ import com.dcfest.dtos.*;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.*;
 import com.dcfest.notifications.email.EmailServices;
+import com.dcfest.notifications.whatsapp.WhatsAppService;
 import com.dcfest.repositories.*;
 import com.dcfest.services.*;
 import com.dcfest.utils.PdfGenerator;
@@ -36,6 +37,9 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
     private static final String ALPHANUMERIC_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int RANDOM_PART_LENGTH = 16; // Length of the random alphanumeric part
+
+    @Autowired
+    private WhatsAppService whatsAppService;
 
     @Autowired
     private EventRuleServices eventRuleServices;
@@ -368,9 +372,22 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                     availableEventModel,
                     roundModel
             );
+            List<Object> messageArr = new ArrayList<>();
+            String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
+            messageArr.add(qrCodeBase64);
+            messageArr.add(availableEventModel.getTitle());
+            messageArr.add(roundName);
+            messageArr.add(availableEventModel.getTitle());
+
+            this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "POP_IMG");
+            System.out.println("wa sended to: " + collegeRepresentativeModel.getPhone());
         }
 
         InputStreamSource attachmentSource = new ByteArrayResource(pdfBytes);
+
+
+
+
 
         return attachmentSource;
     }
@@ -493,6 +510,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             participantAttendanceModel = this.participantAttendanceRepository.save(participantAttendanceModel);
             System.out.println("in db participant-atte after save:" + participantAttendanceModel);
             participantModel = this.participantRepository.save(participantModel);
+            int slot = Integer.parseInt(participantAttendanceModel.getTeamNumber().substring(participantAttendanceModel.getTeamNumber().length() - 2));
             System.out.println("in db participant after save:" + participantModel);
 
 
@@ -505,6 +523,9 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 scoreCardDto.setCollegeParticipationId(collegeParticipationModel.getId());
                 scoreCardDto.setRoundId(roundModel.getId());
                 scoreCardDto.setTeamNumber(team);
+                System.out.println("Slot is :" + slot);
+                scoreCardDto.setSlot(slot);
+
 
                 // Initialize score parameters with meaningful values (consider updating them later)
                 List<ScoreParameterDto> scoreParameterDtos = new ArrayList<>();

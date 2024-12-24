@@ -27,7 +27,7 @@ public class WhatsAppService {
         this.restTemplate = restTemplate;
     }
 
-    public Map<String, Object> sendWhatsAppMessage(String to, List<String> messageArr, String templateName) {
+    public Map<String, Object> sendWhatsAppMessage(String to, List<Object> messageArr, String templateName) {
         try {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("countryCode", "+91");
@@ -50,6 +50,9 @@ public class WhatsAppService {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             System.out.println("interaktApiKey: " + interaktApiKey);
             System.out.println("interaktBaseUrl: " + interaktBaseUrl);
+
+            System.out.println("entity:\n" + entity);
+
             ResponseEntity<Map> response = restTemplate.postForEntity(
                     interaktBaseUrl,
                     entity,

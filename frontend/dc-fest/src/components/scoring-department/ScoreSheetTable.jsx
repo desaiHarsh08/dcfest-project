@@ -78,7 +78,6 @@ function ScoreSheetTable({ teams,  setTeams }) {
             <th>Team No.</th>
             <th>Total Score</th>
             <th>Rank</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>

@@ -122,7 +122,7 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
                 scoreCardDto.getTeamNumber(),
                 null,
                 null,
-                null,
+                scoreCardDto.getSlot(),
                 null
         );
 
@@ -415,6 +415,12 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
                 scoreCardModel.setRank(scoreCardDto.getRank());
             }
 
+            if (collegeModel.getPoints() == null) {
+                collegeModel.setPoints(Long.valueOf(totalPoints));
+            }
+            else {
+                collegeModel.setPoints(collegeModel.getPoints() + Long.valueOf(totalPoints));
+            }
             collegeModel.setPoints(Long.valueOf(totalPoints));
             scoreCardModel.setPoints(totalPoints);
 

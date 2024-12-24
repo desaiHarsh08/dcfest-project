@@ -15,6 +15,7 @@ import { generateQrcode, getPop } from "../services/attendance-apis";
 import AddParticipantModal from "../components/event-participation/AddParticipantModal";
 import { useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaDownload, FaPlus } from "react-icons/fa";
+import { updateAvailableEvent } from "../services/available-events-apis";
 
 const EventParticipationPage = () => {
   const navigate = useNavigate();
@@ -88,8 +89,8 @@ const EventParticipationPage = () => {
       if (roundIndex == 0) {
         setFilteredParticipants(participants.filter((p) => p.collegeId == selectedCollege.id));
       } else {
-        console.log("before", participants)
-        setFilteredParticipants(participants.filter((p) => p.collegeId == selectedCollege.id && p.promotedRoundDtos.some(ele => ele.roundId == selectedRound.id)));
+        console.log("before", participants);
+        setFilteredParticipants(participants.filter((p) => p.collegeId == selectedCollege.id && p.promotedRoundDtos.some((ele) => ele.roundId == selectedRound.id)));
       }
       setRefetchPop((prev) => !prev); // Set refetchPop to true to refetch the POP
     }
@@ -157,6 +158,17 @@ const EventParticipationPage = () => {
     if (!isConfirm) {
       return;
     }
+
+    const minParticipants = selectedAvailableEvent.eventRules.find(rule => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value ;
+    const toDeleteParticipant = filteredParticipants.find(p => p.id == id);
+    console.log("deleteParticipant:", toDeleteParticipant);
+    console.log("minParticipants:", minParticipants);
+    console.log("filteredParticipants:", filteredParticipants.filter(ele => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group ).length);
+    if (toDeleteParticipant.type == 'PERFORMER' && filteredParticipants.filter(ele => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group ).length <= minParticipants) {
+        alert("Minimum participants required for this event is " + minParticipants);
+        return;
+    }
+
     try {
       console.log("deleting participant:", id);
       const response = await deleteParticipant(id);
@@ -284,6 +296,18 @@ const EventParticipationPage = () => {
     return groupsArr;
   };
 
+  const handleAttendance = async (e, participant) => {
+    const updatedParticipant = { ...participant, present: e.target.checked };
+    try {
+      const response = await updateParticipant(updatedParticipant);
+      setFilteredParticipants((prev) => prev.map((p) => (p.id == updatedParticipant.id ? updatedParticipant : p)));
+      setParticipants((prev) => prev.map((p) => (p.id == updatedParticipant.id ? updatedParticipant : p)));
+      setRefetchPop((prev) => !prev);
+    } catch (error) {
+      alert("Oops! Unable to save the participant.");
+    }
+  };
+
   const handleNewParticipantChange = (e) => {
     const { name, value } = e.target;
     console.log(`in change, ${name}: ${value}`);
@@ -296,6 +320,18 @@ const EventParticipationPage = () => {
       return { ...prev, [name]: value };
     });
   };
+
+  const handleCloseRegistration = async (selectedAvailableEvent) => {
+    const newAvailableEvent = { ...selectedAvailableEvent, closeRegistration: true };
+    try {
+        const response = await updateAvailableEvent(newAvailableEvent);
+        console.log("closed reg, response:", response);
+        setAvailableEvent(newAvailableEvent);
+        alert("Registration closed successfully.");
+    } catch (error) {
+        alert("Oops! Unable to close the registration.");
+    }
+  }
 
   return (
     <Container fluid className="mt-4">
@@ -408,6 +444,13 @@ const EventParticipationPage = () => {
             >
               <FaPlus /> Add More Participants
             </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleCloseRegistration(selectedAvailableEvent)}
+              disabled={selectedAvailableEvent?.closeRegistration}
+            >
+              {selectedAvailableEvent?.closeRegistration ? "Closed" : "Close Registration?"}
+            </Button>
           </div>
         </div>
       )}
@@ -452,26 +495,28 @@ const EventParticipationPage = () => {
               })} */}
 
               {/* Alphabtical order of participant names */}
-              {selectedRound && groups.map((grp) => {
-                let tmpParticipants = filteredParticipants.filter((p) => p.group === grp).sort((a, b) => a.name.localeCompare(b.name)); // Sort by name in alphabetical order
+              {selectedRound &&
+                groups.map((grp) => {
+                  let tmpParticipants = filteredParticipants.filter((p) => p.group === grp).sort((a, b) => a.name.localeCompare(b.name)); // Sort by name in alphabetical order
 
-                return tmpParticipants.map((participant, index) => (
-                  <ParticipantRow
-                    key={`${participant.id}`}
-                    selectedRound={selectedRound}
-                    category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
-                    index={index}
-                    availableEvent={selectedAvailableEvent}
-                    participant={participant}
-                    handleEdit={handleEdit}
-                    handleRemove={handleRemove}
-                    filteredParticipants={filteredParticipants}
-                    refetchPop={refetchPop}
-                    pop={pop}
-                    group={grp} // Changed to use `grp` instead of `group` to match the map variable
-                  />
-                ));
-              })}
+                  return tmpParticipants.map((participant, index) => (
+                    <ParticipantRow
+                      key={`${participant.id}`}
+                      selectedRound={selectedRound}
+                      category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
+                      index={index}
+                      availableEvent={selectedAvailableEvent}
+                      participant={participant}
+                      handleEdit={handleEdit}
+                      handleRemove={handleRemove}
+                      filteredParticipants={filteredParticipants}
+                      refetchPop={refetchPop}
+                      handleAttendance={handleAttendance}
+                      pop={pop}
+                      group={grp} // Changed to use `grp` instead of `group` to match the map variable
+                    />
+                  ));
+                })}
             </tbody>
           </Table>
         </div>

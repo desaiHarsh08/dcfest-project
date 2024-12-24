@@ -103,7 +103,13 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 .findById(eventModel.getAvailableEvent().getId()).orElseThrow(
                         () -> new IllegalArgumentException(
                                 "Invalid `AVAILABLE_EVENT` id provided: " + eventModel.getAvailableEvent().getId()));
+
+        if (availableEventModel.isCloseRegistration()) {
+            throw new IllegalArgumentException("Registrations are now closed. Please contact the host college!");
+        }
+
         eventModel.setAvailableEvent(availableEventModel);
+
 
         List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(availableEventModel);
 
@@ -211,7 +217,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         }
         else {
             System.out.println("in otse, groups: " + groups);
-            count = groups.stream().filter(grp -> grp.contains(collegeModel.getIcCode() + "_OTSE")).toList().size();
+            count = groups.stream().filter(grp -> grp.contains("_OTSE")).toList().size();
             group = collegeModel.getIcCode() + "_OTSE_" + String.format("%02d", count + 1);
         }
 

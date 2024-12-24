@@ -348,7 +348,7 @@ public class AuthController {
         if (otpRequest.getEmail() != null) { // Send email
             emailServices.senOTP(otpRequest.getEmail(), "User", otp);
         } else if (otpRequest.getPhone() != null) { // Send phone
-            List<String> messageArr = new ArrayList<>();
+            List<Object> messageArr = new ArrayList<>();
             messageArr.add(otp.toString());
             this.whatsAppService.sendWhatsAppMessage(
                     otpRequest.getPhone(),

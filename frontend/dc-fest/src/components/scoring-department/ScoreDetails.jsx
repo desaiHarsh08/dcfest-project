@@ -22,7 +22,8 @@ const ScoreDetails = ({ selectedCategory, selectedAvailableEvent, selectedRound 
           <strong>
             <BsBuilding /> DEPARTMENT :
           </strong>
-          <span>{selectedAvailableEvent?.title}</span>
+          {/* <span>{selectedAvailableEvent?.title}</span> */}
+          <span className="mx-2">{selectedCategory?.name}</span>
         </div>
         <div className="col">
           <strong>
@@ -35,13 +36,14 @@ const ScoreDetails = ({ selectedCategory, selectedAvailableEvent, selectedRound 
           <strong>
             <BsCalendar /> EVENT NAME :
           </strong>
-          <span>{selectedCategory?.name}</span>
+          {/* <span>{selectedCategory?.name}</span> */}
+            <span className="mx-2">{selectedAvailableEvent?.title}</span>
         </div>
         <div className="col">
           <strong>
             <BsCalendar /> EVENT DATE :
           </strong>
-          <span>{formatDateTime(selectedRound?.startTime)}</span>
+          <span className="mx-2">{formatDateTime(selectedRound?.startTime)}</span>
         </div>
       </div>
       <div className="row">
@@ -49,7 +51,7 @@ const ScoreDetails = ({ selectedCategory, selectedAvailableEvent, selectedRound 
           <strong>
             <BsGeoAlt /> EVENT VENUE :
           </strong>
-          <span>{selectedRound?.venue}</span>
+          <span className="mx-2">{selectedRound?.venue}</span>
         </div>
       </div>
     </div>
