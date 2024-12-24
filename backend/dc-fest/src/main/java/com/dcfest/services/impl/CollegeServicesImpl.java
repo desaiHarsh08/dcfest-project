@@ -128,6 +128,11 @@ public class CollegeServicesImpl implements CollegeServices {
         // Save the changes
         foundCollege = this.collegeRepository.save(foundCollege);
 
+        // Update the reps.
+        for(CollegeRepresentativeDto collegeRepresentativeDto: collegeDto.getRepresentatives()) {
+            this.collegeRepresentativeService.updateRepresentative(collegeRepresentativeDto);
+        }
+
         return this.collegeModelToDto(foundCollege);
     }
 
