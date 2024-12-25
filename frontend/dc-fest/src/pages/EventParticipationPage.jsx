@@ -6,7 +6,7 @@ import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import "../styles/EventParticipationPage.css"; // Import custom CSS
 import { fetchCategories } from "../services/categories-api";
-import { deleteParticipant, fetchParticipantsByEventId, updateParticipant } from "../services/participants-api";
+import { deleteParticipant, disableParticipation, fetchParticipantsByEventId, updateParticipant } from "../services/participants-api";
 import { fetchEventByAvailableEventId } from "../services/event-apis";
 import ParticipantRow from "../components/event-participation/ParticipantRow";
 import { fetchColleges } from "../services/college-apis";
@@ -54,7 +54,7 @@ const EventParticipationPage = () => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    if (!user?.type == "ADMIN" || !user?.type == "REGISTRATION_DESK") {
+    if (user?.type == "ATTENDANCE_DESK" || user?.type == "SCORE_SHEET_DESK" || user?.type == "SCORE_ENTRY_DESK") {
       navigate(-1);
     }
   }, [user, navigate]);
@@ -73,7 +73,10 @@ const EventParticipationPage = () => {
         .then((data) => {
           console.log(data);
           setColleges(data);
-          console.log("data.find((c) => c.id == 27)", data.find((c) => c.id == 27))
+          console.log(
+            "data.find((c) => c.id == 27)",
+            data.find((c) => c.id == 27)
+          );
           setSelectedCollege(data.find((c) => c.id == 27));
         })
         .catch((err) => {
@@ -367,7 +370,7 @@ const EventParticipationPage = () => {
     }
   };
 
-  return (colleges && categories && 
+  return (
     <Container fluid className="mt-4">
       <button onClick={() => navigate(-1)} style={{ marginBottom: "1rem" }} className="btn btn-secondary">
         Go Back
@@ -642,14 +645,17 @@ const EventParticipationPage = () => {
         />
       )}
 
-      <DisableTeamModal
-        showDisableTeamModal={showDisableTeamModal}
-        handleModalClose={() => setShowDisableTeamModal(false)}
-        participants={participants}
-        setParticipants={setParticipants}
-        filteredParticipants={filteredParticipants}
-        setFilteredParticipants={setFilteredParticipants}
-      />
+      {selectedAvailableEvent && (
+        <DisableTeamModal
+          selectedAvailableEvent={selectedAvailableEvent}
+          showDisableTeamModal={showDisableTeamModal}
+          handleModalClose={() => setShowDisableTeamModal(false)}
+          participants={participants}
+          setParticipants={setParticipants}
+          filteredParticipants={filteredParticipants}
+          setFilteredParticipants={setFilteredParticipants}
+        />
+      )}
     </Container>
   );
 };

@@ -61,7 +61,7 @@ const HomeDesk = () => {
       link: "college-rankings",
     },
     {
-      title: "Upload College Lists",
+      title: "Upload College List",
       icon: <FaUsers size={40} color="#ffffff" />,
       bgColor: "linear-gradient(135deg, #F2994A 0%, #F2C94C 100%)",
       imgSrc: upload,
@@ -104,22 +104,86 @@ const HomeDesk = () => {
       </div>
       <ParticipationStats />
       <Row className="d-flex justify-content-center align-items-stretch h-75">
-        {cardsData.map((card, index) => (
-          <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
-            <Link to={card.link} className="text-decoration-none h-100">
-              <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
-                <div className="card-overlay">
-                  <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
-                </div>
-                <Card.Body className="p-4">
-                  <div className="icon-container mb-3">{card.icon}</div>
-                  <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
-                  <Card.Text className="card-text text-white fw-bold fs-5">{card.description}</Card.Text>
-                </Card.Body>
-              </Card>
-            </Link>
-          </Col>
-        ))}
+        {cardsData.map((card, index) => {
+          if (
+            user?.type != "ADMIN" &&
+            (card.title == "Categories" || card.title == "College Rankings" || card.title == "Teams Ranking" || card.title == "Add Event" || card.title == "Upload College List")
+          ) {
+            return null;
+          }
+          if (card.title == "Get Reports" && (user?.type == "ADMIN" || user?.type == "REPORT_DESK")) {
+            return (
+              <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
+                <Link to={card.link} className="text-decoration-none h-100">
+                  <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
+                    <div className="card-overlay">
+                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                    </div>
+                    <Card.Body className="p-4">
+                      <div className="icon-container mb-3">{card.icon}</div>
+                      <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
+                      <Card.Text className="card-text text-white fw-bold fs-5">{card.description}</Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Link>
+              </Col>
+            );
+          }
+          if (card.title == "Scoring Department" && (user?.type == "ADMIN" || user?.type == "SCORE_SHEET_DESK" || user?.type == "SCORE_ENTRY_DESK")) {
+            return (
+              <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
+                <Link to={card.link} className="text-decoration-none h-100">
+                  <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
+                    <div className="card-overlay">
+                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                    </div>
+                    <Card.Body className="p-4">
+                      <div className="icon-container mb-3">{card.icon}</div>
+                      <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
+                      <Card.Text className="card-text text-white fw-bold fs-5">{card.description}</Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Link>
+              </Col>
+            );
+          }
+          if (card.title == "Event Desk" && (user?.type == "ADMIN" || user?.type == "ATTENDANCE_DESK" || user?.type == "REGISTRATION_DESK")) {
+            return (
+              <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
+                <Link to={card.link} className="text-decoration-none h-100">
+                  <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
+                    <div className="card-overlay">
+                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                    </div>
+                    <Card.Body className="p-4">
+                      <div className="icon-container mb-3">{card.icon}</div>
+                      <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
+                      <Card.Text className="card-text text-white fw-bold fs-5">{card.description}</Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Link>
+              </Col>
+            );
+          }
+          if (user?.type == "ADMIN") {
+            return (
+              <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
+                <Link to={card.link} className="text-decoration-none h-100">
+                  <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
+                    <div className="card-overlay">
+                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                    </div>
+                    <Card.Body className="p-4">
+                      <div className="icon-container mb-3">{card.icon}</div>
+                      <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
+                      <Card.Text className="card-text text-white fw-bold fs-5">{card.description}</Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Link>
+              </Col>
+            );
+          }
+        })}
       </Row>
     </div>
   );

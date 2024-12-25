@@ -1,7 +1,17 @@
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../providers/AuthProvider";
+import { useContext, useEffect } from "react";
 
 const TeamsRankingPage = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user?.type != "ADMIN") {
+      navigate(-1);
+    }
+  }, [user, navigate]);
+
   return (
     <div>
       <button

@@ -27,11 +27,7 @@ const EventAttendancePage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user?.type == "REGISTRATION_DESK") {
-      navigate("/home/event-desk/registration", { replace: true });
-    }
-    
-    if (!user?.type == "ADMIN" || !user?.type == "ATTENDANCE_DESK") {
+    if (user?.type == "REGISTRATION_DESK" || user?.type == "SCORE_SHEET_DESK" || user?.type == "SCORE_ENTRY_DESK") {
       navigate(-1);
     }
   }, [user, navigate]);

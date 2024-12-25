@@ -33,7 +33,11 @@ const Login = () => {
           alert("Unable to do login... Please try again...!");
         }
       } else {
-        navigate(`/home`, { replace: true });
+        if (user?.disabled == true) {
+          alert("Your account has been suspended. Please contact the host college!");
+        } else {
+          navigate(`/home`, { replace: true });
+        }
       }
     } catch (error) {
       alert("Please provide the valid credentials!");

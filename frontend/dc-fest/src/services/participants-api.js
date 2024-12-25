@@ -82,8 +82,8 @@ export const deleteParticipant = async (id) => {
     return response.data;
 };
 
-export const disableParticipation = async (group, status) => {
-    const response = await API.get(`/api/participants/disable-participation?group=${group}&status=${status}`, {
+export const disableParticipation = async (group, eventId, status) => {
+    const response = await API.get(`/api/participants/disable-participation?group=${group}&status=${status}&eventId=${eventId}`, {
         withCredentials: true
     });
 

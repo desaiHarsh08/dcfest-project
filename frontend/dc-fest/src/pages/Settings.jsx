@@ -1,14 +1,24 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import { createUser, fetchUsers } from "../services/auth-apis";
 import UserForm from "../components/settings/UserForm";
-import Pagination from "../components/globals/Pagination";
 import UserList from "../components/settings/UserList";
 import { useDispatch } from "react-redux";
 import { toggleLoading } from "../app/slices/toggleLoadingSlice";
 import { toggleRefetch } from "../app/slices/toggleRefetchSlice";
+import { AuthContext } from "../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user?.type != "ADMIN") {
+      navigate(-1);
+    }
+  }, [user, navigate]);
+
   const dispatch = useDispatch();
 
   const [users, setUsers] = useState([]);
@@ -17,38 +27,50 @@ const Settings = () => {
     email: "",
     password: "",
     phone: "",
+    whatsappNumber: "",
     type: "ADMIN",
-  });
-  const [pageData, setPageData] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    pageSize: 100,
-    totalUsers: 0,
+    disabled: false,
   });
 
   useEffect(() => {
-    fetchUsers(pageData.currentPage)
-      .then((data) => {
-        setUsers(data.content);
-        setPageData({
-          currentPage: data.pageNumber,
-          totalPages: data.totalPages,
-          pageSize: data.pageSize,
-          totalUsers: data.totalRecords,
-        });
-      })
-      .catch((err) => console.log(err));
-  }, [pageData.currentPage]);
+    getUsers();
+  }, []);
+
+  const getUsers = async () => {
+    try {
+      const response = await fetchUsers(1);
+      let newUsers = response.content;
+      newUsers = newUsers.map((user) => {
+        user.password = null;
+        return user;
+      });
+      setUsers(newUsers);
+      setUsers(response.content);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleSaveNewUser = async () => {
+    if (newUser.name == "" || newUser.password == "" || newUser.email == "") {
+      alert("Please provide the valid details!");
+      return;
+    }
+    if (users.some((user) => user.email == newUser.email)) {
+      alert("This account already exist!");
+      return;
+    }
     dispatch(toggleLoading());
     try {
       const response = await createUser(newUser);
       console.log(response);
+      alert("New user created!");
     } catch (err) {
       console.log(err);
+      alert(err.response.data.message);
     } finally {
       dispatch(toggleLoading());
+      getUsers();
     }
     dispatch(toggleRefetch());
   };
@@ -60,15 +82,8 @@ const Settings = () => {
 
   return (
     <Container className="mt-5">
-      <h1 className="text-center mb-4">Settings</h1>
-      <UserForm
-        formType="ADD"
-        user={newUser}
-        onUserChange={handleUserChange}
-        onSave={handleSaveNewUser}
-      />
+      <UserForm formType="ADD" user={newUser} onUserChange={handleUserChange} onSave={handleSaveNewUser} />
       <UserList setUsers={setUsers} users={users} />
-      <Pagination pageData={pageData} setPageData={setPageData} />
     </Container>
   );
 };

@@ -30,16 +30,15 @@ const GetReports = () => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    if (!user?.type == "ADMIN") {
+    if (!user?.type == "ADMIN" || !user?.type == "REPORT_DESK") {
       navigate(-1);
     }
   }, [user, navigate]);
 
-
   useEffect(() => {
     fetchAvailableEvents()
       .then((data) => {
-        console.log("availableEvents:", data);
+        // console.log("availableEvents:", data);
         setAvailableEvents(data);
       })
       .catch((err) => console.log("Error while fetching available events", err));
@@ -48,7 +47,7 @@ const GetReports = () => {
   useEffect(() => {
     fetchEvents()
       .then((data) => {
-        console.log("events:", data);
+        // console.log("events:", data);
         setEvents(data);
       })
       .catch((err) => console.log("Error while fetching events", err));
@@ -58,7 +57,7 @@ const GetReports = () => {
     fetchColleges()
       .then((data) => {
         setColleges(data);
-        console.log("College data is coming...", data);
+        // console.log("College data is coming...", data);
       })
       .catch((err) => {
         console.log(err);
@@ -68,7 +67,7 @@ const GetReports = () => {
   useEffect(() => {
     fetchCategories()
       .then((data) => {
-        console.log("categories:", data);
+        // console.log("categories:", data);
         setCategories(data);
       })
       .catch((err) => console.log("Error while fetching events", err));
@@ -134,16 +133,16 @@ const GetReports = () => {
     setIsDownloading(true);
     setCurrentCollege(0);
     try {
-      console.log("here");
+    //   console.log("here");
       const response = await fetchAllParticipations();
-      console.log(response);
+    //   console.log(response);
       const doneColleges = [];
       let formattedArr = [];
       for (let i = 0, c = 0; i < response.length; i++) {
         if (doneColleges.includes(response[i].collegeId)) {
           continue;
         }
-        console.log("done:", response[i].collegeId);
+        // console.log("done:", response[i].collegeId);
         const tmpCollegeParticipations = response.filter((ele) => ele.collegeId == response[i].collegeId);
         for (let j = 0; j < tmpCollegeParticipations.length; j++) {
           const participants = await getParticipants(tmpCollegeParticipations[j]);
@@ -172,15 +171,15 @@ const GetReports = () => {
               participants: participants.length,
             };
             formattedArr.push(obj);
-            console.log(obj);
+            // console.log(obj);
           } else {
             const tmpArr = handleFormatData(participants, formattedArr.length);
-            console.log(tmpArr);
+            // console.log(tmpArr);
             formattedArr = [...formattedArr, ...tmpArr];
           }
         }
 
-        console.log("done:", response[i].collegeId);
+        // console.log("done:", response[i].collegeId);
         doneColleges.push(response[i].collegeId);
         setCurrentCollege(doneColleges.length);
       }
@@ -220,7 +219,7 @@ const GetReports = () => {
               </Button>
               {isDownloading && (
                 <p>
-                  Colleges: {currentCollege}/{colleges.length}
+                  Colleges: {currentCollege}/{colleges.filter((c) => c.detailsUploaded == true).length}
                 </p>
               )}
             </Card.Body>

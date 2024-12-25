@@ -11,7 +11,7 @@ const EventRegistrationPage = () => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    if (!user?.type == "ADMIN" || !user?.type == "REGISTRATION_DESK") {
+    if (user?.type == "ATTENDANCE_DESK" || user?.type == "SCORE_SHEET_DESK" || user?.type == "SCORE_ENTRY_DESK") {
       navigate(-1);
     }
   }, [user, navigate]);

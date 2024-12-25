@@ -1,0 +1,48 @@
+.user-row {
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-row:hover {
+    background-color: #f9f9f9; /* Light hover effect for rows */
+  }
+  
+  .badge-admin {
+    background-color: #6a1b9a; /* Violet */
+    color: white;
+  }
+  
+  .badge-registration {
+    background-color: #3f51b5; /* Indigo */
+    color: white;
+  }
+  
+  .badge-attendance {
+    background-color: #2196f3; /* Blue */
+    color: white;
+  }
+  
+  .badge-report {
+    background-color: #4caf50; /* Green */
+    color: white;
+  }
+  
+  .badge-score-sheet {
+    background-color: #f44336; /* Red */
+    color: white;
+  }
+  
+  .badge-score-entry {
+    background-color: #ff9800; /* Orange */
+    color: white;
+  }
+  
+  .badge-default {
+    background-color: #9e9e9e; /* Grey for unknown types */
+    color: white;
+  }
+  
+  .badge {
+    font-size: 0.875rem;
+    padding: 0.5em 0.75em;
+  }
+  

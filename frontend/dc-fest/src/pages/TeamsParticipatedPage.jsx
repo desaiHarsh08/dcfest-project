@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import * as XLSX from "xlsx";
 import { createCollege, fetchColleges } from "../services/college-apis";
 import CollegeList from "../components/teams-participated/CollegeList";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../providers/AuthProvider";
 
 const TeamsParticipatedPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -11,6 +12,14 @@ const TeamsParticipatedPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user?.type != "ADMIN") {
+      navigate(-1);
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     setLoading(true)
     fetchColleges()

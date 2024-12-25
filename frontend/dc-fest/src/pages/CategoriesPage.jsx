@@ -5,17 +5,27 @@ import { fetchCategories } from "../services/categories-api";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../styles/CategoriesPage.css";
 import { useDispatch } from "react-redux";
-import { setCategories as reduxSetCategories } from "../app/slices/categoriesSlice"
+import { setCategories as reduxSetCategories } from "../app/slices/categoriesSlice";
 import { AuthContext } from "../providers/AuthProvider";
 
 const CategoriesPage = () => {
   const { iccode } = useParams();
+
+  const { user } = useContext(AuthContext);
+
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
   const [categories, setCategories] = useState();
 
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!iccode && user?.type != "ADMIN") {
+      navigate(-1);
+    }
+  }, [user, navigate, iccode]);
 
   useEffect(() => {
     fetchCategories()

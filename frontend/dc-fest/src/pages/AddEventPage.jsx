@@ -68,7 +68,7 @@ const AddEventPage = () => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    if (!user?.type == "ADMIN") {
+    if (user?.type != "ADMIN") {
       navigate(-1);
     }
   }, [user, navigate]);
