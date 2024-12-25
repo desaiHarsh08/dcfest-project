@@ -62,5 +62,8 @@ public class EventModel {
                 '}';
     }
 
+    public EventModel(Long id) {
+        this.id = id;
+    }
 
 }

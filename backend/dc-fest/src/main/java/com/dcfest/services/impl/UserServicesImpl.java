@@ -148,10 +148,12 @@ public class UserServicesImpl implements UserServices {
                 () -> new ResourceNotFoundException("No `USER` exist for id: " + userDto.getId()));
         // Update the fields
         foundUserModel.setName(userDto.getName());
+        foundUserModel.setDisabled(userDto.isDisabled());
         foundUserModel.setEmail(userDto.getEmail());
         foundUserModel.setPhone(userDto.getPhone());
         foundUserModel.setType(userDto.getType());
         foundUserModel.setWhatsappNumber(userDto.getWhatsappNumber());
+        foundUserModel.setPassword(this.bCryptPasswordEncoder.encode(userDto.getPassword()));
         // Save the changes
         foundUserModel = this.userRepository.save(foundUserModel);
 

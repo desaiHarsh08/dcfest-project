@@ -48,7 +48,7 @@ public interface ParticipantRepository extends JpaRepository<ParticipantModel, L
 
     @Query("SELECT COUNT(DISTINCT p.college.id) " +
             "FROM ParticipantModel p JOIN p.events e " +
-            "WHERE e.id = :eventId")
+            "WHERE e.id = :eventId AND p.disableParticipation = false")
     Long countDistinctCollegesForEvent(@Param("eventId") Long eventId);
 
 

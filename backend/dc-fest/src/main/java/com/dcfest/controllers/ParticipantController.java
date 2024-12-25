@@ -104,9 +104,9 @@ public class ParticipantController {
     }
 
     @GetMapping("/disable-participation")
-    public ResponseEntity<?> disableParticipation(@RequestParam String group, @RequestParam boolean status) {
+    public ResponseEntity<?> disableParticipation(@RequestParam String group, @RequestParam Long eventId,  @RequestParam boolean status) {
         return new ResponseEntity<>(
-                participantServices.disableParticipation(group, status),
+                participantServices.disableParticipation(group, eventId, status),
                 HttpStatus.OK
         );
     }

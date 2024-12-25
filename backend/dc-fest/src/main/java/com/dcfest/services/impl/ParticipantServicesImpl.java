@@ -807,11 +807,14 @@ public class ParticipantServicesImpl implements ParticipantServices {
         return participantDto;
     }
 
-    public boolean disableParticipation(String group, boolean status) {
+    public boolean disableParticipation(String group, Long eventId, boolean status) {
         List<ParticipantModel> participantModels = this.participantRepository.findByGroup(group);
         for (ParticipantModel participantModel: participantModels) {
-            participantModel.setDisableParticipation(status);
-            this.participantRepository.save(participantModel);
+            if (participantModel.getEvents().contains(new EventModel(eventId))) {
+                participantModel.setDisableParticipation(status);
+                this.participantRepository.save(participantModel);
+            }
+
         }
 
         return true;

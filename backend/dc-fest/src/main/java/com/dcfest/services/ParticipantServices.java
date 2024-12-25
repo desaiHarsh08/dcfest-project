@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ParticipantServices {
 
-    boolean disableParticipation(String group, boolean status);
+    boolean disableParticipation(String group, Long eventId, boolean status);
 
     boolean correctGroupNameForParticipants();
 
