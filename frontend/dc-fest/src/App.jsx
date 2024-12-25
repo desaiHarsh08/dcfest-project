@@ -29,6 +29,8 @@ import { AuthProvider } from "./providers/AuthProvider";
 import AddParticipantByCollege from "./pages/AddParticipantByCollege";
 import CollegeSettings from "./pages/CollegeSettings";
 import GetReports from "./pages/GetReports";
+import ScoreSheetPage from "./pages/ScoreSheetPage";
+import ScoreEntryPage from "./pages/ScoreEntryPage";
 
 const router = createBrowserRouter([
   {
@@ -161,7 +163,15 @@ const router = createBrowserRouter([
       { path: "college-rankings", element: <CollegeRankingPage /> },
       { path: "teams-ranking", element: <TeamsRankingPage /> },
       { path: "get-reports", element: <GetReports /> },
-      { path: "scoring-department", element: <ScoringDepartment /> },
+      {
+        path: "scoring-department",
+        element: <Outlet />,
+        children: [
+          { path: "", element: <ScoringDepartment /> },
+          { path: "score-sheet", element: <ScoreSheetPage /> },
+          { path: "score-entry", element: <ScoreEntryPage /> },
+        ],
+      },
     ],
   },
 ]);

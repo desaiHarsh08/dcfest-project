@@ -20,7 +20,6 @@ import { closeAvailableEvent, updateAvailableEvent } from "../services/available
 import DisableTeamModal from "../components/event-participation/DisableTeamModal";
 import { AuthContext } from "../providers/AuthProvider";
 
-
 const EventParticipationPage = () => {
   const navigate = useNavigate();
   //   const [confirmParticipation, setConfirmParticipation] = useState(false);
@@ -74,7 +73,8 @@ const EventParticipationPage = () => {
         .then((data) => {
           console.log(data);
           setColleges(data);
-          setSelectedCollege(data[0]);
+          console.log("data.find((c) => c.id == 27)", data.find((c) => c.id == 27))
+          setSelectedCollege(data.find((c) => c.id == 27));
         })
         .catch((err) => {
           console.log(err);
@@ -88,16 +88,16 @@ const EventParticipationPage = () => {
     }
   }, [filteredParticipants]);
 
-//   useEffect(() => {
-//     if (selectedAvailableEvent && selectedCollege) {
-//       fetchParticipationByCollegeIdAndAvailableEventId(selectedCollege.id, selectedAvailableEvent.id)
-//         .then((data) => {
-//           console.log("college_participation:", data);
-//           setCollegeParticipation(data);
-//         })
-//         .catch((err) => console.log(err));
-//     }
-//   }, [selectedAvailableEvent, selectedCollege]);
+  //   useEffect(() => {
+  //     if (selectedAvailableEvent && selectedCollege) {
+  //       fetchParticipationByCollegeIdAndAvailableEventId(selectedCollege.id, selectedAvailableEvent.id)
+  //         .then((data) => {
+  //           console.log("college_participation:", data);
+  //           setCollegeParticipation(data);
+  //         })
+  //         .catch((err) => console.log(err));
+  //     }
+  //   }, [selectedAvailableEvent, selectedCollege]);
 
   useEffect(() => {
     if (selectedCollege && participants.length > 0) {
@@ -138,6 +138,7 @@ const EventParticipationPage = () => {
             const firstEvent = firstCategory.availableEvents[0];
             setEventFilter(firstEvent.id);
             setAvailableEvent(firstEvent);
+            setSelectedCollege(colleges.find((c) => c.id == 27));
             setSelectedRound(firstEvent.rounds[0]);
           }
         }
@@ -162,7 +163,7 @@ const EventParticipationPage = () => {
       setParticipants(response);
       console.log(`response for eventFilter: ${eventFilter}, participants:`, response);
       if (response.length > 0) {
-        setSelectedCollege(colleges.find((c) => c.id == response[0].collegeId));
+        setSelectedCollege(colleges.find((c) => c.id == 27));
       }
     } catch (err) {
       console.error("Error fetching participants:", err);
@@ -366,7 +367,7 @@ const EventParticipationPage = () => {
     }
   };
 
-  return (
+  return (colleges && categories && 
     <Container fluid className="mt-4">
       <button onClick={() => navigate(-1)} style={{ marginBottom: "1rem" }} className="btn btn-secondary">
         Go Back
@@ -390,6 +391,7 @@ const EventParticipationPage = () => {
               const firstEvent = tmpSelectedCategory.availableEvents[0];
               setEventFilter(firstEvent.id);
               setAvailableEvent(firstEvent);
+              setSelectedCollege(colleges.find((c) => c.id == 27));
               setSelectedRound(firstEvent.rounds[0]);
             }
           }}
@@ -409,6 +411,7 @@ const EventParticipationPage = () => {
 
             const tmpAvailableEvent = selectedCategory?.availableEvents?.find((ele) => ele.id == e.target.value);
             setAvailableEvent(tmpAvailableEvent);
+            setSelectedCollege(colleges.find((c) => c.id == 27));
             setSelectedRound(tmpAvailableEvent.rounds[0]);
           }}
         >
@@ -440,7 +443,7 @@ const EventParticipationPage = () => {
         {selectedCollege && participants.length > 0 && (
           <Form.Select
             className="event-dropdown me-2"
-            value={selectedCollege ? selectedCollege?.id : colleges[0].id}
+            value={selectedCollege.id}
             onChange={(e) => {
               const tmpCollege = colleges.find((c) => c.id == e.target.value);
               console.log("on changing, tmpCollege:", tmpCollege);
@@ -639,7 +642,14 @@ const EventParticipationPage = () => {
         />
       )}
 
-      <DisableTeamModal showDisableTeamModal={showDisableTeamModal} handleModalClose={() => setShowDisableTeamModal(false)} participants={participants} setParticipants={setParticipants} filteredParticipants={filteredParticipants} setFilteredParticipants={setFilteredParticipants} />
+      <DisableTeamModal
+        showDisableTeamModal={showDisableTeamModal}
+        handleModalClose={() => setShowDisableTeamModal(false)}
+        participants={participants}
+        setParticipants={setParticipants}
+        filteredParticipants={filteredParticipants}
+        setFilteredParticipants={setFilteredParticipants}
+      />
     </Container>
   );
 };

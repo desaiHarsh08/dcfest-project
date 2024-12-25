@@ -7,7 +7,7 @@ import { markAttendanceForParticipant, scanQrcode } from "../services/attendance
 import { FaClipboardList, FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { AuthContext } from "../providers/AuthProvider";
-import { useNavigate } from "react-router-dom";
+import { replace, useNavigate } from "react-router-dom";
 const EventAttendancePage = () => {
   const [scannedData, setScannedData] = useState(null);
   const [attendanceMarked, setAttendanceMarked] = useState(false);
@@ -27,6 +27,10 @@ const EventAttendancePage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (user?.type == "REGISTRATION_DESK") {
+      navigate("/home/event-desk/registration", { replace: true });
+    }
+    
     if (!user?.type == "ADMIN" || !user?.type == "ATTENDANCE_DESK") {
       navigate(-1);
     }
@@ -82,7 +86,7 @@ const EventAttendancePage = () => {
     try {
       console.log("qrdata:", data);
       const response = await scanQrcode(data);
-      console.log(response)
+      console.log(response);
       setScannedQrcodeResponse(response);
       const tmpPresentIds = [];
       for (let i = 0; i < response.participants.length; i++) {
