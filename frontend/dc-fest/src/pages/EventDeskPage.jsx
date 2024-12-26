@@ -52,7 +52,7 @@ const EventDeskPage = () => {
         )}
 
         {/* Card for Attendance */}
-        {(user?.type == "ADMIN" || user?.type == "ATTENDANCE_DESK") && (
+        {(user?.type == "ADMIN" || user?.type == "ATTENDANCE_DESK" || user?.type == "REGISTRATION_DESK") && (
           <Col xs={12} sm={6} md={4} lg={3} className="mb-4 d-flex justify-content-center">
             <Card className="event-card shadow animate-card h-100 w-100">
               <Card.Img

@@ -39,17 +39,18 @@ public class ScoreCardController {
         return ResponseEntity.ok(scoreCard);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteScoreCardById(@PathVariable Long id) {
+        return new ResponseEntity<>(scoreCardService.deleteScoreCard(id), HttpStatus.OK);
+    }
+
     @GetMapping
     public ResponseEntity<List<ScoreCardDto>> getAllScoreCards() {
         List<ScoreCardDto> scoreCards = scoreCardService.getAllScoreCards();
         return ResponseEntity.ok(scoreCards);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteScoreCard(@PathVariable Long id) {
-        scoreCardService.deleteScoreCard(id);
-        return ResponseEntity.noContent().build();
-    }
+
 
     @PostMapping("/promote-team")
     public ResponseEntity<ScoreCardDto> handlePromoteTeam(@RequestBody ScoreCardDto scoreCardDto) {
