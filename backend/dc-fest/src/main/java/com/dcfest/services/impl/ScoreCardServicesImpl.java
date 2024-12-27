@@ -331,6 +331,13 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
     }
 
     @Override
+    public ScoreCardDto getScoreCardByTeamNumberAndRoundId(String teamNumber, Long roundId) {
+        ScoreCardModel scoreCardModel = this.scoreCardRepository.findByTeamNumberAndRound(teamNumber, new RoundModel(roundId)).orElse(null);
+        System.out.println(scoreCardModel);
+        return this.mapToDto(scoreCardModel);
+    }
+
+    @Override
     public ScoreCardDto handlePromoteTeam(ScoreCardDto scoreCardDto) {
 
         ScoreCardModel scoreCardModel = this.scoreCardRepository.findById(scoreCardDto.getId()).orElseThrow(

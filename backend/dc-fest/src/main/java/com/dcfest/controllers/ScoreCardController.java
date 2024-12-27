@@ -50,6 +50,10 @@ public class ScoreCardController {
         return ResponseEntity.ok(scoreCards);
     }
 
+    @GetMapping("/team-round")
+    public ResponseEntity<?> getScoreCardByTeamNumberAndRound(@RequestParam String teamNumber, @RequestParam Long roundId) {
+        return new ResponseEntity<>(scoreCardService.getScoreCardByTeamNumberAndRoundId(teamNumber, roundId), HttpStatus.OK);
+    }
 
 
     @PostMapping("/promote-team")

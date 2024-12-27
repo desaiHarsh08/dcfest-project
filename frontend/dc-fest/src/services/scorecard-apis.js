@@ -9,6 +9,14 @@ export const getScoreCardSheet = async (availableEventId, roundId) => {
     return response.data;
 };
 
+export const getAllScoreCards = async () => {
+    const response = await API.get(`/api/scorecards`, {
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
 export const handlePromoteTeam = async (scorecard) => {
     const response = await API.post(`/api/scorecards/promote-team`, scorecard, {
         withCredentials: true,
@@ -22,6 +30,14 @@ export const updateTeam = async (scorecard) => {
     const response = await API.put(`/api/scorecards/${scorecard.id}`, scorecard, {
         withCredentials: true,
         responseType: 'arraybuffer',
+    });
+
+    return response.data;
+};
+
+export const getScoreCardTeamByTeamNumberAndRoundId = async (teamNumber, roundId) => {
+    const response = await API.get(`/api/scorecards/team-round?teamNumber=${teamNumber}&roundId=${roundId}`, {
+        withCredentials: true,
     });
 
     return response.data;

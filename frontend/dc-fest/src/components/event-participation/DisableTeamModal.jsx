@@ -144,33 +144,50 @@ const DisableTeamModal = ({ showDisableTeamModal, selectedAvailableEvent, handle
   const handleDisableParticipation = async () => {
     const updatedTeams = [...teams];
 
+    let resEvent;
+    try {
+      resEvent = await fetchEventByAvailableEventId(selectedAvailableEvent.id);
+      console.log("resEvent:", resEvent);
+      setEvent(resEvent);
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log("teams:", teams);
     for (let i = 0; i < teams.length; i++) {
       try {
         console.log("teams[i]:", teams[i]);
-        const response = await disableParticipation(teams[i].group, event.id, teams[i].status);
+        console.log("resEvent.id:", resEvent.id);
+        const response = await disableParticipation(teams[i].group, resEvent.id, teams[i].status);
         console.log("response, disable", response);
 
         // Update the team status in the local `updatedTeams` array
         updatedTeams[i].status = teams[i].status;
-
-        // Update filtered participants
-        setFilteredParticipants((prev) => prev.map((participant) => (participant.group === teams[i].group ? { ...participant, disableParticipation: teams[i].status } : participant)));
-
-        // Update all participants
-        setParticipants((prev) =>
-          prev.map((participant) =>
-            participant.group === teams[i].group && filteredParticipants.some((ele) => ele.id === participant.id) ? { ...participant, disableParticipation: teams[i].status } : participant
-          )
-        );
       } catch (error) {
         console.log(error);
         alert("Error removing participation");
         break;
       }
     }
+    console.log("updatedTeams:", updatedTeams);
+
+    let tmpParticipants = [...participants];
+    let tmpFilteredParticipants = [...filteredParticipants];
+    for (let i = 0; i < teams.length; i++) {
+      // Update filtered participants
+      tmpFilteredParticipants = tmpFilteredParticipants.map((participant) => (participant.group === teams[i].group ? { ...participant, disableParticipation: teams[i].status } : participant));
+
+      // Update all participants
+      tmpParticipants = tmpParticipants.map((participant) =>
+        participant.group === teams[i].group && filteredParticipants.some((ele) => ele.id === participant.id) ? { ...participant, disableParticipation: teams[i].status } : participant
+      );
+    }
 
     // Reassign updated teams to state
     setTeams(updatedTeams);
+
+    setParticipants(tmpParticipants);
+    setFilteredParticipants(tmpFilteredParticipants);
 
     handleModalClose();
   };

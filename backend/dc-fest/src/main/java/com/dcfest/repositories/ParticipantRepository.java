@@ -29,6 +29,9 @@ public interface ParticipantRepository extends JpaRepository<ParticipantModel, L
     @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId AND p.college.id = :collegeId")
     List<ParticipantModel> findByEvent_IdAndCollegeId(@Param("eventId") Long eventId, @Param("collegeId") Long collegeId);
 
+    @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId AND p.group = :group")
+    List<ParticipantModel> findByEvent_IdAndGroup(@Param("eventId") Long eventId, @Param("group") String group);
+
     @Query("SELECT p FROM ParticipantModel p JOIN p.events e WHERE e.id = :eventId AND p.college.id = :collegeId AND p.group = :group")
     List<ParticipantModel> findByEvent_IdAndCollegeIdAndGroup(@Param("eventId") Long eventId, @Param("collegeId") Long collegeId, @Param("group") String group);
 

@@ -808,13 +808,15 @@ public class ParticipantServicesImpl implements ParticipantServices {
     }
 
     public boolean disableParticipation(String group, Long eventId, boolean status) {
-        List<ParticipantModel> participantModels = this.participantRepository.findByGroup(group);
+        System.out.println("event id: " + eventId);
+        System.out.println("status: " + status);
+        System.out.println("group: " + group);
+        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndGroup(eventId, group);
         for (ParticipantModel participantModel: participantModels) {
-            if (participantModel.getEvents().contains(new EventModel(eventId))) {
-                participantModel.setDisableParticipation(status);
-                this.participantRepository.save(participantModel);
-            }
-
+            System.out.println(participantModel.getEvents());
+            participantModel.setDisableParticipation(status);
+            System.out.println("saving participant: " + participantModel.getDisableParticipation());
+            this.participantRepository.save(participantModel);
         }
 
         return true;

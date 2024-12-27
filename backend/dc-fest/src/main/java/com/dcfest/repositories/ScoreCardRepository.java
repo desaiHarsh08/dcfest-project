@@ -18,4 +18,6 @@ public interface ScoreCardRepository extends JpaRepository<ScoreCardModel, Long>
 
     List<ScoreCardModel> findByRound(RoundModel round);
 
+    Optional<ScoreCardModel> findByTeamNumberAndRound(String teamNumber, RoundModel round);
+
 }

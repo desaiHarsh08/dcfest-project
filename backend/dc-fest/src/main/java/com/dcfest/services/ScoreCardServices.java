@@ -16,6 +16,8 @@ public interface ScoreCardServices {
 
     List<ScoreCardDto> getScoreCardsByRoundId(Long id);
 
+    ScoreCardDto getScoreCardByTeamNumberAndRoundId(String teamNumber, Long roundId);
+
     List<ScoreCardDto> getAllScoreCards();
 
     boolean deleteScoreCard(Long id);
