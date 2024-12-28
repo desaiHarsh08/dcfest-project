@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 
 import { Button, Table } from "react-bootstrap";
-import { handlePromoteTeam } from "../../services/scorecard-apis";
+import { getCollegeParticipationForScoreCard, handlePromoteTeam } from "../../services/scorecard-apis";
 
 const ScoreEntryTable = ({ selectedAvailableEvent, selectedRound, selectedCategory, teams, setTeams }) => {
   console.log("selectedRound:", selectedRound);
@@ -68,6 +68,12 @@ const ScoreEntryTable = ({ selectedAvailableEvent, selectedRound, selectedCatego
         return;
       }
     }
+
+    let isConfirmed = confirm('Are you sure that you want to save the rankings?');
+    if (!isConfirmed) {
+        return;
+    }
+
     for (let i = 0; i < teams.length; i++) {
       try {
         console.log(teams[i]);
@@ -77,6 +83,15 @@ const ScoreEntryTable = ({ selectedAvailableEvent, selectedRound, selectedCatego
         console.log("Error in promoting team");
       }
     }
+
+    getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedRound.id)
+        .then((data) => {
+          console.log("fetching data for first round:", data);
+          data.sort((a, b) => a.slot - b.slot);
+          setTeams(data);
+        })
+        .catch((err) => console.log(err));
+
     alert("Data saved successfully!");
   };
 

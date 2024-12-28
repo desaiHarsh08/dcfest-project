@@ -6,7 +6,7 @@ import EditModal from "../components/event/EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
 import ConfirmationModal from "../components/event/ConfirmationModal";
-import { deleteAvailableEvent, updateAvailableEvent } from "../services/available-events-apis";
+import { closeAvailableEvent, deleteAvailableEvent } from "../services/available-events-apis";
 
 const EventPage = () => {
   const { eventSlug } = useParams();
@@ -77,25 +77,42 @@ const EventPage = () => {
     }
   };
 
-  const handleCloseRegistration = async () => {
+  const handleCloseRegistration = async (event) => {
     setIsLoading(true);
+    const newAvailableEvent = { ...event, closeRegistration: true };
     try {
-      const newEvent = { ...event };
-      if (newEvent.closeRegistration) {
-        newEvent.closeRegistration = false;
-      } else {
-        newEvent.closeRegistration = true;
-      }
-      const response = await updateAvailableEvent(newEvent);
-      console.log("closed registration:", response);
-      setEvent(newEvent);
+      const response = await closeAvailableEvent(newAvailableEvent.id);
+      console.log("closed reg, response:", response);
+      setEvent(newAvailableEvent);
+      alert("Registration closed successfully.");
     } catch (error) {
       console.log(error);
+      alert("Oops! Unable to close the registration.");
     } finally {
       setIsLoading(false);
       setOpenCloseRegModal(false);
     }
   };
+
+  //   const handleCloseRegistration = async () => {
+  //     setIsLoading(true);
+  //     try {
+  //       const newEvent = { ...event };
+  //       if (newEvent.closeRegistration) {
+  //         newEvent.closeRegistration = false;
+  //       } else {
+  //         newEvent.closeRegistration = true;
+  //       }
+  //       const response = await updateAvailableEvent(newEvent);
+  //       console.log("closed registration:", response);
+  //       setEvent(newEvent);
+  //     } catch (error) {
+  //       console.log(error);
+  //     } finally {
+  //       setIsLoading(false);
+  //       setOpenCloseRegModal(false);
+  //     }
+  //   };
 
   return (
     <Container className="py-5">

@@ -372,51 +372,51 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 //        System.out.println(pdfBytes);
 
         // Notify the reps
-//        for (CollegeRepresentativeModel collegeRepresentativeModel: collegeRepresentativeModels) {
-//            this.emailServices.sendEventProofEmail(
-//                    collegeRepresentativeModel.getEmail(),
-//                    "Confirmed Participation for the event - " + availableEventModel.getTitle(),
-//                    pdfBytes,
-//                    "POP_" + teamNumber + ".pdf",
-//                    availableEventModel,
-//                    roundModel
-//            );
-//            List<Object> messageArr = new ArrayList<>();
-//            String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
-//            // Create a temporary file to store the QR code image
-//
-//            // Define the path to the static folder (replace with your actual static folder path)
-//            String staticFolderPath = "src/main/resources/static/";
-//
-//            try (ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeImage)) {
-//                // Create the file in the static folder with a unique name (e.g., qrCode.png)
-//                File staticFolder = new File(staticFolderPath);
-//                if (!staticFolder.exists()) {
-//                    staticFolder.mkdirs();  // Ensure the folder exists
-//                }
-//
-//                String fileName = "qrCode" + LocalDateTime.now() + ".png";
-//                File qrCodeFile = new File(staticFolder, fileName);
-//
-//                // Write the byte array to the file in the static folder
-//                java.nio.file.Files.copy(bis, qrCodeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//
-//                // Prepare the message content
-//                messageArr.add(availableEventModel.getTitle());
-//                messageArr.add(roundName);
-//                messageArr.add(availableEventModel.getTitle());
-//                messageArr.add(roundName);
-//
-//                // Send the WhatsApp message with the QR code file
-//                this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "popqr", "http://localhost:5003" + fileName);
-//                System.out.println("WhatsApp message sent to: " + collegeRepresentativeModel.getPhone());
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//
-//        }
+        for (CollegeRepresentativeModel collegeRepresentativeModel: collegeRepresentativeModels) {
+            this.emailServices.sendEventProofEmail(
+                    collegeRepresentativeModel.getEmail(),
+                    "Confirmed Participation for the event - " + availableEventModel.getTitle(),
+                    pdfBytes,
+                    "POP_" + teamNumber + ".pdf",
+                    availableEventModel,
+                    roundModel
+            );
+            List<Object> messageArr = new ArrayList<>();
+            String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
+            // Create a temporary file to store the QR code image
+
+            // Define the path to the static folder (replace with your actual static folder path)
+            String staticFolderPath = "src/main/resources/static/";
+
+            try (ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeImage)) {
+                // Create the file in the static folder with a unique name (e.g., qrCode.png)
+                File staticFolder = new File(staticFolderPath);
+                if (!staticFolder.exists()) {
+                    staticFolder.mkdirs();  // Ensure the folder exists
+                }
+
+                String fileName = "qrCode" + LocalDateTime.now() + ".png";
+                File qrCodeFile = new File(staticFolder, fileName);
+
+                // Write the byte array to the file in the static folder
+                java.nio.file.Files.copy(bis, qrCodeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                // Prepare the message content
+                messageArr.add(availableEventModel.getTitle());
+                messageArr.add(roundName);
+                messageArr.add(availableEventModel.getTitle());
+                messageArr.add(roundName);
+
+                // Send the WhatsApp message with the QR code file
+                this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "popqr", "http://localhost:5003" + fileName);
+                System.out.println("WhatsApp message sent to: " + collegeRepresentativeModel.getPhone());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
 
         InputStreamSource attachmentSource = new ByteArrayResource(pdfBytes);
 

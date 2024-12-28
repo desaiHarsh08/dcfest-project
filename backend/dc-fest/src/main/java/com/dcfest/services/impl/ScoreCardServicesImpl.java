@@ -399,49 +399,47 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
             throw new IllegalArgumentException("Invalid team");
         }
 
-        if (scoreCardModel.getPoints() == null) {
-            System.out.println("in if of points");
-            Integer totalPoints = 0;
-            // If Normal team, add points: 2
-            if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
-                totalPoints += 2;
+        Integer totalPoints = 0;
+        // If Normal team, add points: 2
+        if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
+            totalPoints += 2;
+        }
+
+        if (scoreCardDto.getRank() != null) {
+            switch (scoreCardDto.getRank()) {
+                case 1:
+                    totalPoints += 20;
+                    break;
+                case 2:
+                    totalPoints += 15;
+                    break;
+                case 3:
+                    totalPoints += 10;
             }
 
-            if (scoreCardDto.getRank() != null) {
-                switch (scoreCardDto.getRank()) {
-                    case 1:
-                        totalPoints += 20;
-                        break;
-                    case 2:
-                        totalPoints += 15;
-                        break;
-                    case 3:
-                        totalPoints += 10;
-                }
-
-                scoreCardModel.setRank(scoreCardDto.getRank());
-            }
-            else {
-                scoreCardModel.setRank(null);
-            }
-
-            if (collegeModel.getPoints() == null) {
-                collegeModel.setPoints(Long.valueOf(totalPoints));
-            }
-            else {
-                collegeModel.setPoints(collegeModel.getPoints() + Long.valueOf(totalPoints));
-            }
-            collegeModel.setPoints(Long.valueOf(totalPoints));
-            scoreCardModel.setPoints(totalPoints);
-
-            System.out.println("totalPoints: " + totalPoints);
-            System.out.println("points: " + scoreCardModel.getPoints());
+            scoreCardModel.setRank(scoreCardDto.getRank());
+        }
+        else {
+            scoreCardModel.setRank(null);
         }
 
 
+        if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
+            scoreCardModel.setPoints(totalPoints);
+        }
+        else {
+            scoreCardModel.setPoints(0);
+        }
 
 
-        scoreCardModel.setTeamNumber(participantModels.get(0).getGroup());
+        System.out.println("totalPoints: " + totalPoints);
+        System.out.println("points: " + scoreCardModel.getPoints());
+
+
+
+
+
+//        scoreCardModel.setTeamNumber(participantModels.get(0).getGroup());
         if (scoreCardDto.getPromotedRoundId() != null) {
             scoreCardModel.setPromotedRound(roundModel);
         }
