@@ -29,20 +29,22 @@ public class CertificateServices {
 
             // Set font and size
             canvas.beginText()
-                    .setFontAndSize(PdfFontFactory.createFont("Helvetica-Bold"), 15)
-                    .moveText(475, 335) // Set coordinates (X, Y)
+                    .setFontAndSize(PdfFontFactory.createFont("Helvetica-Bold"), 13)
+                    .moveText(495, 333) // Set coordinates (X, Y)
                     .showText(name.toUpperCase()) // Add the name
                     .endText();
 
+            // College name contains words greater than 4, then use x = 300, otherwise x = 130
+            int collegeNameX = collegeName.split(" ").length <= 5 ? 300 : 160;
             canvas.beginText()
-                    .setFontAndSize(PdfFontFactory.createFont("Helvetica-Bold"), 15)
-                    .moveText(130, 296) // Set coordinates for course
-                    .showText(collegeName.toUpperCase()) // Add the course name
+                    .setFontAndSize(PdfFontFactory.createFont("Helvetica-Bold"), 13)
+                    .moveText(collegeNameX, 296) // Dynamically set X-coordinate
+                    .showText(collegeName.toUpperCase())
                     .endText();
 //
             canvas.beginText()
-                    .setFontAndSize(PdfFontFactory.createFont("Helvetica-Bold"), 15)
-                    .moveText(290, 260) // Set coordinates for date
+                    .setFontAndSize(PdfFontFactory.createFont("Helvetica-Bold"), 13)
+                    .moveText(450, 260) // Set coordinates for date
                     .showText(eventName.toUpperCase()) // Add the date
                     .endText();
 
