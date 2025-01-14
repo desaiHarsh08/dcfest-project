@@ -9,6 +9,7 @@ import collegeRanking from "../../assets/img/college-ranking2.jpg";
 import addEvents from "../../assets/img/addEvents.jpg";
 import teamsRanking from "../../assets/img/team-ranking2.jpg";
 import helpDeskImage from "../../assets/img/help-desk2.jpg";
+import certificateImage from "/certificate.webp";
 import scoringDepartmentImage from "../../assets/img/scoring-department2.jpg";
 import ParticipationStats from "./ParticipationStats";
 import { useContext } from "react";
@@ -83,6 +84,14 @@ const HomeDesk = () => {
       imgSrc: helpDeskImage,
       description: "Get the reports of the events participated.",
       link: "get-reports",
+    },
+    {
+      title: "Generate Certificates",
+      icon: <FaLifeRing size={40} color="#ffffff" />,
+      bgColor: "linear-gradient(135deg, #6A11CB 0%, #2575FC 100%)",
+      imgSrc: certificateImage,
+      description: "Generate the certicificates for the events participants.",
+      link: "generate-certificates",
     },
   ];
 

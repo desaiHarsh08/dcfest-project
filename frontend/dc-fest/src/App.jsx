@@ -31,6 +31,7 @@ import CollegeSettings from "./pages/CollegeSettings";
 import GetReports from "./pages/GetReports";
 import ScoreSheetPage from "./pages/ScoreSheetPage";
 import ScoreEntryPage from "./pages/ScoreEntryPage";
+import GenerateCertificates from "./pages/GenerateCertificates";
 
 const router = createBrowserRouter([
   {
@@ -105,6 +106,7 @@ const router = createBrowserRouter([
     children: [
       { path: "", element: <HomeDesk /> },
       { path: "settings", element: <Settings /> },
+      { path: "generate-certificates", element: <GenerateCertificates /> },
       { path: "add-event", element: <AddEventPage /> },
       {
         path: "categories",
