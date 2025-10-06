@@ -11,4 +11,6 @@ public class AuthRequest {
 
     private String password;
 
+    private Integer year;
+
 }

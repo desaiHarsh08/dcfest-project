@@ -37,7 +37,7 @@ public class UserController {
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         UserDto user = userServices.getUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
-    }
+    }   
 
     @PutMapping
     public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDto) {

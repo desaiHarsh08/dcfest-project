@@ -45,6 +45,16 @@ public class CollegeServicesImpl implements CollegeServices {
     public CollegeDto createCollege(CollegeDto collegeDto) {
         // Create the college
         CollegeModel collegeModel = this.modelMapper.map(collegeDto, CollegeModel.class);
+        // Set current year for uniqueness grouping
+        if (collegeModel.getYear() == null) {
+            collegeModel.setYear(java.time.Year.now().getValue());
+        }
+        // Ensure the icCode+year is unique by pre-check
+        this.collegeRepository.findByIcCodeAndYear(collegeModel.getIcCode(), collegeModel.getYear())
+                .ifPresent(existing -> {
+                    throw new IllegalArgumentException(
+                            "A college with the same IC Code and year already exists.");
+                });
         // Encrypt the raw password
         collegeModel.setPassword(this.bCryptPasswordEncoder.encode(collegeDto.getPassword()));
         // Save the college

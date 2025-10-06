@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,9 @@ import lombok.ToString;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@Table(name = "colleges")
+@Table(name = "colleges", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "ic_code", "year" })
+})
 @Getter
 @Setter
 @ToString
@@ -34,7 +37,7 @@ public class CollegeModel {
 
     private String address;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String icCode;
 
     @Column(nullable = false)
@@ -48,6 +51,9 @@ public class CollegeModel {
 
     @Column(name = "is_archived")
     private boolean isArchived = false;
+
+    @Column(name = "year")
+    private Integer year;
 
     public CollegeModel(Long id) {
         this.id = id;

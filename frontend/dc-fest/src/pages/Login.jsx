@@ -21,7 +21,7 @@ const Login = () => {
     }
 
     try {
-      const { accessToken, user } = await doLogin(credentials);
+      const { accessToken, user } = await doLogin({...credentials, year: 2025});
       console.log(accessToken, user);
       if (!user?.type || user?.type === "COLLEGE_REPRESENTATIVE") {
         try {

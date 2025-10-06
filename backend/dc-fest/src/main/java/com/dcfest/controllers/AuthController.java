@@ -104,7 +104,10 @@ public class AuthController {
         CollegeModel collegeModel = new CollegeModel();
         UserModel userModel = this.userRepository.findByEmail(authRequest.getUsername()).orElse(null);
         if (userModel == null) {
-            collegeModel = this.collegeRepository.findByIcCode(authRequest.getUsername()).orElse(null);
+            Integer year = authRequest.getYear() != null ? authRequest.getYear() : java.time.Year.now().getValue();
+            collegeModel = this.collegeRepository
+                    .findByIcCodeAndYear(authRequest.getUsername(), year)
+                    .orElseGet(() -> this.collegeRepository.findByIcCode(authRequest.getUsername()).orElse(null));
             if (collegeModel == null) {
                 throw new ResourceNotFoundException("No user exsit for username:" + authRequest.getUsername());
             }
@@ -188,17 +191,22 @@ public class AuthController {
         // Verify the refresh token
         RefreshTokenModel refreshTokenModel = this.refreshTokenServices.verifyRefreshToken(refreshToken);
 
-        if (!refreshTokenModel.getEmail().equals(email)) {
+        final String emailValue = email; // make effectively final for lambdas below
+
+        if (!refreshTokenModel.getEmail().equals(emailValue)) {
             throw new SecurityException("Security Exception... Please try to login again!");
         }
 
         // Resolve principal (user or college)
         CollegeModel collegeModel = new CollegeModel();
-        UserModel userModel = this.userRepository.findByEmail(email).orElse(null);
+        UserModel userModel = this.userRepository.findByEmail(emailValue).orElse(null);
         if (userModel == null) {
-            collegeModel = this.collegeRepository.findByIcCode(email).orElse(null);
+            Integer currentYear = java.time.Year.now().getValue();
+            collegeModel = this.collegeRepository
+                    .findByIcCodeAndYear(emailValue, currentYear)
+                    .orElseGet(() -> this.collegeRepository.findByIcCode(emailValue).orElse(null));
             if (collegeModel == null) {
-                throw new ResourceNotFoundException("No user exsit for username:" + email);
+                throw new ResourceNotFoundException("No user exsit for username:" + emailValue);
             }
         }
 
@@ -211,7 +219,7 @@ public class AuthController {
         }
 
         // Generate new access token
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(emailValue);
         String accessToken = this.jwtTokenHelper.generateToken(userDetails);
 
         AuthResponse authResponse = new AuthResponse();

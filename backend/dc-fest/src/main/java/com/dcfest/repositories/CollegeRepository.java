@@ -12,12 +12,11 @@ import com.dcfest.models.CollegeModel;
 @Repository
 public interface CollegeRepository extends JpaRepository<CollegeModel, Long> {
 
-
     Optional<CollegeModel> findByIcCode(String icCode);
+
+    Optional<CollegeModel> findByIcCodeAndYear(String icCode, Integer year);
 
     @Query("SELECT c FROM CollegeModel c ORDER BY c.points DESC")
     List<CollegeModel> findAllOrderByPointsDesc();
-
-
 
 }
