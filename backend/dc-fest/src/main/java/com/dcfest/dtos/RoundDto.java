@@ -10,8 +10,6 @@ import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @ToString
@@ -22,7 +20,7 @@ public class RoundDto {
     private Long id;
 
     private RoundType roundType = RoundType.PRELIMINARY;
-    
+
     private int qualifyNumber;
 
     private RoundStatus status;

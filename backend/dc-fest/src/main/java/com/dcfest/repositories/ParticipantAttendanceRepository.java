@@ -6,7 +6,6 @@ import com.dcfest.models.RoundModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,7 +29,6 @@ public interface ParticipantAttendanceRepository extends JpaRepository<Participa
     @Query("SELECT pa FROM ParticipantAttendanceModel pa WHERE pa.round.id = :roundId AND pa.participant.college.id = :collegeId")
     List<ParticipantAttendanceModel> findParticipantAttendanceByRoundIdAndCollegeId(
             @Param("roundId") Long roundId,
-            @Param("collegeId") Long collegeId
-    );
+            @Param("collegeId") Long collegeId);
 
 }

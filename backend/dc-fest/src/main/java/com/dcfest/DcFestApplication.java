@@ -1,6 +1,5 @@
 package com.dcfest;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,14 +21,15 @@ public class DcFestApplication {
         return new RestTemplate();
     }
 
-	public static void main(String[] args) {
-//        Dotenv dotenv = Dotenv.configure().directory("./").load();
+    public static void main(String[] args) {
+        // Dotenv dotenv = Dotenv.configure().directory("./").load();
 
         // Log the values to confirm they are loaded
-//        System.out.println("Environment variables loaded:");
-//        dotenv.entries().forEach(entry -> System.out.println(entry.getKey() + "=" + entry.getValue()));
+        // System.out.println("Environment variables loaded:");
+        // dotenv.entries().forEach(entry -> System.out.println(entry.getKey() + "=" +
+        // entry.getValue()));
 
-		SpringApplication.run(DcFestApplication.class, args);
-	}
+        SpringApplication.run(DcFestApplication.class, args);
+    }
 
 }

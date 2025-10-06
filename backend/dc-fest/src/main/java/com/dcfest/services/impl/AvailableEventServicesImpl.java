@@ -1,7 +1,6 @@
 package com.dcfest.services.impl;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -24,7 +23,6 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
     @Value("${close_reg_phone}")
     private String closeRegPhone;
-
 
     @Autowired
     private ModelMapper modelMapper;
@@ -49,18 +47,6 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
     @Autowired
     private CollegeParticipationService collegeParticipationService;
-
-    @Autowired
-    private ParticipantServices participantServices;
-
-    @Autowired
-    private ParticipantRepository participantRepository;
-
-    @Autowired
-    private CollegeParticipationRepository collegeParticipationRepository;
-
-    @Autowired
-    private CollegeRepository collegeRepository;
 
     @Autowired
     private JudgeServices judgeServices;
@@ -93,7 +79,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         this.eventServices.createEvent(new EventDto(null, availableEventModel.getId()));
 
         // Create the judges
-        for (JudgeDto judgeDto: availableEventDto.getJudges()) {
+        for (JudgeDto judgeDto : availableEventDto.getJudges()) {
             judgeDto.setAvailableEventId(availableEventModel.getId());
             this.judgeServices.createJudge(judgeDto);
         }
@@ -142,58 +128,68 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         return this.availableEventModelToDto(foundAvailableEventModel);
     }
 
-//    @Override
-//    public AvailableEventDto updateAvailableEvent(AvailableEventDto availableEventDto) {
-//        AvailableEventModel foundAvailableEventModel = this.availableEventRepository.findById(availableEventDto.getId())
-//                .orElseThrow(
-//                        () -> new ResourceNotFoundException(
-//                                "No `AVAILABLE_EVENT` exist for id: " + availableEventDto.getId()));
-//        // Update the fields
-//        foundAvailableEventModel.setTitle(availableEventDto.getTitle());
-//        foundAvailableEventModel.setOneLiner(availableEventDto.getOneLiner());
-//        foundAvailableEventModel.setDescription(availableEventDto.getDescription());
-//        foundAvailableEventModel.setType(availableEventDto.getType());
-//        foundAvailableEventModel.setCloseRegistration(availableEventDto.isCloseRegistration());
-//        foundAvailableEventModel.setCode(availableEventDto.getCode());
-//
-//        // Save the changes
-//        foundAvailableEventModel = this.availableEventRepository.save(foundAvailableEventModel);
-//
-//        // Update the event_rules
-//        List<EventRuleDto> existingEventRuleDtos = this.eventRuleServices.getEventRulesByAvailableEventId(foundAvailableEventModel.getId());
-//        for (EventRuleDto eventRuleDto : availableEventDto.getEventRules()) {
-//            eventRuleDto.setAvailableEventId(foundAvailableEventModel.getId());
-//            if (eventRuleDto.getId() != null && existingEventRuleDtos.stream().anyMatch(e -> e.getId().equals(eventRuleDto.getId()))) {
-//                this.eventRuleServices.updateEventRule(eventRuleDto);
-//            }
-//            else if(existingEventRuleDtos.stream().noneMatch(e -> e.getId().equals(eventRuleDto.getId()))) {
-//                this.eventRuleServices.deleteEventRule(eventRuleDto.getId());
-//            }
-//        }
-//
-//
-//        // Update the round
-//        List<RoundDto> existingRoundDtos = this.roundServices.getRoundsByAvailableEventId(foundAvailableEventModel.getId());
-//        if (!existingRoundDtos.isEmpty()) {
-//            for (RoundDto roundDto : availableEventDto.getRounds()) {
-//                roundDto.setAvailableEventId(foundAvailableEventModel.getId());
-//                if (roundDto.getId() != null && existingRoundDtos.stream().anyMatch(r -> r.getId().equals(roundDto.getId()))) {
-//                    this.roundServices.updateRound(roundDto);
-//                }
-//                else if (existingRoundDtos.stream().noneMatch(r -> r.getId().equals(roundDto.getId()))) {
-//                    this.roundServices.deleteRound(roundDto.getId());
-//                }
-//            }
-//        }
-//
-//        // Update the judges
-//        List<JudgeDto> existingJudgeDtos = this.judgeServices.getJudgesByAvailableEventId(availableEventDto.getId());
-//        for (JudgeDto judgeDto: availableEventDto.getJudges()) {
-//
-//        }
-//
-//        return this.availableEventModelToDto(foundAvailableEventModel);
-//    }
+    // @Override
+    // public AvailableEventDto updateAvailableEvent(AvailableEventDto
+    // availableEventDto) {
+    // AvailableEventModel foundAvailableEventModel =
+    // this.availableEventRepository.findById(availableEventDto.getId())
+    // .orElseThrow(
+    // () -> new ResourceNotFoundException(
+    // "No `AVAILABLE_EVENT` exist for id: " + availableEventDto.getId()));
+    // // Update the fields
+    // foundAvailableEventModel.setTitle(availableEventDto.getTitle());
+    // foundAvailableEventModel.setOneLiner(availableEventDto.getOneLiner());
+    // foundAvailableEventModel.setDescription(availableEventDto.getDescription());
+    // foundAvailableEventModel.setType(availableEventDto.getType());
+    // foundAvailableEventModel.setCloseRegistration(availableEventDto.isCloseRegistration());
+    // foundAvailableEventModel.setCode(availableEventDto.getCode());
+    //
+    // // Save the changes
+    // foundAvailableEventModel =
+    // this.availableEventRepository.save(foundAvailableEventModel);
+    //
+    // // Update the event_rules
+    // List<EventRuleDto> existingEventRuleDtos =
+    // this.eventRuleServices.getEventRulesByAvailableEventId(foundAvailableEventModel.getId());
+    // for (EventRuleDto eventRuleDto : availableEventDto.getEventRules()) {
+    // eventRuleDto.setAvailableEventId(foundAvailableEventModel.getId());
+    // if (eventRuleDto.getId() != null && existingEventRuleDtos.stream().anyMatch(e
+    // -> e.getId().equals(eventRuleDto.getId()))) {
+    // this.eventRuleServices.updateEventRule(eventRuleDto);
+    // }
+    // else if(existingEventRuleDtos.stream().noneMatch(e ->
+    // e.getId().equals(eventRuleDto.getId()))) {
+    // this.eventRuleServices.deleteEventRule(eventRuleDto.getId());
+    // }
+    // }
+    //
+    //
+    // // Update the round
+    // List<RoundDto> existingRoundDtos =
+    // this.roundServices.getRoundsByAvailableEventId(foundAvailableEventModel.getId());
+    // if (!existingRoundDtos.isEmpty()) {
+    // for (RoundDto roundDto : availableEventDto.getRounds()) {
+    // roundDto.setAvailableEventId(foundAvailableEventModel.getId());
+    // if (roundDto.getId() != null && existingRoundDtos.stream().anyMatch(r ->
+    // r.getId().equals(roundDto.getId()))) {
+    // this.roundServices.updateRound(roundDto);
+    // }
+    // else if (existingRoundDtos.stream().noneMatch(r ->
+    // r.getId().equals(roundDto.getId()))) {
+    // this.roundServices.deleteRound(roundDto.getId());
+    // }
+    // }
+    // }
+    //
+    // // Update the judges
+    // List<JudgeDto> existingJudgeDtos =
+    // this.judgeServices.getJudgesByAvailableEventId(availableEventDto.getId());
+    // for (JudgeDto judgeDto: availableEventDto.getJudges()) {
+    //
+    // }
+    //
+    // return this.availableEventModelToDto(foundAvailableEventModel);
+    // }
 
     @Override
     public AvailableEventDto updateAvailableEvent(AvailableEventDto availableEventDto) {
@@ -215,7 +211,8 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         foundAvailableEventModel = this.availableEventRepository.save(foundAvailableEventModel);
 
         // Update Event Rules
-        Map<Long, EventRuleDto> existingEventRulesMap = this.eventRuleServices.getEventRulesByAvailableEventId(foundAvailableEventModel.getId())
+        Map<Long, EventRuleDto> existingEventRulesMap = this.eventRuleServices
+                .getEventRulesByAvailableEventId(foundAvailableEventModel.getId())
                 .stream().collect(Collectors.toMap(EventRuleDto::getId, Function.identity()));
 
         for (EventRuleDto eventRuleDto : availableEventDto.getEventRules()) {
@@ -233,7 +230,8 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         }
 
         // Update Rounds
-        Map<Long, RoundDto> existingRoundsMap = this.roundServices.getRoundsByAvailableEventId(foundAvailableEventModel.getId())
+        Map<Long, RoundDto> existingRoundsMap = this.roundServices
+                .getRoundsByAvailableEventId(foundAvailableEventModel.getId())
                 .stream().collect(Collectors.toMap(RoundDto::getId, Function.identity()));
 
         for (RoundDto roundDto : availableEventDto.getRounds()) {
@@ -251,7 +249,8 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         }
 
         // Update Judges
-        Map<Long, JudgeDto> existingJudgesMap = this.judgeServices.getJudgesByAvailableEventId(foundAvailableEventModel.getId())
+        Map<Long, JudgeDto> existingJudgesMap = this.judgeServices
+                .getJudgesByAvailableEventId(foundAvailableEventModel.getId())
                 .stream().collect(Collectors.toMap(JudgeDto::getId, Function.identity()));
 
         for (JudgeDto judgeDto : availableEventDto.getJudges()) {
@@ -272,12 +271,10 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         return this.availableEventModelToDto(foundAvailableEventModel);
     }
 
-
     @Override
     public AvailableEventDto postCloseRegistrationProcess(Long availableEventId) {
         AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId).orElseThrow(
-                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId)
-        );
+                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId));
 
         availableEventModel.setCloseRegistration(true);
         availableEventModel = this.availableEventRepository.save(availableEventModel);
@@ -285,13 +282,11 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         List<Object> messageArr = new ArrayList<>();
         messageArr.add(availableEventModel.getTitle());
 
-
         this.whatsAppService.sendWhatsAppMessage(
                 closeRegPhone,
                 messageArr,
                 "umang_reg_off",
-                null
-        );
+                null);
 
         return this.availableEventModelToDto(availableEventModel);
     }
@@ -300,7 +295,8 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
     public boolean deleteAvailableEvent(Long id) {
         AvailableEventDto availableEventDto = this.getAvailableEventById(id);
         // Delete the logs
-        List<NotificationLogModel> notificationLogModels = this.notificationLogRepository.findByAvailableEvent(new AvailableEventModel(id));
+        List<NotificationLogModel> notificationLogModels = this.notificationLogRepository
+                .findByAvailableEvent(new AvailableEventModel(id));
         for (NotificationLogModel notificationLogModel : notificationLogModels) {
             this.notificationLogRepository.deleteById(notificationLogModel.getId());
         }
@@ -313,13 +309,14 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
             this.roundServices.deleteRound(roundDto.getId());
         }
         // Delete all the judges
-        for (JudgeDto judgeDto: availableEventDto.getJudges()) {
+        for (JudgeDto judgeDto : availableEventDto.getJudges()) {
             this.judgeServices.deleteJudge(judgeDto.getId());
         }
 
         // Delete the college_participations
-        List<CollegeParticipationDto> collegeParticipationDtos = this.collegeParticipationService.getByAvailableEvent(id);
-        for (CollegeParticipationDto collegeParticipationDto: collegeParticipationDtos) {
+        List<CollegeParticipationDto> collegeParticipationDtos = this.collegeParticipationService
+                .getByAvailableEvent(id);
+        for (CollegeParticipationDto collegeParticipationDto : collegeParticipationDtos) {
             this.collegeParticipationService.deleteParticipation(collegeParticipationDto.getId());
         }
 
@@ -334,7 +331,8 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         }
         AvailableEventDto availableEventDto = this.modelMapper.map(availableEventModel, AvailableEventDto.class);
         availableEventDto.setEventCategoryId(availableEventModel.getEventCategory().getId());
-        availableEventDto.setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
+        availableEventDto
+                .setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setRounds(this.roundServices.getRoundsByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setJudges(this.judgeServices.getJudgesByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setEventMaster(availableEventModel.getEventMaster());

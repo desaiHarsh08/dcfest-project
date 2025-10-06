@@ -1,6 +1,5 @@
 package com.dcfest.services;
 
-import com.dcfest.dtos.CollegeParticipationDto;
 import com.dcfest.dtos.ScoreCardDto;
 import org.springframework.core.io.InputStreamSource;
 

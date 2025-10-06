@@ -4,7 +4,6 @@ import com.dcfest.models.EventRuleModel;
 import com.dcfest.models.EventRuleTemplateModel;
 import com.dcfest.repositories.EventRuleRepository;
 import com.dcfest.repositories.EventRuleTemplateRepository;
-import com.dcfest.services.EventRuleServices;
 import com.dcfest.services.EventRuleTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,9 +38,10 @@ public class EventRuleTemplateServiceImpl implements EventRuleTemplateService {
 
     @Override
     public void deleteEventRuleTemplate(Long id) {
-        List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByEventRuleTemplate(new EventRuleTemplateModel(id));
-        for (EventRuleModel eventRuleModel: eventRuleModels) {
-            this.eventRuleRepository.deleteById(id);
+        List<EventRuleModel> eventRuleModels = this.eventRuleRepository
+                .findByEventRuleTemplate(new EventRuleTemplateModel(id));
+        for (EventRuleModel eventRuleModel : eventRuleModels) {
+            this.eventRuleRepository.deleteById(eventRuleModel.getId());
         }
         eventRuleTemplateRepository.deleteById(id);
     }

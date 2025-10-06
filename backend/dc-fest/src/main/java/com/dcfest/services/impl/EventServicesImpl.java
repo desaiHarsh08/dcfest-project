@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 import java.util.ArrayList;
 
 import com.dcfest.models.ParticipantModel;
-import com.dcfest.repositories.JudgeRepository;
 import com.dcfest.repositories.ParticipantRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import com.dcfest.models.AvailableEventModel;
 import com.dcfest.models.EventModel;
 import com.dcfest.repositories.EventRepository;
 import com.dcfest.services.EventServices;
-import com.dcfest.services.ParticipantServices;
 
 @Service
 public class EventServicesImpl implements EventServices {
@@ -27,12 +25,6 @@ public class EventServicesImpl implements EventServices {
 
     @Autowired
     private EventRepository eventRepository;
-
-    @Autowired
-    private JudgeRepository judgeRepository;
-
-    @Autowired
-    private ParticipantServices participantServices;
 
     @Autowired
     private ParticipantRepository participantRepository;
@@ -120,7 +112,8 @@ public class EventServicesImpl implements EventServices {
 
     @Override
     public void deleteEventsByAvailableEventId(Long availableEventId) {
-        EventModel eventModel = this.eventRepository.findByAvailableEvent(new AvailableEventModel(availableEventId)).orElse(null);
+        EventModel eventModel = this.eventRepository.findByAvailableEvent(new AvailableEventModel(availableEventId))
+                .orElse(null);
         if (eventModel != null) {
             this.eventRepository.deleteById(eventModel.getId());
         }

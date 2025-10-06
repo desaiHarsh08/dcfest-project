@@ -3,8 +3,6 @@ package com.dcfest.services;
 import java.util.List;
 
 import com.dcfest.dtos.AvailableEventDto;
-import com.dcfest.dtos.EventRuleDto;
-import com.dcfest.models.AvailableEventModel;
 
 public interface AvailableEventServices {
 
@@ -25,6 +23,5 @@ public interface AvailableEventServices {
     boolean deleteAvailableEvent(Long id);
 
     AvailableEventDto postCloseRegistrationProcess(Long availableEventId);
-
 
 }

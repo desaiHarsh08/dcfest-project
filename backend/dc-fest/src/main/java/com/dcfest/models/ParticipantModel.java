@@ -8,19 +8,19 @@ import com.dcfest.constants.HandPreferenceType;
 import com.dcfest.constants.ParticipantType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLRestriction;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "participants")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("is_archived=false")
 public class ParticipantModel {
 
     @Id
@@ -56,7 +56,7 @@ public class ParticipantModel {
 
     @ManyToMany(mappedBy = "participants")
     @JsonBackReference
-    private List<EventModel> events =  new ArrayList<>();
+    private List<EventModel> events = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private ParticipantType type = ParticipantType.PERFORMER;
@@ -68,6 +68,9 @@ public class ParticipantModel {
     private HandPreferenceType handPreference = HandPreferenceType.RIGHT_HANDED;
 
     private Boolean disableParticipation;
+
+    @Column(name = "is_archived")
+    private boolean isArchived = false;
 
     public ParticipantModel(Long id) {
         this.id = id;
@@ -81,6 +84,5 @@ public class ParticipantModel {
                 // Avoid adding references to EventModel here
                 '}';
     }
-
 
 }

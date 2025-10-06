@@ -16,9 +16,6 @@ import org.springframework.stereotype.Service;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.notifications.email.EmailServices;
 import com.dcfest.repositories.CollegeRepository;
-import com.dcfest.repositories.ParticipantRepository;
-import com.dcfest.repositories.UserRepository;
-import com.dcfest.utils.PageResponse;
 
 @Service
 public class CollegeServicesImpl implements CollegeServices {
@@ -31,15 +28,6 @@ public class CollegeServicesImpl implements CollegeServices {
 
     @Autowired
     private ParticipantServices participantServices;
-
-    @Autowired
-    private ParticipantRepository participantRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserServices userServices;
 
     @Autowired
     private EmailServices emailServices;
@@ -62,14 +50,15 @@ public class CollegeServicesImpl implements CollegeServices {
         // Save the college
         collegeModel = this.collegeRepository.save(collegeModel);
         // Create the college representative
-        for (CollegeRepresentativeDto collegeRepresentativeDto: collegeDto.getRepresentatives()) {
+        for (CollegeRepresentativeDto collegeRepresentativeDto : collegeDto.getRepresentatives()) {
             collegeRepresentativeDto.setCollegeId(collegeModel.getId());
             this.collegeRepresentativeService.createRepresentative(collegeRepresentativeDto);
         }
 
         // Send email to the college
         if (collegeDto.getEmail() != null) {
-//            this.emailServices.sendCollegeRegistrationEmail(collegeDto.getEmail(), collegeDto.getName());
+            // this.emailServices.sendCollegeRegistrationEmail(collegeDto.getEmail(),
+            // collegeDto.getName());
         }
 
         return this.collegeModelToDto(collegeModel);
@@ -124,12 +113,12 @@ public class CollegeServicesImpl implements CollegeServices {
         foundCollege.setIcCode(collegeDto.getIcCode());
         foundCollege.setPhone(collegeDto.getPhone());
         foundCollege.setPoints(collegeDto.getPoints());
-        
+
         // Save the changes
         foundCollege = this.collegeRepository.save(foundCollege);
 
         // Update the reps.
-        for(CollegeRepresentativeDto collegeRepresentativeDto: collegeDto.getRepresentatives()) {
+        for (CollegeRepresentativeDto collegeRepresentativeDto : collegeDto.getRepresentatives()) {
             this.collegeRepresentativeService.updateRepresentative(collegeRepresentativeDto);
         }
 
@@ -139,8 +128,7 @@ public class CollegeServicesImpl implements CollegeServices {
     @Override
     public CollegeDto resetCollegePassword(CollegeDto collegeDto) {
         CollegeModel foundCollegeModel = this.collegeRepository.findById(collegeDto.getId()).orElseThrow(
-            () -> new ResourceNotFoundException("No `COLLEGE` exist for id: " + collegeDto.getId())
-        );
+                () -> new ResourceNotFoundException("No `COLLEGE` exist for id: " + collegeDto.getId()));
         // Encrypt the raw password
         String encryptedPassword = this.bCryptPasswordEncoder.encode(collegeDto.getPassword());
         // Update the password
@@ -148,16 +136,16 @@ public class CollegeServicesImpl implements CollegeServices {
         // Save the changes
         foundCollegeModel = this.collegeRepository.save(foundCollegeModel);
 
-////        // Notify the college and their representative
-        List<CollegeRepresentativeDto> collegeRepresentativeDtos = this.collegeRepresentativeService.getRepresentativesByCollege(collegeDto.getId());
-        for (CollegeRepresentativeDto collegeRepresentativeDto: collegeRepresentativeDtos) {
+        //// // Notify the college and their representative
+        List<CollegeRepresentativeDto> collegeRepresentativeDtos = this.collegeRepresentativeService
+                .getRepresentativesByCollege(collegeDto.getId());
+        for (CollegeRepresentativeDto collegeRepresentativeDto : collegeRepresentativeDtos) {
             this.emailServices.sendResetPasswordEmail(
                     collegeRepresentativeDto.getEmail(),
                     collegeRepresentativeDto.getName(),
                     foundCollegeModel.getIcCode(),
                     collegeDto.getPassword(),
-                    foundCollegeModel.getName()
-            );
+                    foundCollegeModel.getName());
         }
         // Notify the college
         String collegeEmail = foundCollegeModel.getEmail();
@@ -167,14 +155,11 @@ public class CollegeServicesImpl implements CollegeServices {
                     foundCollegeModel.getName(),
                     foundCollegeModel.getIcCode(),
                     collegeDto.getPassword(),
-                    foundCollegeModel.getName()
-            );
+                    foundCollegeModel.getName());
         }
-
 
         return this.collegeModelToDto(foundCollegeModel);
     }
-
 
     @Override
     public boolean deleteCollege(Long id) {
@@ -188,8 +173,9 @@ public class CollegeServicesImpl implements CollegeServices {
             this.collegeParticipationService.deleteParticipation(collegeParticipationDto.getId());
         }
         // Delete the representative
-        List<CollegeRepresentativeDto> collegeRepresentativeDtos = this.collegeRepresentativeService.getRepresentativesByCollege(id);
-        for (CollegeRepresentativeDto collegeRepresentativeDto: collegeRepresentativeDtos) {
+        List<CollegeRepresentativeDto> collegeRepresentativeDtos = this.collegeRepresentativeService
+                .getRepresentativesByCollege(id);
+        for (CollegeRepresentativeDto collegeRepresentativeDto : collegeRepresentativeDtos) {
             this.collegeRepresentativeService.deleteRepresentative(collegeRepresentativeDto.getId());
         }
 
@@ -209,7 +195,8 @@ public class CollegeServicesImpl implements CollegeServices {
             return null;
         }
         CollegeDto collegeDto = this.modelMapper.map(collegeModel, CollegeDto.class);
-        collegeDto.setRepresentatives(this.collegeRepresentativeService.getRepresentativesByCollege(collegeModel.getId()));
+        collegeDto.setRepresentatives(
+                this.collegeRepresentativeService.getRepresentativesByCollege(collegeModel.getId()));
 
         return collegeDto;
     }

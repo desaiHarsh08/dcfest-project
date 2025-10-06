@@ -12,11 +12,7 @@ import com.dcfest.dtos.JudgeDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.AvailableEventModel;
 import com.dcfest.models.JudgeModel;
-import com.dcfest.notifications.email.EmailServices;
-import com.dcfest.repositories.AvailableEventRepository;
-import com.dcfest.repositories.EventRepository;
 import com.dcfest.repositories.JudgeRepository;
-import com.dcfest.repositories.UserRepository;
 import com.dcfest.services.JudgeServices;
 
 @Service
@@ -28,18 +24,6 @@ public class JudgeServicesImpl implements JudgeServices {
     @Autowired
     private JudgeRepository judgeRepository;
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private AvailableEventRepository availableEventRepository;
-
-    @Autowired
-    private EmailServices emailServices;
-
     @Override
     public JudgeDto createJudge(JudgeDto judgeDto) {
         // Create the judge
@@ -47,8 +31,7 @@ public class JudgeServicesImpl implements JudgeServices {
                 null,
                 judgeDto.getName(),
                 judgeDto.getPhone(),
-                new AvailableEventModel(judgeDto.getAvailableEventId())
-        );
+                new AvailableEventModel(judgeDto.getAvailableEventId()));
         // Save the judge
         judgeModel = this.judgeRepository.save(judgeModel);
 
@@ -67,14 +50,14 @@ public class JudgeServicesImpl implements JudgeServices {
 
     @Override
     public List<JudgeDto> getJudgesByAvailableEventId(Long availableEventId) {
-        List<JudgeModel> judgeModels = this.judgeRepository.findByAvailableEvent(new AvailableEventModel(availableEventId));
+        List<JudgeModel> judgeModels = this.judgeRepository
+                .findByAvailableEvent(new AvailableEventModel(availableEventId));
         if (judgeModels.isEmpty()) {
             return new ArrayList<>();
         }
 
         return judgeModels.stream().map(this::judgeModelToDto).collect(Collectors.toList());
     }
-
 
     @Override
     public JudgeDto getJudgeById(Long id) {
@@ -87,8 +70,7 @@ public class JudgeServicesImpl implements JudgeServices {
     @Override
     public JudgeDto updateJudge(JudgeDto judgeDto) {
         JudgeModel foundJudgeModel = this.judgeRepository.findById(judgeDto.getId()).orElseThrow(
-                () -> new ResourceNotFoundException("No judge exist for id: " + judgeDto.getId())
-        );
+                () -> new ResourceNotFoundException("No judge exist for id: " + judgeDto.getId()));
         foundJudgeModel.setName(judgeDto.getName());
         foundJudgeModel.setPhone(judgeDto.getPhone());
 

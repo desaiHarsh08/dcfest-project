@@ -1,7 +1,6 @@
 package com.dcfest.controllers;
 
 import com.dcfest.dtos.CollegeParticipationDto;
-import com.dcfest.models.CollegeParticipationModel;
 import com.dcfest.services.CollegeParticipationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,8 @@ public class CollegeParticipationController {
     public ResponseEntity<CollegeParticipationDto> createParticipation(
             @RequestBody CollegeParticipationDto participationDto) {
         System.out.println(participationDto);
-        CollegeParticipationDto createdParticipation = collegeParticipationService.createParticipation(participationDto);
+        CollegeParticipationDto createdParticipation = collegeParticipationService
+                .createParticipation(participationDto);
         return ResponseEntity.ok(createdParticipation);
     }
 
@@ -60,11 +60,8 @@ public class CollegeParticipationController {
 
     @GetMapping("/interested-colleges")
     public ResponseEntity<List<CollegeParticipationDto>> getInterestedColleges() {
-    return new ResponseEntity<>(this.collegeParticipationService.getInterestedColleges(), HttpStatus.OK);
+        return new ResponseEntity<>(this.collegeParticipationService.getInterestedColleges(), HttpStatus.OK);
     }
-
-
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteParticipation(@PathVariable Long id) {

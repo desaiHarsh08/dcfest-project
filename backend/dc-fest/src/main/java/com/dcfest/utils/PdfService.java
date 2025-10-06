@@ -1,6 +1,5 @@
 package com.dcfest.utils;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.context.Context;
@@ -12,7 +11,6 @@ public class PdfService {
 
     private final SpringTemplateEngine templateEngine;
 
-    @Autowired
     public PdfService(SpringTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
     }

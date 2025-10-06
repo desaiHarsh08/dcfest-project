@@ -35,7 +35,7 @@ public class CertificateServices {
                     .endText();
 
             // College name contains words greater than 4, then use x = 300, otherwise x = 130
-            int collegeNameX = collegeName.split(" ").length <= 5 ? 300 : 160;
+            int collegeNameX = collegeName.split(" ").length <= 5 ? 300 : 130;
             canvas.beginText()
                     .setFontAndSize(PdfFontFactory.createFont("Helvetica-Bold"), 13)
                     .moveText(collegeNameX, 296) // Dynamically set X-coordinate

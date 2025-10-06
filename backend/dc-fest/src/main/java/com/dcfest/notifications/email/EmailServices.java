@@ -2,10 +2,7 @@ package com.dcfest.notifications.email;
 
 import com.dcfest.constants.RoundType;
 import com.dcfest.models.AvailableEventModel;
-import com.dcfest.models.EventModel;
 import com.dcfest.models.RoundModel;
-import com.dcfest.models.UserModel;
-import com.dcfest.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamSource;
@@ -20,7 +17,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Service
 public class EmailServices {
@@ -30,10 +26,6 @@ public class EmailServices {
 
     @Autowired
     private TemplateEngine templateEngine;
-
-    @Autowired
-    private UserRepository userRepository;
-
 
     @Async
     public void sendCollegeRegistrationEmail(String to, String collegeName) {
@@ -82,30 +74,33 @@ public class EmailServices {
         }
     }
 
-//    @Async
-//    public void sendParticipantRegistrationEmail(String to, String name, List<VenueModel> venueModels, EventModel eventModel) {
-//        String subject = "Confirmation of your participation in " + eventModel.getAvailableEvent().getTitle() + " - Umang DCFest 2024";
-//
-//        try {
-//            MimeMessage message = emailSender.createMimeMessage();
-//            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-//            helper.setTo(to);
-//            helper.setSubject(subject);
-//
-//            // Create the HTML content using Thymeleaf template
-//            Context context = new Context();
-//            context.setVariable("name", name);
-//            context.setVariable("eventModel", eventModel);
-//            context.setVariable("venueModels", venueModels);
-//
-//            String htmlContent = templateEngine.process("participantRegistration", context);
-//            helper.setText(htmlContent, true); // Enable HTML content
-//
-//            this.emailSender.send(message);
-//        } catch (MessagingException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    // @Async
+    // public void sendParticipantRegistrationEmail(String to, String name,
+    // List<VenueModel> venueModels, EventModel eventModel) {
+    // String subject = "Confirmation of your participation in " +
+    // eventModel.getAvailableEvent().getTitle() + " - Umang DCFest 2024";
+    //
+    // try {
+    // MimeMessage message = emailSender.createMimeMessage();
+    // MimeMessageHelper helper = new MimeMessageHelper(message, true);
+    // helper.setTo(to);
+    // helper.setSubject(subject);
+    //
+    // // Create the HTML content using Thymeleaf template
+    // Context context = new Context();
+    // context.setVariable("name", name);
+    // context.setVariable("eventModel", eventModel);
+    // context.setVariable("venueModels", venueModels);
+    //
+    // String htmlContent = templateEngine.process("participantRegistration",
+    // context);
+    // helper.setText(htmlContent, true); // Enable HTML content
+    //
+    // this.emailSender.send(message);
+    // } catch (MessagingException e) {
+    // e.printStackTrace();
+    // }
+    // }
 
     @Async
     public void sendResetPasswordEmail(String to, String name, String iccode, String password, String institutionName) {
@@ -134,8 +129,6 @@ public class EmailServices {
         }
     }
 
-
-
     // Send simple HTML email
     public void sendSimpleMessage(String to, String subject, String body) {
         System.out.println("in sendSimpleMessage()");
@@ -156,7 +149,7 @@ public class EmailServices {
 
     // Send an email with an attachment (e.g., QR code or other files)
     public void sendSimpleMessageWithAttachment(String to, String subject, String body, byte[] attachmentData,
-                                                String attachmentName) {
+            String attachmentName) {
         try {
             MimeMessage message = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -176,9 +169,9 @@ public class EmailServices {
         }
     }
 
-
     @Async
-    public void sendEventProofEmail(String to, String subject, byte[] pdfData, String attachmentName, AvailableEventModel availableEventModel, RoundModel roundModel) {
+    public void sendEventProofEmail(String to, String subject, byte[] pdfData, String attachmentName,
+            AvailableEventModel availableEventModel, RoundModel roundModel) {
         try {
             MimeMessage message = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -189,13 +182,13 @@ public class EmailServices {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a");
             String formattedDateTime = roundModel.getStartTime().format(formatter);
 
-
             // Add the PDF as an attachment
             InputStreamSource attachmentSource = new ByteArrayResource(pdfData);
             helper.addAttachment(attachmentName, attachmentSource);
 
             // Create the HTML content using Thymeleaf template
-            String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS" : roundModel.getRoundType().name();
+            String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS"
+                    : roundModel.getRoundType().name();
             Context context = new Context();
             context.setVariable("eventName", availableEventModel.getTitle());
 
@@ -203,7 +196,6 @@ public class EmailServices {
             context.setVariable("venue", roundModel.getVenue());
             context.setVariable("round", roundName);
             context.setVariable("slug", availableEventModel.getSlug());
-
 
             String htmlContent = templateEngine.process("confirmEventParticipation", context);
             helper.setText(htmlContent, true); // Enable HTML content
@@ -213,13 +205,6 @@ public class EmailServices {
             // Log the exception for better error tracking
             e.printStackTrace();
         }
-    }
-
-
-    private UserModel getUser(Long id) {
-        return this.userRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Please provide the valid user!")
-        );
     }
 
 }

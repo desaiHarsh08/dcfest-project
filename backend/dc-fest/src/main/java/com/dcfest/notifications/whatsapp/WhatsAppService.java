@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,8 @@ public class WhatsAppService {
         this.restTemplate = restTemplate;
     }
 
-    public Map<String, Object> sendWhatsAppMessage(String to, List<Object> messageArr, String templateName, String filePath) {
+    public Map<String, Object> sendWhatsAppMessage(String to, List<Object> messageArr, String templateName,
+            String filePath) {
         try {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("countryCode", "+91");
@@ -40,8 +40,7 @@ public class WhatsAppService {
             template.put("languageCode", "en");
             if (filePath == null) {
                 template.put("headerValues", List.of("Alert"));
-            }
-            else {
+            } else {
                 template.put("headerValues", List.of(filePath));
             }
 
@@ -60,16 +59,17 @@ public class WhatsAppService {
 
             System.out.println("entity:\n" + entity);
 
-            ResponseEntity<Map> response = restTemplate.postForEntity(
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Map<String, Object>> response = restTemplate.postForEntity(
                     interaktBaseUrl,
                     entity,
-                    Map.class
-            );
+                    (Class<Map<String, Object>>) (Class<?>) Map.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                return response.getBody();
+                return (Map<String, Object>) response.getBody();
             } else {
-                throw new RuntimeException("HTTP error! Status: " + response.getStatusCode() + ", Response: " + response.getBody());
+                throw new RuntimeException(
+                        "HTTP error! Status: " + response.getStatusCode() + ", Response: " + response.getBody());
             }
         } catch (Exception e) {
             throw new RuntimeException("Error sending WhatsApp message: " + e.getMessage(), e);

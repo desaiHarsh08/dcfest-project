@@ -1,4 +1,4 @@
-package com.dcfest.services.impl;
+package com.dcfest.services;
 
 import com.dcfest.dtos.ScoreParameterDto;
 

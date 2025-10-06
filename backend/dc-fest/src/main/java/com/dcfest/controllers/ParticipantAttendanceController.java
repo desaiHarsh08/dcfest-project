@@ -2,9 +2,7 @@ package com.dcfest.controllers;
 
 import com.dcfest.dtos.ParticipantAttendanceDto;
 import com.dcfest.services.ParticipantAttendanceServices;
-import com.dcfest.utils.PdfService;
 import com.dcfest.utils.ScannedQrcodeResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
@@ -21,12 +19,9 @@ import java.util.List;
 public class ParticipantAttendanceController {
 
     private final ParticipantAttendanceServices participantAttendanceServices;
-    private final PdfService pdfService;
 
-    @Autowired
-    public ParticipantAttendanceController(ParticipantAttendanceServices participantAttendanceServices, PdfService pdfService) {
+    public ParticipantAttendanceController(ParticipantAttendanceServices participantAttendanceServices) {
         this.participantAttendanceServices = participantAttendanceServices;
-        this.pdfService = pdfService;
     }
 
     // Get Attendance by ID
@@ -57,22 +52,24 @@ public class ParticipantAttendanceController {
             @RequestParam Long collegeId,
             @RequestParam Long availableEventId,
             @RequestParam Long roundId,
-            @RequestParam String group
-    ) {
+            @RequestParam String group) {
         System.out.println(collegeId);
         System.out.println(availableEventId);
         System.out.println(roundId);
 
         try {
             // Generate the PDF byte array from the service method
-            InputStreamSource pdf = participantAttendanceServices.generateQrcode(collegeId, availableEventId, roundId, group);
+            InputStreamSource pdf = participantAttendanceServices.generateQrcode(collegeId, availableEventId, roundId,
+                    group);
 
             // Prepare the PDF byte array to be returned as InputStreamResource
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(((ByteArrayResource) pdf).getByteArray());
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
+                    ((ByteArrayResource) pdf).getByteArray());
 
             // Create the response with the correct headers
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=pop_participants.pdf"); // Inline opens in browser
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=pop_participants.pdf"); // Inline opens in
+                                                                                                   // browser
             headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
 
             return new ResponseEntity<>(new InputStreamResource(byteArrayInputStream), headers, HttpStatus.OK);
@@ -87,8 +84,7 @@ public class ParticipantAttendanceController {
         System.out.println("qrData: " + qrData);
         return new ResponseEntity<>(
                 this.participantAttendanceServices.scanQrcode(qrData),
-                HttpStatus.OK
-        );
+                HttpStatus.OK);
     }
 
     @GetMapping("/mark-attendance")
@@ -96,12 +92,10 @@ public class ParticipantAttendanceController {
             @RequestParam Long roundId,
             @RequestParam Long collegeId,
             @RequestParam Long participantId,
-            @RequestParam boolean status
-    ) {
+            @RequestParam boolean status) {
         return new ResponseEntity<>(
                 this.participantAttendanceServices.markAttendance(roundId, collegeId, participantId, status),
-                HttpStatus.OK
-        );
+                HttpStatus.OK);
     }
 
     @GetMapping("/get-pop")
@@ -109,8 +103,7 @@ public class ParticipantAttendanceController {
             @RequestParam Long collegeId,
             @RequestParam Long availableEventId,
             @RequestParam Long roundId,
-            @RequestParam String group
-    ) {
+            @RequestParam String group) {
         System.out.println(collegeId);
         System.out.println(availableEventId);
         System.out.println(roundId);
@@ -120,11 +113,13 @@ public class ParticipantAttendanceController {
             InputStreamSource pdf = participantAttendanceServices.getPop(roundId, collegeId, availableEventId, group);
 
             // Prepare the PDF byte array to be returned as InputStreamResource
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(((ByteArrayResource) pdf).getByteArray());
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
+                    ((ByteArrayResource) pdf).getByteArray());
 
             // Create the response with the correct headers
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=pop_participants.pdf"); // Inline opens in browser
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=pop_participants.pdf"); // Inline opens in
+                                                                                                   // browser
             headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
 
             return new ResponseEntity<>(new InputStreamResource(byteArrayInputStream), headers, HttpStatus.OK);

@@ -1,6 +1,5 @@
 package com.dcfest.repositories;
 
-import com.dcfest.dtos.PromotedRoundDto;
 import com.dcfest.models.ParticipantModel;
 import com.dcfest.models.PromotedRoundModel;
 import com.dcfest.models.RoundModel;

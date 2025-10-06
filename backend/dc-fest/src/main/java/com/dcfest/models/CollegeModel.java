@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "colleges")
@@ -19,6 +20,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("is_archived=false")
 public class CollegeModel {
 
     @Id
@@ -43,6 +45,9 @@ public class CollegeModel {
     private String phone;
 
     private Long points;
+
+    @Column(name = "is_archived")
+    private boolean isArchived = false;
 
     public CollegeModel(Long id) {
         this.id = id;

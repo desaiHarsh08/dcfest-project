@@ -2,6 +2,7 @@ package com.dcfest.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "college_representatives")
@@ -10,6 +11,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("is_archived=false")
 public class CollegeRepresentativeModel {
 
     @Id
@@ -31,5 +33,8 @@ public class CollegeRepresentativeModel {
 
     @Column(nullable = false)
     private String whatsappNumber;
+
+    @Column(name = "is_archived")
+    private boolean isArchived = false;
 
 }

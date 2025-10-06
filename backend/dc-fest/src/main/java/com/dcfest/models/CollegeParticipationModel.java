@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "college_participations", uniqueConstraints = {
@@ -23,6 +24,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("is_archived=false")
 public class CollegeParticipationModel {
 
     @Id
@@ -38,6 +40,9 @@ public class CollegeParticipationModel {
     private AvailableEventModel availableEvent;
 
     private String teamNumber;
+
+    @jakarta.persistence.Column(name = "is_archived")
+    private boolean isArchived = false;
 
     public CollegeParticipationModel(Long id) {
         this.id = id;

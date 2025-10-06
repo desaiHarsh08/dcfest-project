@@ -1,6 +1,5 @@
 package com.dcfest.dtos;
 
-import com.dcfest.models.RoundModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,10 +1,5 @@
 package com.dcfest.dtos;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.dcfest.utils.PageResponse;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

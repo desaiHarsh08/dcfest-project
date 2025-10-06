@@ -1,7 +1,6 @@
 package com.dcfest.services;
 
 import com.dcfest.dtos.ParticipantAttendanceDto;
-import com.dcfest.models.ParticipantAttendanceModel;
 import com.dcfest.models.ParticipantModel;
 import com.dcfest.models.RoundModel;
 import com.dcfest.utils.ScannedQrcodeResponse;
@@ -11,7 +10,8 @@ import java.util.List;
 
 public interface ParticipantAttendanceServices {
 
-    List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel,  String group, String teamNumber);
+    List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels,
+            RoundModel roundModel, String group, String teamNumber);
 
     ParticipantAttendanceDto getAttendanceById(Long id);
 

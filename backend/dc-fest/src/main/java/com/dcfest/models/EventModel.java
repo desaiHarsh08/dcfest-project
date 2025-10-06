@@ -3,8 +3,6 @@ package com.dcfest.models;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,13 +18,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "events")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventModel {
@@ -40,12 +36,8 @@ public class EventModel {
     private AvailableEventModel availableEvent;
 
     @ManyToMany
-    @JoinTable(
-        name = "event_participant", 
-        joinColumns = @JoinColumn(name = "event_id"), 
-        inverseJoinColumns = @JoinColumn(name = "participant_id"),
-        uniqueConstraints = @UniqueConstraint(columnNames = {"event_id", "participant_id"})
-    )
+    @JoinTable(name = "event_participant", joinColumns = @JoinColumn(name = "event_id"), inverseJoinColumns = @JoinColumn(name = "participant_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
+            "event_id", "participant_id" }))
     @JsonManagedReference
     private List<ParticipantModel> participants = new ArrayList<>();
 

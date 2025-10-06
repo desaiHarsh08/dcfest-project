@@ -1,8 +1,5 @@
 package com.dcfest.models;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

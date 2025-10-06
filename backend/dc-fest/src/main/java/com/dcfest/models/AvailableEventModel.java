@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.util.EnumSet;
 
@@ -15,7 +14,6 @@ import java.util.EnumSet;
 @Table(name = "available_events")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class AvailableEventModel {
@@ -67,6 +65,5 @@ public class AvailableEventModel {
                 // Do not add references to EventModel here
                 '}';
     }
-
 
 }

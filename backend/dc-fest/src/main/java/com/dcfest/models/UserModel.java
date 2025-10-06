@@ -7,9 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.SQLRestriction;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +22,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("is_archived=false")
 public class UserModel {
 
     @Id
@@ -47,5 +47,8 @@ public class UserModel {
     private String type = UserType.PARTICIPANT.name();
 
     private boolean isDisabled;
+
+    @Column(name = "is_archived")
+    private boolean isArchived = false;
 
 }

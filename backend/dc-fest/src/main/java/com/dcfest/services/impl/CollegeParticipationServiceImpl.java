@@ -1,6 +1,5 @@
 package com.dcfest.services.impl;
 
-import com.dcfest.dtos.CollegeDto;
 import com.dcfest.dtos.CollegeParticipationDto;
 import com.dcfest.exceptions.RegisteredSlotsAvailableException;
 import com.dcfest.exceptions.ResourceNotFoundException;
@@ -30,9 +29,6 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     private EventRepository eventRepository;
 
     @Autowired
-    private CollegeRepository collegeRepository;
-
-    @Autowired
     private ParticipantRepository participantRepository;
 
     @Autowired
@@ -43,20 +39,25 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
     @Override
     public CollegeParticipationDto createParticipation(CollegeParticipationDto participationDto) {
-        List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
-        EventRuleModel eventRuleModel = eventRuleModels.stream().filter(e -> e.getEventRuleTemplate().getName().equalsIgnoreCase("REGISTERED_SLOTS_AVAILABLE")).findFirst().orElse(null);
-        if(eventRuleModel == null){
+        List<EventRuleModel> eventRuleModels = this.eventRuleRepository
+                .findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
+        EventRuleModel eventRuleModel = eventRuleModels.stream()
+                .filter(e -> e.getEventRuleTemplate().getName().equalsIgnoreCase("REGISTERED_SLOTS_AVAILABLE"))
+                .findFirst().orElse(null);
+        if (eventRuleModel == null) {
             throw new IllegalArgumentException("Unable to find event rule.");
         }
 
         int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
 
-        List<CollegeParticipationModel> collegeParticipationModels =  this.participationRepository.findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
+        List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository
+                .findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
 
         int slotsOccupied = collegeParticipationModels.size();
 
-        if(slotsOccupied >= maxSlotsAvailable){
-            throw new RegisteredSlotsAvailableException("Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+        if (slotsOccupied >= maxSlotsAvailable) {
+            throw new RegisteredSlotsAvailableException(
+                    "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
         }
 
         // Create the college's participation
@@ -131,18 +132,22 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     @Override
     public boolean deleteParticipation(Long id) {
         // Check for whether college's participation exist.
-        CollegeParticipationModel existCollegeParticipationModel = this.participationRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("No college_participation exist for id: " + id)
-        );
+        CollegeParticipationModel existCollegeParticipationModel = this.participationRepository.findById(id)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("No college_participation exist for id: " + id));
         System.out.println(existCollegeParticipationModel);
         // Fetch the event from available_event
-        EventModel eventModel = this.eventRepository.findByAvailableEvent(new AvailableEventModel(existCollegeParticipationModel.getAvailableEvent().getId())).orElse(null);
+        EventModel eventModel = this.eventRepository
+                .findByAvailableEvent(
+                        new AvailableEventModel(existCollegeParticipationModel.getAvailableEvent().getId()))
+                .orElse(null);
         if (eventModel == null) {
             throw new IllegalArgumentException("Unable to find the event from the available_event");
         }
         // Delete the participants
-        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), existCollegeParticipationModel.getCollege().getId());
-        for (ParticipantModel participantModel: participantModels) {
+        List<ParticipantModel> participantModels = this.participantRepository
+                .findByEvent_IdAndCollegeId(eventModel.getId(), existCollegeParticipationModel.getCollege().getId());
+        for (ParticipantModel participantModel : participantModels) {
             if (!this.participantServices.deleteParticipant(participantModel.getId())) {
                 throw new IllegalArgumentException("Unable to delete the participants");
             }
@@ -155,8 +160,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     @Override
     public CollegeParticipationDto getParticipationById(Long id) {
         CollegeParticipationModel collegeParticipationModel = this.participationRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("No participation exist for id: " + id)
-        );
+                () -> new ResourceNotFoundException("No participation exist for id: " + id));
 
         return this.collegeParticipationModelToDto(collegeParticipationModel);
     }
@@ -175,13 +179,14 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     }
 
     public List<CollegeParticipationDto> getInterestedColleges() {
-        List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository.findByEventWithEmptyParticipants();
+        List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository
+                .findByEventWithEmptyParticipants();
         if (collegeParticipationModels.isEmpty()) {
             return new ArrayList<>();
         }
 
-
-        return collegeParticipationModels.stream().map(this::collegeParticipationModelToDto).collect(Collectors.toList());
+        return collegeParticipationModels.stream().map(this::collegeParticipationModelToDto)
+                .collect(Collectors.toList());
     }
 
 }

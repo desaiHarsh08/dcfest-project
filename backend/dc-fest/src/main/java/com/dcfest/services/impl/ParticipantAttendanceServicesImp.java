@@ -1,6 +1,5 @@
 package com.dcfest.services.impl;
 
-import com.dcfest.constants.EntryType;
 import com.dcfest.constants.RoundType;
 import com.dcfest.dtos.*;
 import com.dcfest.exceptions.ResourceNotFoundException;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.stereotype.Service;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -98,10 +96,12 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     private CollegeParticipationRepository collegeParticipationRepository;
 
     @Override
-    public List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels, RoundModel roundModel, String group, String teamNumber) {
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroupAndRound(group, roundModel);
+    public List<ParticipantAttendanceDto> createAttendance(String qrcodeData, List<ParticipantModel> participantModels,
+            RoundModel roundModel, String group, String teamNumber) {
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository
+                .findByGroupAndRound(group, roundModel);
         if (participantAttendanceModels.isEmpty()) {
-            for (ParticipantModel participantModel: participantModels) {
+            for (ParticipantModel participantModel : participantModels) {
                 ParticipantAttendanceModel attendanceModel = new ParticipantAttendanceModel(
                         null,
                         participantModel,
@@ -109,23 +109,22 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                         participantModel.isPresent(),
                         roundModel,
                         group,
-                        teamNumber
-                );
+                        teamNumber);
                 participantAttendanceModels.add(
-                        this.participantAttendanceRepository.save(attendanceModel)
-                );
+                        this.participantAttendanceRepository.save(attendanceModel));
             }
-//            System.out.println("List: " + participantAttendanceModels.size());
+            // System.out.println("List: " + participantAttendanceModels.size());
         }
 
-        return participantAttendanceModels.stream().map(this::participantAttendanceModelToDto).collect(Collectors.toList());
+        return participantAttendanceModels.stream().map(this::participantAttendanceModelToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public ParticipantAttendanceDto getAttendanceById(Long id) {
-        ParticipantAttendanceModel foundParticipantAttendanceModel = this.participantAttendanceRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("No attendance found for id: " + id)
-        );
+        ParticipantAttendanceModel foundParticipantAttendanceModel = this.participantAttendanceRepository.findById(id)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("No attendance found for id: " + id));
 
         return this.participantAttendanceModelToDto(foundParticipantAttendanceModel);
     }
@@ -133,32 +132,29 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     @Override
     public InputStreamSource getPop(Long roundId, Long collegeId, Long availableEventId, String group) {
         CollegeModel collegeModel = this.collegeRepository.findById(collegeId).orElseThrow(
-                () -> new ResourceNotFoundException("No college exist for id: " + collegeId)
-        );
-        List<CollegeRepresentativeModel> collegeRepresentativeModels = this.collegeRepresentativeRepository.findByCollege(collegeModel);
+                () -> new ResourceNotFoundException("No college exist for id: " + collegeId));
 
         AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId).orElseThrow(
-                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId)
-        );
+                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId));
 
         EventModel eventModel = this.eventRepository.findByAvailableEvent(availableEventModel).orElseThrow(
-                () -> new ResourceNotFoundException("No event exist for available event: " + availableEventId)
-        );
+                () -> new ResourceNotFoundException("No event exist for available event: " + availableEventId));
 
         List<RoundModel> roundModels = this.roundRepository.findByAvailableEvent(availableEventModel);
         RoundModel roundModel = roundModels.stream().filter(r -> r.getId().equals(roundId)).findAny().orElseThrow(
-                () -> new ResourceNotFoundException("No round exist for id: " + roundId)
-        );
+                () -> new ResourceNotFoundException("No round exist for id: " + roundId));
         roundModel.setAvailableEvent(availableEventModel);
 
-        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), collegeId);
+        List<ParticipantModel> participantModels = this.participantRepository
+                .findByEvent_IdAndCollegeId(eventModel.getId(), collegeId);
 
-//        System.out.println(participantModels);
+        // System.out.println(participantModels);
 
-
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByGroupAndRound(group, new RoundModel(roundId));
-//        System.out.println(participantModels    );
-        participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group)).collect(Collectors.toList());
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository
+                .findByGroupAndRound(group, new RoundModel(roundId));
+        // System.out.println(participantModels );
+        participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group))
+                .collect(Collectors.toList());
 
         if (participantAttendanceModels.isEmpty()) {
             return null;
@@ -174,14 +170,13 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             throw new RuntimeException("Failed to generate QR code", e);
         }
 
-
         String teamNumber = participantModels.get(0).getTeamNumber();
         List<ParticipantModel> actualParticipants = new ArrayList<>();
-        for (ParticipantModel participantModel: participantModels) {
+        for (ParticipantModel participantModel : participantModels) {
             if (participantModel.isPresent()) {
                 actualParticipants.add(participantModel);
             }
-//            System.out.println(participantModel.getTeamNumber());
+            // System.out.println(participantModel.getTeamNumber());
         }
 
         // Create the pop
@@ -190,7 +185,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         String formattedDateTime = roundModel.getStartTime().format(formatter);
 
         // 1. Prepare data for the template
-        String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS" : roundModel.getRoundType().name();
+        String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS"
+                : roundModel.getRoundType().name();
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("college", collegeModel.getName());
         templateData.put("eventTitle", availableEventModel.getTitle());
@@ -201,20 +197,21 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         templateData.put("teamNumber", teamNumber); // Example
         templateData.put("eventMaster", availableEventModel.getEventMaster());
         templateData.put("eventMasterPhone", availableEventModel.getEventMasterPhone());
-//        System.out.println("img: " + Base64.getEncoder().encodeToString(qrCodeImage));
+        // System.out.println("img: " +
+        // Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("qrcodeImage", "data:image/png;base64," + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("participants", actualParticipants);
 
         // Render the HTML template
         String htmlContent = pdfService.renderHtmlTemplate("pop_template", templateData);
-//        System.out.println("Rendered HTML: " + htmlContent);
+        // System.out.println("Rendered HTML: " + htmlContent);
 
-//        System.out.println("Rendered HTML: " + htmlContent);
-// Or save to a file
+        // System.out.println("Rendered HTML: " + htmlContent);
+        // Or save to a file
         try (FileWriter writer = new FileWriter("output.html")) {
             writer.write(htmlContent);
         } catch (IOException e) {
-//            e.printStackTrace();
+            // e.printStackTrace();
         }
 
         // Generate the PDF
@@ -227,46 +224,47 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     }
 
     @Override
-    public  List<ParticipantAttendanceDto> getParticipantAttendancesByParticipantId(Long participantId) {
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByParticipant(new ParticipantModel(participantId));
+    public List<ParticipantAttendanceDto> getParticipantAttendancesByParticipantId(Long participantId) {
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository
+                .findByParticipant(new ParticipantModel(participantId));
         if (participantAttendanceModels.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return participantAttendanceModels.stream().map(this::participantAttendanceModelToDto).collect(Collectors.toList());
+        return participantAttendanceModels.stream().map(this::participantAttendanceModelToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public InputStreamSource generateQrcode(Long collegeId, Long availableEventId, Long roundId, String group) {
-//        System.out.println("in generate qrcode");
-//        System.out.println(collegeId);
-//        System.out.println(availableEventId);
-//        System.out.println(eventId);
-//        System.out.println(roundId);
+        // System.out.println("in generate qrcode");
+        // System.out.println(collegeId);
+        // System.out.println(availableEventId);
+        // System.out.println(eventId);
+        // System.out.println(roundId);
 
         CollegeModel collegeModel = this.collegeRepository.findById(collegeId).orElseThrow(
-                () -> new ResourceNotFoundException("No college exist for id: " + collegeId)
-        );
-        List<CollegeRepresentativeModel> collegeRepresentativeModels = this.collegeRepresentativeRepository.findByCollege(collegeModel);
+                () -> new ResourceNotFoundException("No college exist for id: " + collegeId));
+        List<CollegeRepresentativeModel> collegeRepresentativeModels = this.collegeRepresentativeRepository
+                .findByCollege(collegeModel);
 
         AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId).orElseThrow(
-                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId)
-        );
+                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId));
 
         EventModel eventModel = this.eventRepository.findByAvailableEvent(availableEventModel).orElseThrow(
-                () -> new ResourceNotFoundException("No event exist for availableEventModel: " + availableEventModel.getId())
-        );
+                () -> new ResourceNotFoundException(
+                        "No event exist for availableEventModel: " + availableEventModel.getId()));
 
         List<RoundModel> roundModels = this.roundRepository.findByAvailableEvent(availableEventModel);
         RoundModel roundModel = roundModels.stream().filter(r -> r.getId().equals(roundId)).findAny().orElseThrow(
-                () -> new ResourceNotFoundException("No round exist for id: " + roundId)
-        );
+                () -> new ResourceNotFoundException("No round exist for id: " + roundId));
         roundModel.setAvailableEvent(availableEventModel);
 
-        List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(eventModel.getId(), collegeId);
-        participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group)).collect(Collectors.toList());
-//        System.out.println(participantModels);
-
+        List<ParticipantModel> participantModels = this.participantRepository
+                .findByEvent_IdAndCollegeId(eventModel.getId(), collegeId);
+        participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group))
+                .collect(Collectors.toList());
+        // System.out.println(participantModels);
 
         // Generate qrcode
         String qrData = this.generateRandomAlphanumeric();
@@ -280,47 +278,42 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         }
 
         CollegeParticipationModel existingCollegeParticipationModel = new CollegeParticipationModel();
-        List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository.findByAvailableEvent(availableEventModel);
-        int collegeParticipationIndex = 0;
-        for (CollegeParticipationModel collegeParticipationModel: collegeParticipationModels) {
+        List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository
+                .findByAvailableEvent(availableEventModel);
+        for (CollegeParticipationModel collegeParticipationModel : collegeParticipationModels) {
             if (collegeParticipationModel.getCollege().getId().equals(collegeId)) {
                 existingCollegeParticipationModel = collegeParticipationModel;
                 break;
             }
-            collegeParticipationIndex += 1;
         }
 
-
-
-
-//        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findParticipantAttendanceByRoundIdAndCollegeId(roundId, collegeId);
+        // List<ParticipantAttendanceModel> participantAttendanceModels =
+        // this.participantAttendanceRepository.findParticipantAttendanceByRoundIdAndCollegeId(roundId,
+        // collegeId);
 
         String teamNumber;
         int countTeam = this.participantAttendanceRepository.countTeam(roundId);
 
-//        if (participantModels.stream().anyMatch(p -> p.getEntryType().equals(EntryType.NORMAL))) {
-//            countTeam = (int) participantAttendanceModels.stream().filter(pa -> !pa.getTeamNumber().contains(EntryType.OTSE.name())).count();
-//        }
-//        else {
-//            countTeam = (int) participantAttendanceModels.stream().filter(pa -> pa.getTeamNumber().contains(EntryType.OTSE.name())).count();
-//        }
-
+        // if (participantModels.stream().anyMatch(p ->
+        // p.getEntryType().equals(EntryType.NORMAL))) {
+        // countTeam = (int) participantAttendanceModels.stream().filter(pa ->
+        // !pa.getTeamNumber().contains(EntryType.OTSE.name())).count();
+        // }
+        // else {
+        // countTeam = (int) participantAttendanceModels.stream().filter(pa ->
+        // pa.getTeamNumber().contains(EntryType.OTSE.name())).count();
+        // }
 
         if (availableEventModel.getCode() != null) {
             teamNumber = availableEventModel.getCode() + "_" + String.format("%02d", (++countTeam));
-        }
-        else {
+        } else {
             teamNumber = "N/A" + "_" + String.format("%02d", ++countTeam);
         }
-
-
-
-
 
         existingCollegeParticipationModel.setTeamNumber(teamNumber);
         this.collegeParticipationRepository.save(existingCollegeParticipationModel);
 
-        for (ParticipantModel participantModel: participantModels) {
+        for (ParticipantModel participantModel : participantModels) {
             participantModel.setTeamNumber(teamNumber);
             this.participantRepository.save(participantModel);
         }
@@ -336,7 +329,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         String formattedDateTime = roundModel.getStartTime().format(formatter);
 
         // 1. Prepare data for the template
-        String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS" : roundModel.getRoundType().name();
+        String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS"
+                : roundModel.getRoundType().name();
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("college", collegeModel.getName());
         templateData.put("eventTitle", availableEventModel.getTitle());
@@ -349,50 +343,49 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         System.out.println("in p-a-s-i" + availableEventModel.getEventMasterPhone());
         templateData.put("eventMaster", availableEventModel.getEventMaster()); // Example
         templateData.put("eventMasterPhone", availableEventModel.getEventMasterPhone()); // Example
-//        System.out.println("img: " + Base64.getEncoder().encodeToString(qrCodeImage));
+        // System.out.println("img: " +
+        // Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("qrcodeImage", "data:image/png;base64," + Base64.getEncoder().encodeToString(qrCodeImage));
         templateData.put("participants", participantModels);
 
         // Render the HTML template
         String htmlContent = pdfService.renderHtmlTemplate("pop_template", templateData);
-//        System.out.println("Rendered HTML: " + htmlContent);
+        // System.out.println("Rendered HTML: " + htmlContent);
 
-//        System.out.println("Rendered HTML: " + htmlContent);
-// Or save to a file
+        // System.out.println("Rendered HTML: " + htmlContent);
+        // Or save to a file
         try (FileWriter writer = new FileWriter("output.html")) {
             writer.write(htmlContent);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-
         // Generate the PDF
         byte[] pdfBytes = PdfGenerator.generatePdf(htmlContent);
 
-//        System.out.println(pdfBytes);
+        // System.out.println(pdfBytes);
 
         // Notify the reps
-        for (CollegeRepresentativeModel collegeRepresentativeModel: collegeRepresentativeModels) {
+        for (CollegeRepresentativeModel collegeRepresentativeModel : collegeRepresentativeModels) {
             this.emailServices.sendEventProofEmail(
                     collegeRepresentativeModel.getEmail(),
                     "Confirmed Participation for the event - " + availableEventModel.getTitle(),
                     pdfBytes,
                     "POP_" + teamNumber + ".pdf",
                     availableEventModel,
-                    roundModel
-            );
+                    roundModel);
             List<Object> messageArr = new ArrayList<>();
-            String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
             // Create a temporary file to store the QR code image
 
-            // Define the path to the static folder (replace with your actual static folder path)
+            // Define the path to the static folder (replace with your actual static folder
+            // path)
             String staticFolderPath = "src/main/resources/static/";
 
             try (ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeImage)) {
                 // Create the file in the static folder with a unique name (e.g., qrCode.png)
                 File staticFolder = new File(staticFolderPath);
                 if (!staticFolder.exists()) {
-                    staticFolder.mkdirs();  // Ensure the folder exists
+                    staticFolder.mkdirs(); // Ensure the folder exists
                 }
 
                 String fileName = "qrCode" + LocalDateTime.now() + ".png";
@@ -408,21 +401,17 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 messageArr.add(roundName);
 
                 // Send the WhatsApp message with the QR code file
-                this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "popqr", "http://localhost:5003" + fileName);
+                this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "popqr",
+                        "http://localhost:5003" + fileName);
                 System.out.println("WhatsApp message sent to: " + collegeRepresentativeModel.getPhone());
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-
         }
 
         InputStreamSource attachmentSource = new ByteArrayResource(pdfBytes);
-
-
-
-
 
         return attachmentSource;
     }
@@ -437,7 +426,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 int index = random.nextInt(ALPHANUMERIC_CHARS.length());
                 sb.append(ALPHANUMERIC_CHARS.charAt(index));
             }
-            if (this.participantAttendanceRepository.findByQrcode(sb.toString()).isEmpty())  {
+            if (this.participantAttendanceRepository.findByQrcode(sb.toString()).isEmpty()) {
                 isUnique = true;
             }
         } while (!isUnique);
@@ -463,7 +452,6 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         return byteArrayOutputStream.toByteArray();
     }
 
-
     @Override
     public List<ParticipantAttendanceDto> getAllAttendances() {
         List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findAll();
@@ -471,32 +459,37 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             return new ArrayList<>();
         }
 
-        return participantAttendanceModels.stream().map(this::participantAttendanceModelToDto).collect(Collectors.toList());
+        return participantAttendanceModels.stream().map(this::participantAttendanceModelToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public ScannedQrcodeResponse scanQrcode(String qrData) {
-        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository.findByQrcode(qrData);
+        List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository
+                .findByQrcode(qrData);
 
         if (participantAttendanceModels.isEmpty()) {
             return null;
         }
         List<ParticipantDto> participantDtos = new ArrayList<>();
-        for (ParticipantAttendanceModel participantAttendanceModel: participantAttendanceModels) {
-            ParticipantModel participantModel = this.participantRepository.findById(participantAttendanceModel.getParticipant().getId()).orElse(null);
+        for (ParticipantAttendanceModel participantAttendanceModel : participantAttendanceModels) {
+            ParticipantModel participantModel = this.participantRepository
+                    .findById(participantAttendanceModel.getParticipant().getId()).orElse(null);
             if (participantModel != null) {
                 System.out.println("pop:" + participantModel.getTeamNumber());
-//                this.participantRepository.save(participantModel);
+                // this.participantRepository.save(participantModel);
                 participantDtos.add(this.participantModelToDto(participantModel));
             }
         }
 
-        RoundModel roundModel = this.roundRepository.findById(participantAttendanceModels.get(0).getRound().getId()).orElseThrow(
-                () -> new ResourceNotFoundException("No round exist for id: " + participantAttendanceModels.get(0).getRound().getId())
-        );
-        AvailableEventModel availableEventModel = this.availableEventRepository.findById(roundModel.getAvailableEvent().getId()).orElseThrow(
-                () -> new ResourceNotFoundException("No available_event exist for id: " + roundModel.getAvailableEvent().getId())
-        );
+        RoundModel roundModel = this.roundRepository.findById(participantAttendanceModels.get(0).getRound().getId())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "No round exist for id: " + participantAttendanceModels.get(0).getRound().getId()));
+        AvailableEventModel availableEventModel = this.availableEventRepository
+                .findById(roundModel.getAvailableEvent().getId()).orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "No available_event exist for id: " + roundModel.getAvailableEvent().getId()));
 
         ScannedQrcodeResponse scannedQrcodeResponse = new ScannedQrcodeResponse();
         scannedQrcodeResponse.setAvailableEvent(this.availableEventModelToDto(availableEventModel));
@@ -505,7 +498,6 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         return scannedQrcodeResponse;
     }
-
 
     @Override
     public ParticipantAttendanceDto markAttendance(Long roundId, Long collegeId, Long participantId, boolean status) {
@@ -517,7 +509,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         RoundModel roundModel = this.roundRepository.findById(roundId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid round_id: " + roundId));
 
-        AvailableEventModel availableEventModel = this.availableEventRepository.findById(roundModel.getAvailableEvent().getId())
+        AvailableEventModel availableEventModel = this.availableEventRepository
+                .findById(roundModel.getAvailableEvent().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid available_event_id for round: " + roundId));
 
         // Fetch CollegeParticipationModel
@@ -525,7 +518,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 .findByCollegeAndAvailableEvent(new CollegeModel(collegeId), availableEventModel)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid college_id or available_event_id"));
 
-        // Attempt to find the specific ParticipantAttendanceModel for the given participantId
+        // Attempt to find the specific ParticipantAttendanceModel for the given
+        // participantId
         Optional<ParticipantAttendanceModel> participantAttendanceOptional = this.participantAttendanceRepository
                 .findParticipantAttendanceByRoundIdAndCollegeId(roundId, collegeId)
                 .stream()
@@ -533,8 +527,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 .findFirst();
 
         ParticipantModel participantModel = this.participantRepository.findById(participantId).orElseThrow(
-                () -> new IllegalArgumentException("No participant found for id: " + participantId)
-        );
+                () -> new IllegalArgumentException("No participant found for id: " + participantId));
         System.out.println("fetched participantModel:" + participantModel.getGroup());
 
         // If the attendance record is found
@@ -546,13 +539,11 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             participantModel.setPresent(participantAttendanceModel.isPresent());
 
             EventModel eventModel = this.eventRepository.findByAvailableEvent(availableEventModel).orElseThrow(
-                    () -> new IllegalArgumentException("Unable to load event")
-            );
+                    () -> new IllegalArgumentException("Unable to load event"));
             List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeIdAndGroup(
                     eventModel.getId(),
                     collegeId,
-                    participantModel.getGroup()
-            );
+                    participantModel.getGroup());
 
             // Save the updated attendance record
             participantAttendanceModel = this.participantAttendanceRepository.save(participantAttendanceModel);
@@ -567,13 +558,12 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             int slot = Integer.parseInt(popNumber.substring(popNumber.length() - 2));
             System.out.println("in db participant after save:" + participantModel);
 
-
             // Generate the scorecard
             String team = participantModel.getGroup();
 
-
             System.out.println("team: " + team);
-            List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByCollegeParticipationAndRoundAndTeamNumber(collegeParticipationModel, roundModel, team);
+            List<ScoreCardModel> scoreCardModels = this.scoreCardRepository
+                    .findByCollegeParticipationAndRoundAndTeamNumber(collegeParticipationModel, roundModel, team);
             if (scoreCardModels.isEmpty()) {
                 ScoreCardDto scoreCardDto = new ScoreCardDto();
                 scoreCardDto.setCollegeParticipationId(collegeParticipationModel.getId());
@@ -582,8 +572,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 System.out.println("Slot is :" + slot);
                 scoreCardDto.setSlot(slot);
 
-
-                // Initialize score parameters with meaningful values (consider updating them later)
+                // Initialize score parameters with meaningful values (consider updating them
+                // later)
                 List<ScoreParameterDto> scoreParameterDtos = new ArrayList<>();
                 for (int i = 0; i < 4; i++) {
                     ScoreParameterDto scoreParameterDto = new ScoreParameterDto(null, "", null, null);
@@ -592,9 +582,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 scoreCardDto.setScoreParameters(scoreParameterDtos);
                 // Create the scorecard
                 this.scoreCardServices.createScoreCard(scoreCardDto);
-            }
-            else {
-                for (ScoreCardModel scoreCardModel: scoreCardModels) {
+            } else {
+                for (ScoreCardModel scoreCardModel : scoreCardModels) {
                     scoreCardModel.setTeamNumber(team);
                     this.scoreCardRepository.save(scoreCardModel);
                 }
@@ -609,17 +598,18 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
     @Override
     public boolean deleteAttendance(Long id) {
-        ParticipantAttendanceDto foundParticipantAttendanceDto = this.getAttendanceById(id);
         this.participantAttendanceRepository.deleteById(id);
         return true;
     }
 
-    private ParticipantAttendanceDto participantAttendanceModelToDto(ParticipantAttendanceModel participantAttendanceModel) {
+    private ParticipantAttendanceDto participantAttendanceModelToDto(
+            ParticipantAttendanceModel participantAttendanceModel) {
         if (participantAttendanceModel == null) {
             return null;
         }
 
-        ParticipantAttendanceDto participantAttendanceDto = this.modelMapper.map(participantAttendanceModel, ParticipantAttendanceDto.class);
+        ParticipantAttendanceDto participantAttendanceDto = this.modelMapper.map(participantAttendanceModel,
+                ParticipantAttendanceDto.class);
         participantAttendanceDto.setParticipantId(participantAttendanceModel.getParticipant().getId());
         participantAttendanceDto.setRoundId(participantAttendanceModel.getRound().getId());
 
@@ -648,7 +638,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         }
         AvailableEventDto availableEventDto = this.modelMapper.map(availableEventModel, AvailableEventDto.class);
         availableEventDto.setEventCategoryId(availableEventModel.getEventCategory().getId());
-        availableEventDto.setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
+        availableEventDto
+                .setEventRules(this.eventRuleServices.getEventRulesByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setRounds(this.roundServices.getRoundsByAvailableEventId(availableEventModel.getId()));
         availableEventDto.setJudges(this.judgeServices.getJudgesByAvailableEventId(availableEventModel.getId()));
 
