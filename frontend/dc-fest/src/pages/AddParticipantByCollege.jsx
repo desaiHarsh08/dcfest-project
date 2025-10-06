@@ -64,9 +64,9 @@ export default function AddParticipantByCollege() {
 
         if (!maxSlotsAvailable) navigate(`/${iccode}/${eventId}`);
 
-        if (data.length > 0 || slotsOccupied + 1 > maxSlotsAvailable || new Date() > new Date("2024-12-11T14:00:00")) {
-          navigate(`/${iccode}/${eventId}`);
-        }
+        // if (data.length > 0 || slotsOccupied + 1 > maxSlotsAvailable || new Date() > new Date("2024-12-11T14:00:00")) {
+        //   navigate(`/${iccode}/${eventId}`);
+        // }
       });
     }
   }, [eventId, college, slotsOccupied, availableEvent, event, iccode]);

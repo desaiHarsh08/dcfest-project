@@ -338,10 +338,10 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       console.log("error in fetchParticipantsByEventIdAndCollegeId() - ", error);
     }
 
-    if (iccode && new Date() > new Date("2024-12-11T14:00:00") && participants.some((p) => p.entryType == "NORMAL")) {
-      alert(`"Oops! Umangfest-2024 registrations are closed. Don't miss out next time—contact the host college for help!`);
-      return;
-    }
+    // if (iccode && new Date() > new Date("2024-12-11T14:00:00") && participants.some((p) => p.entryType == "NORMAL")) {
+    //   alert(`"Oops! Umangfest-2024 registrations are closed. Don't miss out next time—contact the host college for help!`);
+    //   return;
+    // }
 
     setLoading(true);
     const participantsArr = [];
@@ -438,7 +438,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
   return (
     <>
-      {new Date() > new Date("2024-12-11T14:00:00") && (
+      {/* {new Date() > new Date("2024-12-11T14:00:00") && (
         <div className="vw-100 d-flex positon-absolute justify-content-center" style={{ top: "83px", zIndex: "1", position: "absolute" }}>
           <div className="w-100 d-flex justify-content-center align-items-center gap-2 bottom-0 border" style={{ listStyle: "none", backgroundColor: "#ff6767", color: "white" }}>
             <FaBolt />
@@ -447,7 +447,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
             </p>
           </div>
         </div>
-      )}
+      )} */}
 
       <Container fluid className="d-flex align-items-center justify-content-center bg-light" id="event-participant-container">
         <Row className="w-100 h-100 py-2">

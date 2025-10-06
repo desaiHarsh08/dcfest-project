@@ -95,10 +95,10 @@ const CollegeEvent = () => {
     }
   };
   const handleDelete = async (id) => {
-    if (new Date() > new Date("2024-12-11T14:00:00")) {
-      alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
-      return;
-    }
+    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
+    //   return;
+    // }
     const tmpParticipant = participants.find((p) => p.id == id);
     const isConfirm = confirm(`Are you sure that you want to delete "${tmpParticipant?.name}"?`);
     if (!isConfirm) {
@@ -323,10 +323,10 @@ const CollegeEvent = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (new Date() > new Date("2024-12-11T14:00:00")) {
-      alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
-      return;
-    }
+    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
+    //   return;
+    // }
     console.log("Im in handle Save", isValid);
     if (!handleRuleChecks(true)) {
       return;
@@ -359,10 +359,10 @@ const CollegeEvent = () => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (new Date() > new Date("2024-12-11T14:00:00")) {
-      alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
-      return;
-    }
+    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
+    //   return;
+    // }
 
     if (!handleRuleChecks(true)) {
       alert("Please provide the correct participant entries... check the rules");
@@ -527,7 +527,7 @@ const CollegeEvent = () => {
                 <div className="d-flex align-items-center gap-2">
                   <h4 className="text-secondary">Participants</h4>
                   {participants.length > 0 &&
-                    new Date() < new Date("2024-12-11T14:00:00") &&
+                    // new Date() < new Date("2024-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
                       <button
@@ -553,7 +553,7 @@ const CollegeEvent = () => {
                       </button>
                     )}
                   {participants.length > 0 &&
-                    new Date() < new Date("2024-12-11T14:00:00") &&
+                    // new Date() < new Date("2024-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter((p) => p.type == "ACCOMPANIST").length && (
                       <button
@@ -580,7 +580,7 @@ const CollegeEvent = () => {
                     )}
                 </div>
                 {college &&
-                  new Date() < new Date("2024-12-11T14:00:00") &&
+                //   new Date() < new Date("2024-12-11T14:00:00") &&
                   participants.length == 0 &&
                   slotsOccupied != null &&
                   slotsOccupied + 1 <= availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
