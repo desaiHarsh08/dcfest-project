@@ -25,6 +25,18 @@
     /* Space between cards */
 }
 
+/* Hide scrollbar visually while keeping scroll functionality */
+.event-list-container-horizontal {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.event-list-container-horizontal::-webkit-scrollbar {
+    display: none;
+}
+
 .event-card {
     flex: 0 0 auto;
     /* Prevent card from shrinking */
@@ -38,6 +50,42 @@
     /* Subtle shadow */
     transition: transform 0.2s;
     /* Smooth scale on hover */
+}
+
+/* Carousel wrapper positions nav buttons */
+.carousel-wrapper {
+    position: relative;
+}
+
+.nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.nav-left {
+    left: 4px;
+}
+
+.nav-right {
+    right: 4px;
+}
+
+.nav-button:hover {
+    background: rgba(0, 0, 0, 0.75);
 }
 
 .event-card:hover {
