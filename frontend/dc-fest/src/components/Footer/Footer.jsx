@@ -13,7 +13,7 @@ const Footer = () => {
                             className="footer-logo img-fluid me-2" // reduced space between logo and text
                         />
                         <p className="footer-text mb-0">
-                            UMANG &copy; 2024 | All rights reserved
+                            NEXUS &copy; 2025 | All rights reserved
                         </p>
                     </Col>
                 </Row>
