@@ -4,25 +4,20 @@ import com.dcfest.constants.RoundType;
 import com.dcfest.models.AvailableEventModel;
 import com.dcfest.models.RoundModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamSource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.List;
 
 @Service
 public class EmailServices {
 
     @Autowired
-    private JavaMailSender emailSender;
+    private ZeptoMailService zeptoMailService;
 
     @Autowired
     private TemplateEngine templateEngine;
@@ -32,20 +27,15 @@ public class EmailServices {
         String subject = "Confirmation of Participation for Umang DCFest 2024";
 
         try {
-            MimeMessage message = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(to);
-            helper.setSubject(subject);
-
             // Create the HTML content using Thymeleaf template
             Context context = new Context();
             context.setVariable("name", collegeName);
 
             String htmlContent = templateEngine.process("collegeRegistration", context);
-            helper.setText(htmlContent, true); // Enable HTML content
 
-            this.emailSender.send(message);
-        } catch (MessagingException e) {
+            // Send email using ZeptoMail
+            zeptoMailService.sendEmail(to, subject, htmlContent);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -55,21 +45,16 @@ public class EmailServices {
         String subject = "Verify your account for Umang DCFest 2024";
 
         try {
-            MimeMessage message = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(to);
-            helper.setSubject(subject);
-
             // Create the HTML content using Thymeleaf template
             Context context = new Context();
             context.setVariable("name", username);
             context.setVariable("otp", otp);
 
             String htmlContent = templateEngine.process("sendOtp", context);
-            helper.setText(htmlContent, true); // Enable HTML content
 
-            this.emailSender.send(message);
-        } catch (MessagingException e) {
+            // Send email using ZeptoMail
+            zeptoMailService.sendEmail(to, subject, htmlContent);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -107,11 +92,6 @@ public class EmailServices {
         String subject = "Reset Password Success - (Umang 2024)";
 
         try {
-            MimeMessage message = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(to);
-            helper.setSubject(subject);
-
             // Create the HTML content using Thymeleaf template
             Context context = new Context();
             context.setVariable("name", name);
@@ -120,10 +100,10 @@ public class EmailServices {
             context.setVariable("institutionName", institutionName);
 
             String htmlContent = templateEngine.process("resetPasswordEmail", context);
-            helper.setText(htmlContent, true); // Enable HTML content
 
-            emailSender.send(message);
-        } catch (MessagingException e) {
+            // Send email using ZeptoMail
+            zeptoMailService.sendEmail(to, subject, htmlContent);
+        } catch (Exception e) {
             // Log the exception for better error tracking
             e.printStackTrace();
         }
@@ -133,15 +113,9 @@ public class EmailServices {
     public void sendSimpleMessage(String to, String subject, String body) {
         System.out.println("in sendSimpleMessage()");
         try {
-            MimeMessage message = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(body, true); // 'true' enables HTML content
-
-            emailSender.send(message);
-        } catch (MessagingException e) {
+            // Send email using ZeptoMail
+            zeptoMailService.sendEmail(to, subject, body);
+        } catch (Exception e) {
             // Handle the exception or log it
             e.printStackTrace();
         }
@@ -151,21 +125,38 @@ public class EmailServices {
     public void sendSimpleMessageWithAttachment(String to, String subject, String body, byte[] attachmentData,
             String attachmentName) {
         try {
-            MimeMessage message = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            // Convert attachment data to base64
+            String base64Attachment = Base64.getEncoder().encodeToString(attachmentData);
 
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(body, true); // 'true' enables HTML content
+            // Determine content type based on file extension
+            String contentType = getContentType(attachmentName);
 
-            // Add the QR code image as an attachment
-            InputStreamSource attachmentSource = new ByteArrayResource(attachmentData);
-            helper.addAttachment(attachmentName, attachmentSource);
+            // Create attachment object
+            ZeptoMailService.Attachment attachment = new ZeptoMailService.Attachment(
+                    base64Attachment,
+                    attachmentName,
+                    contentType);
 
-            emailSender.send(message);
-        } catch (MessagingException e) {
+            // Send email with attachment using ZeptoMail
+            zeptoMailService.sendEmail(to, subject, body, List.of(attachment));
+        } catch (Exception e) {
             // Handle the exception or log it
             e.printStackTrace();
+        }
+    }
+
+    private String getContentType(String fileName) {
+        String extension = fileName.toLowerCase();
+        if (extension.endsWith(".pdf")) {
+            return "application/pdf";
+        } else if (extension.endsWith(".jpg") || extension.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else if (extension.endsWith(".png")) {
+            return "image/png";
+        } else if (extension.endsWith(".gif")) {
+            return "image/gif";
+        } else {
+            return "application/octet-stream";
         }
     }
 
@@ -173,35 +164,34 @@ public class EmailServices {
     public void sendEventProofEmail(String to, String subject, byte[] pdfData, String attachmentName,
             AvailableEventModel availableEventModel, RoundModel roundModel) {
         try {
-            MimeMessage message = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(to);
-            helper.setSubject(subject);
-
             // Format the LocalDateTime to the required format without milliseconds
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a");
             String formattedDateTime = roundModel.getStartTime().format(formatter);
-
-            // Add the PDF as an attachment
-            InputStreamSource attachmentSource = new ByteArrayResource(pdfData);
-            helper.addAttachment(attachmentName, attachmentSource);
 
             // Create the HTML content using Thymeleaf template
             String roundName = roundModel.getRoundType().equals(RoundType.SEMI_FINAL) ? "PRELIMS"
                     : roundModel.getRoundType().name();
             Context context = new Context();
             context.setVariable("eventName", availableEventModel.getTitle());
-
             context.setVariable("eventDateTime", formattedDateTime);
             context.setVariable("venue", roundModel.getVenue());
             context.setVariable("round", roundName);
             context.setVariable("slug", availableEventModel.getSlug());
 
             String htmlContent = templateEngine.process("confirmEventParticipation", context);
-            helper.setText(htmlContent, true); // Enable HTML content
 
-            emailSender.send(message);
-        } catch (MessagingException e) {
+            // Convert PDF data to base64
+            String base64Pdf = Base64.getEncoder().encodeToString(pdfData);
+
+            // Create attachment object
+            ZeptoMailService.Attachment attachment = new ZeptoMailService.Attachment(
+                    base64Pdf,
+                    attachmentName,
+                    "application/pdf");
+
+            // Send email with PDF attachment using ZeptoMail
+            zeptoMailService.sendEmail(to, subject, htmlContent, List.of(attachment));
+        } catch (Exception e) {
             // Log the exception for better error tracking
             e.printStackTrace();
         }
