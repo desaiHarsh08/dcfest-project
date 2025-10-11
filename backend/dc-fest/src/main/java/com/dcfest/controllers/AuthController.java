@@ -379,7 +379,7 @@ public class AuthController {
             this.whatsAppService.sendWhatsAppMessage(
                     otpRequest.getPhone(),
                     messageArr,
-                    "logincode",
+                    "otpveri",
                     null);
         }
     }
