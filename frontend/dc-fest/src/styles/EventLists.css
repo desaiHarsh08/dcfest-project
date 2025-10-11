@@ -2,64 +2,74 @@ Container for the event list
 .event-list-container-horizontal {
     display: flex;
     overflow-x: auto; /* Enables horizontal scrolling */
+    overflow-y: hidden; /* Prevent vertical scrollbar */
     padding: 20px;
     gap: 20px; /* Space between cards */
     scroll-snap-type: x mandatory; /* Smooth scrolling */
+    /* Hide scrollbar across browsers while preserving scroll */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.event-list-container-horizontal::-webkit-scrollbar { /* Chrome/Safari */
+    display: none;
 }
 
 /* Styling for the event cards */
 .event-card {
-    min-width: 250px; /* Minimum width for each card */
-    flex: 0 0 auto; /* Keeps cards in a horizontal row */
-    scroll-snap-align: start; /* Ensures snapping when scrolling */
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    max-width: 300px; /* Set a maximum width */
+    min-width: 260px;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    max-width: 320px;
+    background: #fff;
 }
 
 /* Hover effect for event cards */
 .event-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.14);
 }
 
 /* Image inside the card */
 .event-img {
-    object-fit: cover; /* Ensures the image covers the card properly */
-    height: 200px; /* Fixes height to ensure consistent card size */
-    border-radius: 10px 10px 0 0; /* Rounds the top corners */
+    object-fit: cover;
+    height: 200px;
 }
 
 /* Title styling */
 .event-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #007bff;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111827;
 }
 
 /* Event heading */
 .event-heading {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #333;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 4px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .event-card {
-        min-width: 200px; /* Adjust the minimum card width for smaller screens */
+        min-width: 200px;
     }
     .event-title {
-        font-size: 1rem; /* Reduce font size for smaller screens */
+        font-size: 1rem;
     }
 }
 
 @media (max-width: 576px) {
     .event-card {
-        min-width: 180px; /* Further reduce card width for very small screens */
+        min-width: 180px;
     }
     .event-img {
-        height: 150px; /* Reduce image height for smaller devices */
+        height: 150px;
     }
 }

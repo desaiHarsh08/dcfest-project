@@ -17,7 +17,7 @@ const WelcomeSection = () => {
   return (
     <div className="welcome-section">
       <div className="main-header text-center">
-        <div className="welcome-title">WELCOME TO UMANG 2024</div>
+        <div className="welcome-title">WELCOME TO NEXUS 2025!</div>
         <div className="slider">
           <div className="slider-track">
             {images.map((src, index) => (
@@ -41,7 +41,7 @@ const WelcomeSection = () => {
         </div>
         <p className="welcome-description">
           Dive into an extraordinary celebration of culture, art, and
-          excitement. Join us for "UMANG 2024" — where creativity meets
+          excitement. Join us for "NEXUS 2025" — where creativity meets
           tradition, and every moment is unforgettable. Be ready for an
           experience like no other!
         </p>

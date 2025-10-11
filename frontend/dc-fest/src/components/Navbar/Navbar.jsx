@@ -14,7 +14,7 @@ const GuidelinesModal = ({ show, handleClose }) => (
     </Modal.Header>
     <Modal.Body className="modal-body-custom">
       <ul className="guidelines-list">
-        <li>Two college representatives attending the final meeting before Umang will be recognised as the official representatives of their respective colleges for UMANG 2024.</li>
+        <li>Two college representatives attending the final meeting before NEXUS will be recognised as the official representatives of their respective colleges for NEXUS 2025.</li>
         <li>All participants must carry a valid college identity card from their respective college.</li>
         <li>Participants cannot be changed from prelims to Finals.</li>
         <li>The organisers shall not reimburse any expenses incurred by any of the colleges.</li>
@@ -31,7 +31,7 @@ const GuidelinesModal = ({ show, handleClose }) => (
         <li>All the given pen drives must be in audio format, named and labelled with their respective IC codes. Management shall not be responsible for any problems related to the same.</li>
         <li>The management shall not be responsible for any loss, damage, theft, etc. of your personal belongings.</li>
         <li>Damaging or tampering with any kind of college property by anyone shall be considered a serious offense and may lead to cancellation of the college participation.</li>
-        <li>The prop list and song list must be submitted in Umang's final representative meeting. Not listing any of the above will result in disqualification.</li>
+        <li>The prop list and song list must be submitted in NEXUS's final representative meeting. Not listing any of the above will result in disqualification.</li>
         <li>Organisers reserve the right to modify the rules and regulations (if required).</li>
         <li>On the Spot Entry (OTSE) is subject to available slots.</li>
         <li>Rights to admission are reserved.</li>
@@ -96,8 +96,8 @@ const Navbar = () => {
       >
         <Container>
           <div className="navbar-brand ms-2 fs-5 font-bold d-flex align-items-center">
-            <img src="/umang-logo.jpeg" alt="Umang Logo" className="logo-img me-2" />
-            <span>UMANG 2024</span>
+            <img src="/NEXUS-LOGO.png" alt="NEXUS Logo" className="logo-img me-2" />
+            {/* <span>NEXUS 2025</span> */}
           </div>
           <RBNavbar.Toggle aria-controls="navbar-default" style={{ background: "none" }} />
           <RBNavbar.Collapse id="navbar-default">
