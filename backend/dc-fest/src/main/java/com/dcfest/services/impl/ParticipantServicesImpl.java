@@ -106,9 +106,10 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 .filter(cp -> cp.getCollege().getId().equals(participantDtos.get(0).getCollegeId())).findAny()
                 .orElse(null);
         if (collegeParticipationModels.isEmpty() || existingCollegeParticipation == null) {
+            // Use already fetched and validated collegeModel
             this.collegeParticipationRepository.save(new CollegeParticipationModel(
                     null,
-                    new CollegeModel(participantDtos.get(0).getCollegeId()),
+                    collegeModel,
                     availableEventModel,
                     null,
                     false));
@@ -261,9 +262,10 @@ public class ParticipantServicesImpl implements ParticipantServices {
         CollegeParticipationModel existingCollegeParticipation = collegeParticipationModels.stream()
                 .filter(cp -> cp.getCollege().getId().equals(participantDto.getCollegeId())).findAny().orElse(null);
         if (collegeParticipationModels.isEmpty() || existingCollegeParticipation == null) {
+            // Use already fetched and validated collegeModel
             this.collegeParticipationRepository.save(new CollegeParticipationModel(
                     null,
-                    new CollegeModel(participantDto.getCollegeId()),
+                    collegeModel,
                     availableEventModel,
                     null,
                     false));
@@ -413,8 +415,11 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Override
     public List<ParticipantDto> getParticipantByCollegeId(Long collegeId) {
-        CollegeModel collegeModel = new CollegeModel();
-        collegeModel.setId(collegeId);
+        // Validate college exists and is not archived
+        CollegeModel collegeModel = this.collegeRepository.findById(collegeId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College not found or has been archived for id: " + collegeId));
+
         List<ParticipantModel> participantModels = this.participantRepository.findByCollege(collegeModel);
 
         if (participantModels.isEmpty()) {
@@ -544,8 +549,12 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Override
     public void deleteParticipantsByCollegesId(Long collegeId) {
+        // Validate college exists (allow deletion even if archived)
+        CollegeModel collegeModel = this.collegeRepository.findById(collegeId)
+                .orElseThrow(() -> new ResourceNotFoundException("College not found for id: " + collegeId));
+
         List<ParticipantModel> participantModels = this.participantRepository
-                .findByCollege(new CollegeModel(collegeId));
+                .findByCollege(collegeModel);
         for (ParticipantModel participantModel : participantModels) {
             this.deleteParticipant(participantModel.getId());
         }

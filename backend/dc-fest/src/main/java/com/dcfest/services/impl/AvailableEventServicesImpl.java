@@ -279,7 +279,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         availableEventModel.setCloseRegistration(true);
         availableEventModel = this.availableEventRepository.save(availableEventModel);
 
-        List<Object> messageArr = new ArrayList<>();
+        List<String> messageArr = new ArrayList<>();
         messageArr.add(availableEventModel.getTitle());
 
         this.whatsAppService.sendWhatsAppMessage(

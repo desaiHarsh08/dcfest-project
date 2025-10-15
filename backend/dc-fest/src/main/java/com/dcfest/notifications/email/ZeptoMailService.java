@@ -47,10 +47,10 @@ public class ZeptoMailService {
             from.put("name", "Umang DCFest 2024");
             emailData.put("from", from);
 
-            // To addresses
-            List<Map<String, String>> toList = new ArrayList<>();
-            Map<String, String> toAddress = new HashMap<>();
-            toAddress.put("address", to);
+            // To addresses - ZeptoMail API format
+            List<Map<String, Object>> toList = new ArrayList<>();
+            Map<String, Object> toAddress = new HashMap<>();
+            toAddress.put("email_address", Map.of("address", to, "name", ""));
             toList.add(toAddress);
             emailData.put("to", toList);
 

@@ -225,8 +225,13 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
     @Override
     public List<ParticipantAttendanceDto> getParticipantAttendancesByParticipantId(Long participantId) {
+        // Validate participant exists and is not archived
+        ParticipantModel participant = this.participantRepository.findById(participantId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Participant not found or has been archived for id: " + participantId));
+
         List<ParticipantAttendanceModel> participantAttendanceModels = this.participantAttendanceRepository
-                .findByParticipant(new ParticipantModel(participantId));
+                .findByParticipant(participant);
         if (participantAttendanceModels.isEmpty()) {
             return new ArrayList<>();
         }
@@ -374,7 +379,7 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                     "POP_" + teamNumber + ".pdf",
                     availableEventModel,
                     roundModel);
-            List<Object> messageArr = new ArrayList<>();
+            List<String> messageArr = new ArrayList<>();
             // Create a temporary file to store the QR code image
 
             // Define the path to the static folder (replace with your actual static folder
@@ -513,9 +518,14 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 .findById(roundModel.getAvailableEvent().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid available_event_id for round: " + roundId));
 
+        // Validate college exists and is not archived
+        CollegeModel college = this.collegeRepository.findById(collegeId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College not found or has been archived for id: " + collegeId));
+
         // Fetch CollegeParticipationModel
         CollegeParticipationModel collegeParticipationModel = this.collegeParticipationRepository
-                .findByCollegeAndAvailableEvent(new CollegeModel(collegeId), availableEventModel)
+                .findByCollegeAndAvailableEvent(college, availableEventModel)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid college_id or available_event_id"));
 
         // Attempt to find the specific ParticipantAttendanceModel for the given

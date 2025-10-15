@@ -103,10 +103,23 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         if (scoreCardDto.getTeamNumber() == null) {
             throw new IllegalArgumentException("Unable to create score card");
         }
+
+        // Validate college participation exists and is not archived
+        CollegeParticipationModel collegeParticipation = this.collegeParticipationRepository
+                .findById(scoreCardDto.getCollegeParticipationId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College participation not found or has been archived for id: "
+                                + scoreCardDto.getCollegeParticipationId()));
+
+        // Validate round exists
+        RoundModel round = this.roundRepository.findById(scoreCardDto.getRoundId())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Round not found for id: " + scoreCardDto.getRoundId()));
+
         ScoreCardModel scoreCard = new ScoreCardModel(
                 null,
-                new CollegeParticipationModel(scoreCardDto.getCollegeParticipationId()),
-                new RoundModel(scoreCardDto.getRoundId()),
+                collegeParticipation,
+                round,
                 scoreCardDto.getTeamNumber(),
                 null,
                 null,
@@ -239,8 +252,18 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
 
     public List<ScoreCardDto> getScoreCardByCollegeParticipationIdAndRoundId(Long collegeParticipationId,
             Long roundId) {
+        // Validate college participation exists and is not archived
+        CollegeParticipationModel collegeParticipation = this.collegeParticipationRepository
+                .findById(collegeParticipationId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College participation not found or has been archived for id: " + collegeParticipationId));
+
+        // Validate round exists
+        RoundModel round = this.roundRepository.findById(roundId)
+                .orElseThrow(() -> new ResourceNotFoundException("Round not found for id: " + roundId));
+
         List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByCollegeParticipationAndRound(
-                new CollegeParticipationModel(collegeParticipationId), new RoundModel(roundId));
+                collegeParticipation, round);
         if (scoreCardModels.isEmpty()) {
             return new ArrayList<>();
         }

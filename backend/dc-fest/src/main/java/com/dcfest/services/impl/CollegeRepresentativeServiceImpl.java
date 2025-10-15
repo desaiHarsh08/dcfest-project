@@ -32,7 +32,8 @@ public class CollegeRepresentativeServiceImpl implements CollegeRepresentativeSe
 
     @Override
     public CollegeRepresentativeDto updateRepresentative(CollegeRepresentativeDto representativeDto) {
-        Optional<CollegeRepresentativeModel> existingRepresentative = representativeRepository.findById(representativeDto.getId());
+        Optional<CollegeRepresentativeModel> existingRepresentative = representativeRepository
+                .findById(representativeDto.getId());
         if (existingRepresentative.isEmpty()) {
             throw new RuntimeException("Representative not found");
         }
@@ -41,7 +42,12 @@ public class CollegeRepresentativeServiceImpl implements CollegeRepresentativeSe
         representative.setEmail(representativeDto.getEmail());
         representative.setPhone(representativeDto.getPhone());
         representative.setWhatsappNumber(representativeDto.getWhatsappNumber());
-        representative.setCollege(new CollegeModel(representativeDto.getCollegeId())); // Set College using ID
+
+        // Validate college exists and is not archived
+        CollegeModel college = this.collegeRepository.findById(representativeDto.getCollegeId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College not found or has been archived for id: " + representativeDto.getCollegeId()));
+        representative.setCollege(college);
 
         CollegeRepresentativeModel updatedRepresentative = representativeRepository.save(representative);
         return mapToDto(updatedRepresentative);
@@ -63,8 +69,7 @@ public class CollegeRepresentativeServiceImpl implements CollegeRepresentativeSe
     @Override
     public List<CollegeRepresentativeDto> getRepresentativesByCollege(Long collegeId) {
         CollegeModel college = collegeRepository.findById(collegeId).orElseThrow(
-                () -> new ResourceNotFoundException("College not found")
-        );
+                () -> new ResourceNotFoundException("College not found"));
 
         return representativeRepository.findByCollege(college).stream()
                 .map(this::mapToDto)
@@ -78,14 +83,18 @@ public class CollegeRepresentativeServiceImpl implements CollegeRepresentativeSe
                 representative.getName(),
                 representative.getEmail(),
                 representative.getPhone(),
-                representative.getWhatsappNumber()
-        );
+                representative.getWhatsappNumber());
     }
 
     private CollegeRepresentativeModel mapToEntity(CollegeRepresentativeDto dto) {
         CollegeRepresentativeModel representative = new CollegeRepresentativeModel();
         representative.setId(dto.getId());
-        representative.setCollege(new CollegeModel(dto.getCollegeId()));
+
+        // Validate college exists and is not archived
+        CollegeModel college = this.collegeRepository.findById(dto.getCollegeId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College not found or has been archived for id: " + dto.getCollegeId()));
+        representative.setCollege(college);
         representative.setName(dto.getName());
         representative.setEmail(dto.getEmail());
         representative.setPhone(dto.getPhone());

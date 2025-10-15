@@ -69,6 +69,10 @@ const EventCard = ({ event, college }) => {
       const response = await fetchParticipationsByAvailableEventId(availableEventId);
       console.log("response:", event?.title, response.length);
       setSlotsOccupied(response.length);
+
+      // Debug: Log the event rules
+      const maxSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate.name === "REGISTERED_SLOTS_AVAILABLE")?.value;
+      console.log(`${event?.title} - Slots: ${response.length}/${maxSlots}, closeRegistration: ${event?.closeRegistration}`);
     } catch (error) {
       console.log(error);
       alert("Unable to fetch the details!");
@@ -130,21 +134,28 @@ const EventCard = ({ event, college }) => {
                   <FaCheckCircle className="me-2" />
                   {isLoading ? "Please wait..." : "Enrolled"}
                 </Button>
-              ) : !event?.closeRegistration && slotsOccupied < event?.eventRules.find((ele) => ele.eventRuleTemplate.name === "REGISTERED_SLOTS_AVAILABLE")?.value ? (
-                <Button variant="primary" onClick={handleCollegeRegister} disabled={isLoading} className="d-flex align-items-center">
-                  {isLoading ? (
-                    <>
-                      <FaSpinner className="me-2 spinner-border-sm" />
-                      Registering...
-                    </>
-                  ) : (
-                    "Register"
-                  )}
-                </Button>
               ) : (
-                <Button disabled variant="danger">
-                  Full
-                </Button>
+                (() => {
+                  const maxSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "REGISTERED_SLOTS_AVAILABLE")?.value;
+                  const isRegistrationOpen = !event?.closeRegistration && slotsOccupied !== null && maxSlots && slotsOccupied < parseInt(maxSlots);
+
+                  return isRegistrationOpen ? (
+                    <Button variant="primary" onClick={handleCollegeRegister} disabled={isLoading} className="d-flex align-items-center">
+                      {isLoading ? (
+                        <>
+                          <FaSpinner className="me-2 spinner-border-sm" />
+                          Registering...
+                        </>
+                      ) : (
+                        "Register"
+                      )}
+                    </Button>
+                  ) : (
+                    <Button disabled variant="danger">
+                      Full
+                    </Button>
+                  );
+                })()
               )}
             </div>
           </Card.Body>

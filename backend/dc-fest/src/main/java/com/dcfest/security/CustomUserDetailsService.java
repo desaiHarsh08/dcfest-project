@@ -23,7 +23,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        UserModel user = this.userRepository.findByEmail(username).orElse(null);
+        // Use explicit non-archived queries for authentication
+        UserModel user = this.userRepository.findByEmailAndNotArchived(username).orElse(null);
         if (user != null) {
             // Create UserDetails object using user data
             return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
@@ -32,7 +33,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .build();
         }
 
-        CollegeModel collegeModel = this.collegeRepository.findByIcCode(username).orElse(null);
+        // Try to find college (non-archived only)
+        CollegeModel collegeModel = this.collegeRepository.findByIcCodeAndNotArchived(username).orElse(null);
 
         if (collegeModel != null) {
             // Create UserDetails object using college data
