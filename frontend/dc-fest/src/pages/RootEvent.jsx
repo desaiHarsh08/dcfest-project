@@ -38,6 +38,24 @@ const RootEvent = () => {
     });
   };
 
+  // Function to format time only
+  const formatTime = (dateTime) => {
+    return new Date(dateTime).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Function to format date only
+  const formatDate = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <>
       <Navbar />
@@ -146,12 +164,16 @@ const RootEvent = () => {
                               </div>
                               <div>
                                 <p>
-                                  <FaRegClock className="me-2" />
-                                  {formatDateTime(round?.startTime)}
+                                  <FaCalendarAlt className="me-2" />
+                                  <strong>Date:</strong> {formatDate(round?.startTime)}
                                 </p>
                                 <p>
                                   <FaRegClock className="me-2" />
-                                  {formatDateTime(round?.endTime)}
+                                  <strong>Start:</strong> {formatTime(round?.startTime)}
+                                </p>
+                                <p>
+                                  <FaRegClock className="me-2" />
+                                  <strong>End:</strong> {formatTime(round?.endTime)}
                                 </p>
                               </div>
                             </ListGroup.Item>

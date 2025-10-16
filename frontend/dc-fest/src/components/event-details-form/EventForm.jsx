@@ -55,7 +55,10 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
         console.log(data);
         setCategories(data);
 
-        setEvent((prev) => ({ ...prev, eventCategoryId: data[0]?.id }));
+        // Only set default category for new events, not when editing
+        if (formType.toLowerCase() === "add") {
+          setEvent((prev) => ({ ...prev, eventCategoryId: data[0]?.id }));
+        }
       })
       .catch((error) => console.log(error));
   }, []);
@@ -236,6 +239,12 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
     const existRegisteredSlots = event.eventRules.find((ele) => ele.eventRuleTemplate.id == 6);
     if (!existRegisteredSlots) {
       alert("Please provide the REGISTERED_SLOTS_AVAILABLE");
+      return;
+    }
+
+    // Validate that all rule values are provided (same validation as AddEventPage)
+    if (event?.eventRules?.filter((rule) => rule.value?.trim() == "").length > 0) {
+      alert("Please provide all rule values!");
       return;
     }
 

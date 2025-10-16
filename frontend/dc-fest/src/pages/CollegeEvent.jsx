@@ -138,6 +138,24 @@ const CollegeEvent = () => {
     });
   };
 
+  // Function to format time only
+  const formatTime = (dateTime) => {
+    return new Date(dateTime).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Function to format date only
+  const formatDate = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
     console.log(`in change, ${name}: ${value}`);
@@ -502,12 +520,16 @@ const CollegeEvent = () => {
                             </div>
                             <div>
                               <p>
-                                <FaRegClock className="me-2" />
-                                {formatDateTime(round?.startTime)}
+                                <FaCalendarAlt className="me-2" />
+                                <strong>Date:</strong> {formatDate(round?.startTime)}
                               </p>
                               <p>
                                 <FaRegClock className="me-2" />
-                                {formatDateTime(round?.endTime)}
+                                <strong>Start:</strong> {formatTime(round?.startTime)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                <strong>End:</strong> {formatTime(round?.endTime)}
                               </p>
                             </div>
                           </ListGroup.Item>
@@ -580,7 +602,7 @@ const CollegeEvent = () => {
                     )}
                 </div>
                 {college &&
-                //   new Date() < new Date("2024-12-11T14:00:00") &&
+                  //   new Date() < new Date("2024-12-11T14:00:00") &&
                   participants.length == 0 &&
                   slotsOccupied != null &&
                   slotsOccupied + 1 <= availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (

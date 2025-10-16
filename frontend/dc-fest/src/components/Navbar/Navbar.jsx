@@ -8,7 +8,7 @@ import "../../styles/GuidelinesModal.css"; // Import custom styles
 import { AuthContext } from "../../providers/AuthProvider";
 // Guidelines Modal Component
 const GuidelinesModal = ({ show, handleClose }) => (
-  <Modal show={show} onHide={handleClose} size="lg" centered>
+  <Modal show={show} onHide={handleClose} size="lg" centered className="flex flex-column justify-content-between"> 
     <Modal.Header closeButton className="modal-header-custom">
       <Modal.Title className="modal-title-custom">General Guidelines</Modal.Title>
     </Modal.Header>
@@ -37,7 +37,7 @@ const GuidelinesModal = ({ show, handleClose }) => (
         <li>Rights to admission are reserved.</li>
       </ul>
     </Modal.Body>
-    <Modal.Footer className="modal-footer-custom">
+    <Modal.Footer className="modal-footer-custom ">
       <Button variant="secondary" onClick={handleClose} className="modal-close-btn">
         Close
       </Button>
