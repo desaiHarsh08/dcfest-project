@@ -46,25 +46,31 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   useEffect(() => {
     fetchCategories()
       .then((data) => {
-        if (new Date() > new Date("2024-12-11T14:00:00")) {
-          data = data.map((category) => {
-            console.log("before, category:", category);
-            const availableOtseEvents = category.availableEvents.filter((a) => {
-              const otseRule = a.eventRules.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value;
-              console.log(otseRule);
+        // Apply OTSE filter only to specific categories (not Business Category)
+        console.log("Applying OTSE filter to non-business categories");
+        data = data.map((category) => {
+          console.log("Category:", category.name);
+          console.log("Available events before filter:", category.availableEvents?.length);
 
-              return otseRule != 0;
-            });
-
-            category = { ...category, availableEvents: availableOtseEvents };
-            console.log("in map, ", category);
+          // Skip OTSE filtering for Business Category
+          if (category.name === "Business Category") {
+            console.log("Skipping OTSE filter for Business Category - showing all events");
             return category;
+          }
+
+          // Apply OTSE filter to other categories
+          const availableOtseEvents = category.availableEvents.filter((a) => {
+            const otseRule = a.eventRules.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value;
+            console.log(`Event: ${a.title}, OTSE_SLOTS: ${otseRule}`);
+            return otseRule != 0;
           });
-          console.log(data);
-          setCategories(data);
-        } else {
-          setCategories(data);
-        }
+
+          console.log("Available events after OTSE filter:", availableOtseEvents.length);
+          category = { ...category, availableEvents: availableOtseEvents };
+          return category;
+        });
+        console.log("Final filtered data:", data);
+        setCategories(data);
 
         if (availableEvent) {
           const tmpCategory = data.find((ele) => ele.id == availableEvent.eventCategoryId);
