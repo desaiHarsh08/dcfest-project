@@ -6,7 +6,7 @@ import { addParticipant, deleteParticipant, fetchParticipantsByEventIdAndCollege
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
-import { FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaRegClock, FaTicketAlt, FaCalendarAlt } from "react-icons/fa";
 import { fetchCollegeByIcCode } from "../services/college-apis";
 
 const participantObj = {
@@ -123,19 +123,6 @@ const CollegeEvent = () => {
       setLoading(false);
       setDeletingId(null);
     }
-  };
-
-  const formatDateTime = (dateTime) => {
-    return new Date(dateTime).toLocaleString("en-US", {
-      //   weekday: "long", // Day of the week (e.g., Monday)
-      year: "numeric", // Year (e.g., 2024)
-      month: "long", // Month (e.g., November)
-      day: "numeric", // Day (e.g., 14)
-      hour: "2-digit", // Hour (e.g., 09)
-      minute: "2-digit", // Minute (e.g., 30)
-      //   second: "2-digit", // Second (e.g., 05)
-      hour12: true, // Use AM/PM format
-    });
   };
 
   // Function to format time only

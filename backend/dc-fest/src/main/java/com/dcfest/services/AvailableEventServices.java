@@ -24,4 +24,6 @@ public interface AvailableEventServices {
 
     AvailableEventDto postCloseRegistrationProcess(Long availableEventId);
 
+    AvailableEventDto toggleRegistrationProcess(Long availableEventId);
+
 }

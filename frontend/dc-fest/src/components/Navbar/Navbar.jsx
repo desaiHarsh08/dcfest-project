@@ -8,7 +8,7 @@ import "../../styles/GuidelinesModal.css"; // Import custom styles
 import { AuthContext } from "../../providers/AuthProvider";
 // Guidelines Modal Component
 const GuidelinesModal = ({ show, handleClose }) => (
-  <Modal show={show} onHide={handleClose} size="lg" centered className="flex flex-column justify-content-between"> 
+  <Modal show={show} onHide={handleClose} size="lg" centered className="flex flex-column justify-content-between">
     <Modal.Header closeButton className="modal-header-custom">
       <Modal.Title className="modal-title-custom">General Guidelines</Modal.Title>
     </Modal.Header>
@@ -31,7 +31,7 @@ const GuidelinesModal = ({ show, handleClose }) => (
         <li>All the given pen drives must be in audio format, named and labelled with their respective IC codes. Management shall not be responsible for any problems related to the same.</li>
         <li>The management shall not be responsible for any loss, damage, theft, etc. of your personal belongings.</li>
         <li>Damaging or tampering with any kind of college property by anyone shall be considered a serious offense and may lead to cancellation of the college participation.</li>
-        <li>The prop list and song list must be submitted in NEXUS's final representative meeting. Not listing any of the above will result in disqualification.</li>
+        <li>The prop list and song list must be submitted in NEXUS&apos;s final representative meeting. Not listing any of the above will result in disqualification.</li>
         <li>Organisers reserve the right to modify the rules and regulations (if required).</li>
         <li>On the Spot Entry (OTSE) is subject to available slots.</li>
         <li>Rights to admission are reserved.</li>

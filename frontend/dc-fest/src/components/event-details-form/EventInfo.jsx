@@ -62,7 +62,7 @@ const EventInfo = ({ categories, event, onChange, onJudgeChange, onAddJudge, onD
           Close Registration
         </label>
         <div className="form-check w-75">
-          <input name="closeRegistration" value={event?.closeRegistration} type="checkbox" onChange={onChange} className="form-check"></input>
+          <input name="closeRegistration" checked={event?.closeRegistration === true || event?.closeRegistration === "true"} type="checkbox" onChange={onChange} className="form-check" />
         </div>
       </div>
       <div className="mb-3 d-flex">
@@ -93,13 +93,13 @@ const EventInfo = ({ categories, event, onChange, onJudgeChange, onAddJudge, onD
         <div className="card p-3">
           {event?.judges.map((judge, index) => (
             <div key={`judge-${index}`} className=" d-flex gap-2 align-items-center p-2">
-              <div className="mb-3" style={{width: "33%"}}>
+              <div className="mb-3" style={{ width: "33%" }}>
                 <input type="text" placeholder="Judge Name" className="form-control py-2 w-100 " name="judgeName" onChange={(e) => onJudgeChange(e, index)} value={judge?.name} />
               </div>
-              <div className="mb-3" style={{width: "33%"}}>
+              <div className="mb-3" style={{ width: "33%" }}>
                 <input type="text" placeholder="Judge Phone" className="form-control py-2 w-100 " name="judgePhone" onChange={(e) => onJudgeChange(e, index)} value={judge?.phone} />
               </div>
-              <div className="mb-3" style={{width: "33%"}}>
+              <div className="mb-3" style={{ width: "33%" }}>
                 <MdDelete onClick={() => onDeleteJudge(index)} className="text-danger fs-4" />
               </div>
             </div>

@@ -292,6 +292,33 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
     }
 
     @Override
+    public AvailableEventDto toggleRegistrationProcess(Long availableEventId) {
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId).orElseThrow(
+                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId));
+
+        // Toggle the registration status
+        boolean newStatus = !availableEventModel.isCloseRegistration();
+        availableEventModel.setCloseRegistration(newStatus);
+        availableEventModel = this.availableEventRepository.save(availableEventModel);
+
+        List<String> messageArr = new ArrayList<>();
+        messageArr.add(availableEventModel.getTitle());
+
+        // Send appropriate WhatsApp message based on the new status
+        String templateName = "umang_reg_off"; // Use same template for both cases
+        String statusMessage = newStatus ? "Registration closed for" : "Registration opened for";
+        messageArr.set(0, statusMessage + " " + availableEventModel.getTitle());
+
+        this.whatsAppService.sendWhatsAppMessage(
+                closeRegPhone,
+                messageArr,
+                templateName,
+                null);
+
+        return this.availableEventModelToDto(availableEventModel);
+    }
+
+    @Override
     public boolean deleteAvailableEvent(Long id) {
         AvailableEventDto availableEventDto = this.getAvailableEventById(id);
         // Delete the logs

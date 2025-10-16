@@ -6,7 +6,7 @@ import EditModal from "../components/event/EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
 import ConfirmationModal from "../components/event/ConfirmationModal";
-import { closeAvailableEvent, deleteAvailableEvent } from "../services/available-events-apis";
+import { deleteAvailableEvent, toggleAvailableEventRegistration } from "../services/available-events-apis";
 
 const EventPage = () => {
   const { eventSlug } = useParams();
@@ -79,15 +79,16 @@ const EventPage = () => {
 
   const handleCloseRegistration = async (event) => {
     setIsLoading(true);
-    const newAvailableEvent = { ...event, closeRegistration: true };
     try {
-      const response = await closeAvailableEvent(newAvailableEvent.id);
-      console.log("closed reg, response:", response);
-      setEvent(newAvailableEvent);
-      alert("Registration closed successfully.");
+      const response = await toggleAvailableEventRegistration(event.id);
+      console.log("toggled reg, response:", response);
+      console.log("New closeRegistration status:", response.closeRegistration);
+      setEvent(response);
+      console.log("Event state updated");
+      // Remove alert since we have modal confirmation
     } catch (error) {
       console.log(error);
-      alert("Oops! Unable to close the registration.");
+      alert("Oops! Unable to toggle the registration.");
     } finally {
       setIsLoading(false);
       setOpenCloseRegModal(false);
@@ -243,16 +244,16 @@ const EventPage = () => {
                   title="Confirm?"
                   message={"Are your sure that you want to delete this event. This process cannot be undone."}
                 />
-                <Button variant={event?.closeRegistration ? "info" : "success"} onClick={() => setOpenCloseRegModal(true)}>
-                  {event?.closeRegistration ? "Closed" : "Open"}
+                <Button variant={event?.closeRegistration ? "success" : "info"} onClick={() => setOpenCloseRegModal(true)}>
+                  {event?.closeRegistration ? "Open Registration" : "Close Registration"}
                 </Button>
                 <ConfirmationModal
                   show={openCloseRegModal}
                   onHide={() => setOpenCloseRegModal(false)}
-                  onConfirm={handleCloseRegistration}
+                  onConfirm={() => handleCloseRegistration(event)}
                   isLoading={isLoading}
                   title="Confirm?"
-                  message={"Are your sure that you want to toggle the registration for this event."}
+                  message={`Are you sure that you want to ${event?.closeRegistration ? "open" : "close"} the registration for this event?`}
                 />
               </Card.Body>
             </Card>

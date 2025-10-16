@@ -134,7 +134,13 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+
+    // Handle checkbox inputs
+    if (type === "checkbox") {
+      setEvent((prev) => ({ ...prev, [name]: checked }));
+      return;
+    }
 
     // If the title changes, update the slug automatically
     if (name === "title") {

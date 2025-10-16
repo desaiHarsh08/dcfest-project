@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
-import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt } from "react-icons/fa";
+import { FaTicketAlt, FaRegClock, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import { fetchEventBySlug } from "../services/event-apis";
 import "../styles/RootEvents.css";
 import Navbar from "../components/Navbar/Navbar";
@@ -22,21 +22,6 @@ const RootEvent = () => {
   if (error) {
     return <p className="text-danger">{error}</p>;
   }
-
-  // Function to format date and time in AM/PM format
-  const formatDateTime = (dateTime) => {
-    console.log("in format date time:", dateTime);
-    return new Date(dateTime).toLocaleString("en-US", {
-      //   weekday: "long", // Day of the week (e.g., Monday)
-      year: "numeric", // Year (e.g., 2024)
-      month: "long", // Month (e.g., November)
-      day: "numeric", // Day (e.g., 14)
-      hour: "2-digit", // Hour (e.g., 09)
-      minute: "2-digit", // Minute (e.g., 30)
-      //   second: "2-digit", // Second (e.g., 05)
-      hour12: true, // Use AM/PM format
-    });
-  };
 
   // Function to format time only
   const formatTime = (dateTime) => {

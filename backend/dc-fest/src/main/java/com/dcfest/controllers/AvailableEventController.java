@@ -54,9 +54,9 @@ public class AvailableEventController {
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
-    @GetMapping("/close-reg/{id}")
-    public ResponseEntity<AvailableEventDto> doCloseRegistration(@PathVariable Long id) {
-        AvailableEventDto event = availableEventServices.postCloseRegistrationProcess(id);
+    @GetMapping("/toggle-reg/{id}")
+    public ResponseEntity<AvailableEventDto> toggleRegistration(@PathVariable Long id) {
+        AvailableEventDto event = availableEventServices.toggleRegistrationProcess(id);
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
