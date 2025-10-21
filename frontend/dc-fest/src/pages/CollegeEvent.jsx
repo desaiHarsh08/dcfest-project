@@ -36,9 +36,9 @@ const CollegeEvent = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
-    if (new Date() > new Date("2024-12-11T14:00:00")) {
-      return;
-    }
+    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    //   return;
+    // }
     setShow(true);
   };
 
@@ -146,6 +146,24 @@ const CollegeEvent = () => {
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
     console.log(`in change, ${name}: ${value}`);
+
+    // Validate phone number - only allow digits and limit to 10 digits
+    if (name === "whatsappNumber") {
+      // Remove any non-digit characters
+      const numericValue = value.replace(/\D/g, "");
+      // Limit to 10 digits
+      if (numericValue.length <= 10) {
+        setSelectedParticipant((prev) => ({ ...prev, [name]: numericValue }));
+      }
+      return;
+    }
+
+    // Validate email - basic email pattern
+    if (name === "email") {
+      setSelectedParticipant((prev) => ({ ...prev, [name]: value }));
+      return;
+    }
+
     setSelectedParticipant((prev) => {
       if (name == "male") {
         console.log({ ...prev, male: Boolean(value) });
@@ -181,13 +199,25 @@ const CollegeEvent = () => {
 
     console.log("in handleRuleChecks(), after, newParticipants:", newParticipants);
 
-    // Check for whatsapp_no.
-    if (!deleteParticipantId && (selectedParticipant?.whatsappNumber.length > 11 || selectedParticipant?.whatsappNumber.length < 10)) {
+    // Check for whatsapp_no. - must be exactly 10 digits
+    if (!deleteParticipantId && selectedParticipant?.whatsappNumber.length !== 10) {
       setIsValid(false);
       if (isSubmitting) {
-        alert(`Please provide a valid number, currently ${selectedParticipant.whatsappNumber.length}!`);
+        alert(`Please provide a valid 10-digit phone number, currently ${selectedParticipant.whatsappNumber.length} digits!`);
       }
       return false;
+    }
+
+    // Check for valid email format
+    if (!deleteParticipantId) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(selectedParticipant?.email)) {
+        setIsValid(false);
+        if (isSubmitting) {
+          alert("Please provide a valid email address!");
+        }
+        return false;
+      }
     }
 
     // Check for blank field
@@ -694,9 +724,9 @@ const CollegeEvent = () => {
                   name={`male`} // Unique name for each participant's radio group
                   checked={selectedParticipant?.male}
                   onChange={() => {
-                    if (new Date() > new Date("2024-12-11T14:00:00")) {
-                      return;
-                    }
+                    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+                    //   return;
+                    // }
                     handleEditFormChange({
                       target: { name: "male", value: true },
                     });
@@ -708,9 +738,9 @@ const CollegeEvent = () => {
                   name={`male`} // Same unique name for the pair
                   checked={!selectedParticipant?.male}
                   onChange={() => {
-                    if (new Date() > new Date("2024-12-11T14:00:00")) {
-                      return;
-                    }
+                    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+                    //   return;
+                    // }
                     handleEditFormChange({
                       target: { name: "male", value: false },
                     });
@@ -758,9 +788,9 @@ const CollegeEvent = () => {
               variant="primary"
               disabled={loading}
               onClick={(e) => {
-                if (new Date() > new Date("2024-12-11T14:00:00")) {
-                  return;
-                }
+                // if (new Date() > new Date("2024-12-11T14:00:00")) {
+                //   return;
+                // }
                 if (!addFlag) {
                   handleSave(e);
                 } else {

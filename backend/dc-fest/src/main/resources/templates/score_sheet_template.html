@@ -167,7 +167,7 @@
           <!-- Center Text -->
           <div style="text-align: center; display: inline-block">
             <h5 style="margin: 5px 0; text-transform: uppercase">THE BHAWANIPUR EDUCATION SOCIETY COLLEGE</h5>
-            <h5 style="margin: 5px 0">UMANG 2024 SCORESHEET</h5>
+            <h5 style="margin: 5px 0">UMANG <span id="currentYear"></span> SCORESHEET</h5>
           </div>
 
           <!-- Right Logo -->
@@ -316,5 +316,10 @@
         </section>
       </footer>
     </div>
+
+    <script>
+      // Set current year dynamically
+      document.getElementById("currentYear").textContent = new Date().getFullYear();
+    </script>
   </body>
 </html>

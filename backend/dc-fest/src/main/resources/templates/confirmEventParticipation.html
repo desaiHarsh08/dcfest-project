@@ -154,9 +154,7 @@
       <tr class="header">
         <td>
           <!--            <img th:src="'http://13.235.168.107:5006/' + ${slug} + '.jpeg'" alt="Event Image">-->
-          <div
-            style="background-image: url(http://13.235.168.107:5006/non-gas-cooking.jpg); height: 150px; background-size: cover; background-repeat: no-repeat; object-fit: contain"
-          >
+          <div style="background-image: url(http://13.235.168.107:5006/non-gas-cooking.jpg); height: 150px; background-size: cover; background-repeat: no-repeat; object-fit: contain">
             <!-- <img src="http://13.235.168.107:5006/non-gas-cooking.jpg" alt="Event Image" style="width: 100%; height: 100%" /> -->
           </div>
           <h1>Event Participation Confirmation</h1>
@@ -183,7 +181,7 @@
         <td>
           <p>
             Cheers,<br />
-            <strong>The Umang Fest 2024 Team</strong>
+            <strong>The Umang Fest <span id="currentYear"></span> Team</strong>
           </p>
           <p>
             <a href="http://13.235.168.107:3007/">Visit Our Website</a>
@@ -191,5 +189,10 @@
         </td>
       </tr>
     </table>
+
+    <script>
+      // Set current year dynamically
+      document.getElementById("currentYear").textContent = new Date().getFullYear();
+    </script>
   </body>
 </html>

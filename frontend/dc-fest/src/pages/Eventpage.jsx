@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
-import { FaMapMarkerAlt, FaEdit, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaEdit, FaArrowLeft, FaCalendarAlt, FaRegClock } from "react-icons/fa";
 import EditModal from "../components/event/EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
@@ -41,20 +41,22 @@ const EventPage = () => {
     return <p className="text-danger">{error}</p>;
   }
 
-  // Utility function to format date and time
-  const formatDateTime = (dateTime) => {
-    const date = new Date(dateTime);
-    const formattedDate = date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-    const formattedTime = date.toLocaleTimeString("en-IN", {
+  // Function to format time only
+  const formatTime = (dateTime) => {
+    return new Date(dateTime).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
     });
-    return `${formattedDate}, ${formattedTime}`;
+  };
+
+  // Function to format date only
+  const formatDate = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   const handleDeleteEvent = async () => {
@@ -221,7 +223,15 @@ const EventPage = () => {
                             <div>
                               <p>
                                 <FaCalendarAlt className="me-2" />
-                                {formatDateTime(round?.startTime)} - {formatDateTime(round?.endTime)}
+                                <strong>Date:</strong> {formatDate(round?.startTime)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                <strong>Start:</strong> {formatTime(round?.startTime)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                <strong>End:</strong> {formatTime(round?.endTime)}
                               </p>
                             </div>
                           </ListGroup.Item>

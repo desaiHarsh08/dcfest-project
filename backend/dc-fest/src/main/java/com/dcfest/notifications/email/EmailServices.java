@@ -11,6 +11,7 @@ import org.thymeleaf.context.Context;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -24,7 +25,7 @@ public class EmailServices {
 
     @Async
     public void sendCollegeRegistrationEmail(String to, String collegeName) {
-        String subject = "Confirmation of Participation for Umang DCFest 2024";
+        String subject = "Confirmation of Participation for Umang 2024";
 
         try {
             // Create the HTML content using Thymeleaf template
@@ -42,7 +43,7 @@ public class EmailServices {
 
     @Async
     public void senOTP(String to, String username, Long otp) {
-        String subject = "Verify your account for Umang DCFest 2024";
+        String subject = "Verify your account for Umang " + (new Date().getYear() + 1);
 
         try {
             // Create the HTML content using Thymeleaf template
