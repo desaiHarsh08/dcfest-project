@@ -16,12 +16,18 @@ const Login = () => {
     e.preventDefault();
     console.log(credentials);
 
-    if (credentials.username.trim() === "" || credentials.password.trim() === "") {
+    if (
+      credentials.username.trim() === "" ||
+      credentials.password.trim() === ""
+    ) {
       return;
     }
 
     try {
-      const { accessToken, user } = await doLogin({...credentials, year: 2025});
+      const { accessToken, user } = await doLogin({
+        ...credentials,
+        year: 2025,
+      });
       console.log(accessToken, user);
       if (!user?.type || user?.type === "COLLEGE_REPRESENTATIVE") {
         try {
@@ -34,7 +40,9 @@ const Login = () => {
         }
       } else {
         if (user?.disabled == true) {
-          alert("Your account has been suspended. Please contact the host college!");
+          alert(
+            "Your account has been suspended. Please contact the host college!"
+          );
         } else {
           navigate(`/home`, { replace: true });
         }
@@ -51,7 +59,7 @@ const Login = () => {
         <Col md={5}>
           <Card className="shadow-lg p-4 card-login">
             <Card.Body>
-              <h3 className="text-center mb-4">Welcome to NEXUS 2025</h3>
+              <h3 className="text-center mb-4">Welcome to UMANG 2025</h3>
               <Form onSubmit={handleLogin}>
                 <Form.Group controlId="formBasicusername" className="mb-3">
                   <Form.Label>
