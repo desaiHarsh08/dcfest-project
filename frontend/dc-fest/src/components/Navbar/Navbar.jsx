@@ -191,7 +191,7 @@ const Navbar = () => {
         <Container>
           <div className="navbar-brand ms-2 fs-5 font-bold d-flex align-items-center">
             <img
-              src="/umang-logo.jpeg"
+              src="/U25.png"
               alt="UMANG Logo"
               className="logo-img me-2"
               style={{

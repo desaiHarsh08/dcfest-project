@@ -20,7 +20,9 @@ const EventsPage = () => {
     getCollege();
     // const categoryId = categories.find(c -> c?.slug == categorySlug)?.id;
     // if (categoryId) {
-    fetchAvailableEventsByCategorySlug(categorySlug)
+    // In admin routes (no iccode), include inactive events as well
+    const includeInactive = !iccode;
+    fetchAvailableEventsByCategorySlug(categorySlug, includeInactive)
       .then((data) => setEvents(data))
       .catch((err) => {
         console.log(err);

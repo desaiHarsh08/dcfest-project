@@ -23,8 +23,8 @@ export const fetchAvailableEventsBySlug = async (slug) => {
     return response.data;
 };
 
-export const fetchAvailableEventsByCategorySlug = async (slug) => {
-    const response = await API.get(`/api/available-events/category/${slug}`, {
+export const fetchAvailableEventsByCategorySlug = async (slug, includeInactive = false) => {
+    const response = await API.get(`/api/available-events/category/${slug}?includeInactive=${includeInactive}`, {
         withCredentials: true
     });
 
@@ -49,6 +49,14 @@ export const closeAvailableEvent = async (id) => {
 
 export const toggleAvailableEventRegistration = async (id) => {
     const response = await API.get(`/api/available-events/toggle-reg/${id}`, {
+        withCredentials: true
+    });
+
+    return response.data;
+};
+
+export const toggleAvailableEventActive = async (id) => {
+    const response = await API.get(`/api/available-events/toggle-active/${id}`, {
         withCredentials: true
     });
 

@@ -19,12 +19,22 @@ public interface AvailableEventRepository extends JpaRepository<AvailableEventMo
 
     List<AvailableEventModel> findByType(EventType type);
 
+    Optional<AvailableEventModel> findBySlugAndIsActiveTrue(String slug);
+
     Optional<AvailableEventModel> findBySlug(String slug);
 
-    List<AvailableEventModel> findByEventCategory(EventCategoryModel eventCategory);
+    List<AvailableEventModel> findByEventCategoryAndIsActiveTrue(EventCategoryModel eventCategory);
+
+    List<AvailableEventModel> findAllByIsActiveTrue();
+
+    @Query("SELECT a FROM AvailableEventModel a JOIN a.eventCategory e WHERE e.slug = :categorySlug AND a.isActive = true")
+    List<AvailableEventModel> findByCategorySlugActive(@Param("categorySlug") String categorySlug);
 
     @Query("SELECT a FROM AvailableEventModel a JOIN a.eventCategory e WHERE e.slug = :categorySlug")
-    List<AvailableEventModel> findByCategorySlug(@Param("categorySlug") String categorySlug);
+    List<AvailableEventModel> findByCategorySlugAll(@Param("categorySlug") String categorySlug);
+
+    // Non-filtered category query by entity
+    List<AvailableEventModel> findByEventCategory(EventCategoryModel eventCategory);
 
     @Query("DELETE FROM AvailableEventModel a WHERE a.eventCategory.id = :eventCategoryId")
     void deleteByCategoryId(@Param("eventCategoryId") Long eventCategoryId);

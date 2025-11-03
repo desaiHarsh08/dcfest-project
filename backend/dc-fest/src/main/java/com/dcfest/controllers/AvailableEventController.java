@@ -29,14 +29,22 @@ public class AvailableEventController {
     }
 
     @GetMapping("/category/{categorySlug}")
-    public ResponseEntity<List<AvailableEventDto>> getAvailableEventsByCategorySlug(@PathVariable String categorySlug) {
-        List<AvailableEventDto> events = availableEventServices.getAvailableEventByCategorySlug(categorySlug);
+    public ResponseEntity<List<AvailableEventDto>> getAvailableEventsByCategorySlug(
+            @PathVariable String categorySlug,
+            @RequestParam(name = "includeInactive", required = false, defaultValue = "false") boolean includeInactive) {
+        List<AvailableEventDto> events = includeInactive
+                ? availableEventServices.getAvailableEventByCategorySlugAll(categorySlug)
+                : availableEventServices.getAvailableEventByCategorySlug(categorySlug);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
     @GetMapping("/slug/{eventSlug}")
-    public ResponseEntity<AvailableEventDto> getAvailableEventsBySlug(@PathVariable String eventSlug) {
-        AvailableEventDto events = availableEventServices.getAvailableEventBySlug(eventSlug);
+    public ResponseEntity<AvailableEventDto> getAvailableEventsBySlug(
+            @PathVariable String eventSlug,
+            @RequestParam(name = "includeInactive", required = false, defaultValue = "false") boolean includeInactive) {
+        AvailableEventDto events = includeInactive
+                ? availableEventServices.getAvailableEventBySlugAll(eventSlug)
+                : availableEventServices.getAvailableEventBySlug(eventSlug);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
@@ -57,6 +65,12 @@ public class AvailableEventController {
     @GetMapping("/toggle-reg/{id}")
     public ResponseEntity<AvailableEventDto> toggleRegistration(@PathVariable Long id) {
         AvailableEventDto event = availableEventServices.toggleRegistrationProcess(id);
+        return new ResponseEntity<>(event, HttpStatus.OK);
+    }
+
+    @GetMapping("/toggle-active/{id}")
+    public ResponseEntity<AvailableEventDto> toggleActive(@PathVariable Long id) {
+        AvailableEventDto event = availableEventServices.toggleActive(id);
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 

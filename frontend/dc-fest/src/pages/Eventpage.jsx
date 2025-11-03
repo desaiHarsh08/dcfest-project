@@ -6,7 +6,7 @@ import EditModal from "../components/event/EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
 import ConfirmationModal from "../components/event/ConfirmationModal";
-import { deleteAvailableEvent, toggleAvailableEventRegistration } from "../services/available-events-apis";
+import { deleteAvailableEvent, toggleAvailableEventRegistration, toggleAvailableEventActive } from "../services/available-events-apis";
 
 const EventPage = () => {
   const { eventSlug } = useParams();
@@ -16,10 +16,13 @@ const EventPage = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openCloseRegModal, setOpenCloseRegModal] = useState(false);
+  const [openToggleActiveModal, setOpenToggleActiveModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchEventBySlug(eventSlug)
+    // Admin route under /home should include inactive
+    const includeInactive = true;
+    fetchEventBySlug(eventSlug, includeInactive)
       .then((data) => setEvent(data))
       .catch((err) => {
         console.log(err);
@@ -38,7 +41,8 @@ const EventPage = () => {
   const closeModal = () => setModalOpen(false);
 
   if (error) {
-    return <p className="text-danger">{error}</p>;
+    const msg = error?.response?.data?.message || error?.message || "Failed to load event";
+    return <p className="text-danger">{msg}</p>;
   }
 
   // Function to format time only
@@ -94,6 +98,20 @@ const EventPage = () => {
     } finally {
       setIsLoading(false);
       setOpenCloseRegModal(false);
+    }
+  };
+
+  const handleToggleActive = async (event) => {
+    setIsLoading(true);
+    try {
+      const response = await toggleAvailableEventActive(event.id);
+      setEvent(response);
+    } catch (error) {
+      console.log(error);
+      alert("Unable to toggle active state.");
+    } finally {
+      setIsLoading(false);
+      setOpenToggleActiveModal(false);
     }
   };
 
@@ -257,6 +275,9 @@ const EventPage = () => {
                 <Button variant={event?.closeRegistration ? "success" : "info"} onClick={() => setOpenCloseRegModal(true)}>
                   {event?.closeRegistration ? "Open Registration" : "Close Registration"}
                 </Button>
+                <Button className="ms-2" variant={event?.active ? "secondary" : "primary"} onClick={() => setOpenToggleActiveModal(true)}>
+                  {event?.active ? "Deactivate" : "Activate"}
+                </Button>
                 <ConfirmationModal
                   show={openCloseRegModal}
                   onHide={() => setOpenCloseRegModal(false)}
@@ -264,6 +285,14 @@ const EventPage = () => {
                   isLoading={isLoading}
                   title="Confirm?"
                   message={`Are you sure that you want to ${event?.closeRegistration ? "open" : "close"} the registration for this event?`}
+                />
+                <ConfirmationModal
+                  show={openToggleActiveModal}
+                  onHide={() => setOpenToggleActiveModal(false)}
+                  onConfirm={() => handleToggleActive(event)}
+                  isLoading={isLoading}
+                  title="Confirm?"
+                  message={`Are you sure that you want to ${event?.active ? "deactivate" : "activate"} this event?`}
                 />
               </Card.Body>
             </Card>
