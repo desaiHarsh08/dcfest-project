@@ -24,9 +24,12 @@ const SelectFields = ({
           onChange={(e) => {
             const category = categories?.find((c) => c?.id == e.target.value);
             setSelectedCategory(category);
-            const availableEvent = category.availableEvents[0];
+            // Only set availableEvent if there are events in the category
+            const availableEvent = category?.availableEvents?.length > 0 ? category.availableEvents[0] : null;
             setSelectedAvailableEvent(availableEvent);
-            onSetDefaultParticipants(availableEvent);
+            if (availableEvent) {
+              onSetDefaultParticipants(availableEvent);
+            }
           }}
           disabled={!!availableEvent}
           style={{ backgroundColor: availableEvent ? "aliceblue" : "" }}
@@ -41,21 +44,29 @@ const SelectFields = ({
       <Form.Group className="field-card mb-4">
         <Form.Label>Event</Form.Label>
         <Form.Select
-          value={selectedAvailableEvent?.id}
+          value={selectedAvailableEvent?.id || ""}
           onChange={(e) => {
-            const availableEvent = selectedCategory?.availableEvents.find((a) => a.id == e.target.value);
-            console.log("selected available event:", availableEvent);
-            setSelectedAvailableEvent(availableEvent);
-            onSetDefaultParticipants(availableEvent);
+            if (e.target.value) {
+              const availableEvent = selectedCategory?.availableEvents?.find((a) => a.id == e.target.value);
+              console.log("selected available event:", availableEvent);
+              setSelectedAvailableEvent(availableEvent);
+              onSetDefaultParticipants(availableEvent);
+            } else {
+              setSelectedAvailableEvent(null);
+            }
           }}
           disabled={!!availableEvent}
           style={{ backgroundColor: availableEvent ? "aliceblue" : "" }}
         >
-          {selectedCategory?.availableEvents?.map((availableEvent, availableEventIndex) => (
-            <option key={`available-event-${availableEventIndex}`} value={availableEvent?.id}>
-              {availableEvent?.title}
-            </option>
-          ))}
+          {selectedCategory?.availableEvents?.length > 0 ? (
+            selectedCategory.availableEvents.map((availableEvent, availableEventIndex) => (
+              <option key={`available-event-${availableEventIndex}`} value={availableEvent?.id}>
+                {availableEvent?.title}
+              </option>
+            ))
+          ) : (
+            <option value="">No events available</option>
+          )}
         </Form.Select>
       </Form.Group>
       <Form.Group className="mb-4 field-card">

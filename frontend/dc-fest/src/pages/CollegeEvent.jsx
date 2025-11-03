@@ -639,7 +639,7 @@ const CollegeEvent = () => {
                     <th>Phone</th>
                     <th>Type</th>
                     <th>Entry</th>
-                    {new Date() < new Date("2024-12-11T14:00:00") && <th>Actions</th>}
+                    {!availableEvent?.closeRegistration && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -656,7 +656,7 @@ const CollegeEvent = () => {
                         <td>
                           <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant.entryType}</Badge>
                         </td>
-                        {new Date() < new Date("2024-12-11T14:00:00") && (
+                        {!availableEvent?.closeRegistration && (
                           <td>
                             {(availableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length ||
                               participant.type === "ACCOMPANIST") && (

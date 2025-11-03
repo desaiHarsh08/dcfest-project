@@ -6,6 +6,11 @@ import { Badge, Form } from "react-bootstrap";
 const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent, iccode }) => {
   useEffect(() => {}, [selectedAvailableEvent]);
 
+  // Check if OTSE slots are available
+  const otseSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "OTSE_SLOTS");
+  const otseSlotsAvailable = otseSlotsRule ? Number(otseSlotsRule.value) : 0;
+  const isOtseAvailable = otseSlotsAvailable > 0;
+
   return (
     <div className="card p-3 rounded-0">
       <h5>Participant-{participantIndex + 1}</h5>
@@ -66,7 +71,9 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
         <Form.Label>Entry Type</Form.Label>
         <Form.Select aria-label="Default select example" name="entryType" disabled={!!iccode} value={participant.entryType} onChange={(e) => onChange(e, participantIndex)}>
           <option value={"NORMAL"}>NORMAL</option>
-          <option value={"OTSE"}>OTSE</option>
+          <option value={"OTSE"} disabled={!isOtseAvailable}>
+            OTSE {!isOtseAvailable ? "(Not Available)" : ""}
+          </option>
         </Form.Select>
       </Form.Group>
     </div>

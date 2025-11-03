@@ -134,7 +134,7 @@ const RegistrationRulesModal = ({ show, handleClose }) => (
           Events having restrictions on the maximum number of participants/teams
           shall be accepted on a first come first serve basis.
         </li>
-        <li>The last date for online registrations is 10th December 2024.</li>
+        <li>Registration deadlines are set per event. Please check individual event details for specific deadlines.</li>
         <li>
           After registration, if a college team backs out from any event on the
           main day, then it will lead to a negative marking.
