@@ -37,11 +37,21 @@ export const AuthProvider = ({ children }) => {
       return response.data.accessToken;
     } catch (error) {
       console.error("Failed to generate new token:", error);
-      alert("Session expired or failed to authenticate. Please log in again.");
-      logout();
+      // Only show alert if it's not a missing session (401 or network error)
+      // For missing sessions, silently redirect to login
+      if (error.response?.status === 401 || error.code === "ERR_NETWORK") {
+        // No valid session - redirect to login without alert
+        setAccessToken(null);
+        setUser(null);
+        navigate("/login");
+      } else {
+        // Other errors - show alert
+        alert("Session expired or failed to authenticate. Please log in again.");
+        logout();
+      }
       return null;
     }
-  }, [logout]);
+  }, [logout, navigate]);
 
   useEffect(() => {
     if (accessToken === null) {

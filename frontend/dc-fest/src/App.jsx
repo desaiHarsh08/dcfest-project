@@ -178,6 +178,13 @@ const router = createBrowserRouter([
   },
 ]);
 
-const App = () => <RouterProvider router={router} />;
+// Use Vite's BASE_URL (automatically set from vite.config.js base option)
+// If BASE_URL is not available, use VITE_APP_PREFIX from .env
+// BASE_URL should match the 'base' config in vite.config.js
+const baseUrl = import.meta.env.BASE_URL ?? import.meta.env.VITE_APP_PREFIX ?? "/";
+const basename = baseUrl === "/" ? "" : baseUrl.replace(/\/$/, "");
+console.log("Router basename:", basename, "| BASE_URL:", import.meta.env.BASE_URL, "| VITE_APP_PREFIX:", import.meta.env.VITE_APP_PREFIX);
+
+const App = () => <RouterProvider basename={basename} router={router} />;
 
 export default App;
