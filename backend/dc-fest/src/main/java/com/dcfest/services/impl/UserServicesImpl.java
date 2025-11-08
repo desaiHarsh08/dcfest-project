@@ -54,21 +54,21 @@ public class UserServicesImpl implements UserServices {
                 : "Your College";
 
         // Handle email based on user type
-        String subject = "Welcome to Umang DCFest 2024!";
+        String subject = "Welcome to Umang DCFest 2025!";
         String body = "Dear " + userModel.getName() + ",\n\nThank you for registering with us.";
 
         if (userModel.getType().equals(UserType.REGISTRATION_DESK.name())) {
-            subject = "You Are Now Part of the Registration Desk for Umang DCFest 2024!";
+            subject = "You Are Now Part of the Registration Desk for Umang DCFest 2025!";
             body = "Dear " + userModel.getName() + ",\n\n" +
-                    "We are pleased to inform you that you are now part of the Registration Desk team for Umang DCFest 2024.\n\n"
+                    "We are pleased to inform you that you are now part of the Registration Desk team for Umang DCFest 2025.\n\n"
                     +
                     "As a Registration Desk representative, you will be responsible for assisting in the participant registrations, handling queries, and ensuring smooth registration processes.\n\n"
                     +
                     "Thank you for your contribution to the event! We look forward to working with you.\n\nBest regards,\nThe Umang DCFest Team";
         } else if (userModel.getType().equals(UserType.COLLEGE_REPRESENTATIVE.name())) {
-            subject = "You Are Now a College Representative for Umang DCFest 2024!";
+            subject = "You Are Now a College Representative for Umang DCFest 2025!";
             body = "Dear " + userModel.getName() + ",\n\n" +
-                    "We are pleased to inform you that you have been appointed as the College Representative for Umang DCFest 2024 from "
+                    "We are pleased to inform you that you have been appointed as the College Representative for Umang DCFest 2025 from "
                     + collegeName + ".\n\n" +
                     "As a College Representative, you will act as the liaison between " + collegeName
                     + " and the event, ensuring that your college's participants are well-informed and supported.\n\n" +

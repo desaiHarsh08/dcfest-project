@@ -42,7 +42,7 @@ const EventAttendancePage = () => {
   const formatDateTime = (dateTime) => {
     return new Date(dateTime).toLocaleString("en-US", {
       //   weekday: "long", // Day of the week (e.g., Monday)
-      year: "numeric", // Year (e.g., 2024)
+      year: "numeric", // Year (e.g., 2025)
       month: "long", // Month (e.g., November)
       day: "numeric", // Day (e.g., 14)
       hour: "2-digit", // Hour (e.g., 09)

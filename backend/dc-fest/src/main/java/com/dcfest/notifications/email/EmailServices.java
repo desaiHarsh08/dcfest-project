@@ -25,7 +25,7 @@ public class EmailServices {
 
     @Async
     public void sendCollegeRegistrationEmail(String to, String collegeName) {
-        String subject = "Confirmation of Participation for Umang 2024";
+        String subject = "Confirmation of Participation for Umang 2025";
 
         try {
             // Create the HTML content using Thymeleaf template
@@ -64,7 +64,7 @@ public class EmailServices {
     // public void sendParticipantRegistrationEmail(String to, String name,
     // List<VenueModel> venueModels, EventModel eventModel) {
     // String subject = "Confirmation of your participation in " +
-    // eventModel.getAvailableEvent().getTitle() + " - Umang DCFest 2024";
+    // eventModel.getAvailableEvent().getTitle() + " - Umang DCFest 2025";
     //
     // try {
     // MimeMessage message = emailSender.createMimeMessage();
@@ -90,7 +90,7 @@ public class EmailServices {
 
     @Async
     public void sendResetPasswordEmail(String to, String name, String iccode, String password, String institutionName) {
-        String subject = "Reset Password Success - (Umang 2024)";
+        String subject = "Reset Password Success - (Umang 2025)";
 
         try {
             // Create the HTML content using Thymeleaf template

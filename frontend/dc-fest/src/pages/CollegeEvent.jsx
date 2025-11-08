@@ -36,7 +36,7 @@ const CollegeEvent = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
-    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
     //   return;
     // }
     setShow(true);
@@ -95,7 +95,7 @@ const CollegeEvent = () => {
     }
   };
   const handleDelete = async (id) => {
-    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
@@ -358,7 +358,7 @@ const CollegeEvent = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
@@ -394,7 +394,7 @@ const CollegeEvent = () => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
@@ -566,7 +566,7 @@ const CollegeEvent = () => {
                 <div className="d-flex align-items-center gap-2">
                   <h4 className="text-secondary">Participants</h4>
                   {participants.length > 0 &&
-                    // new Date() < new Date("2024-12-11T14:00:00") &&
+                    // new Date() < new Date("2025-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
                       <button
@@ -592,7 +592,7 @@ const CollegeEvent = () => {
                       </button>
                     )}
                   {participants.length > 0 &&
-                    // new Date() < new Date("2024-12-11T14:00:00") &&
+                    // new Date() < new Date("2025-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter((p) => p.type == "ACCOMPANIST").length && (
                       <button
@@ -619,7 +619,7 @@ const CollegeEvent = () => {
                     )}
                 </div>
                 {college &&
-                  //   new Date() < new Date("2024-12-11T14:00:00") &&
+                  //   new Date() < new Date("2025-12-11T14:00:00") &&
                   participants.length == 0 &&
                   slotsOccupied != null &&
                   slotsOccupied + 1 <= availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
@@ -724,7 +724,7 @@ const CollegeEvent = () => {
                   name={`male`} // Unique name for each participant's radio group
                   checked={selectedParticipant?.male}
                   onChange={() => {
-                    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+                    // if (new Date() > new Date("2025-12-11T14:00:00")) {
                     //   return;
                     // }
                     handleEditFormChange({
@@ -738,7 +738,7 @@ const CollegeEvent = () => {
                   name={`male`} // Same unique name for the pair
                   checked={!selectedParticipant?.male}
                   onChange={() => {
-                    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+                    // if (new Date() > new Date("2025-12-11T14:00:00")) {
                     //   return;
                     // }
                     handleEditFormChange({
@@ -788,7 +788,7 @@ const CollegeEvent = () => {
               variant="primary"
               disabled={loading}
               onClick={(e) => {
-                // if (new Date() > new Date("2024-12-11T14:00:00")) {
+                // if (new Date() > new Date("2025-12-11T14:00:00")) {
                 //   return;
                 // }
                 if (!addFlag) {

@@ -63,7 +63,7 @@ const EventsPage = () => {
         {/* Page Title */}
         <Row className="mb-4">
           <Col>
-            <h1 className="text-center mt-5">List of Events for UMANG 2024</h1>
+            <h1 className="text-center mt-5">List of Events for UMANG 2025</h1>
           </Col>
         </Row>
 

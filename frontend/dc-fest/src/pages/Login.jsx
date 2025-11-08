@@ -4,7 +4,7 @@ import "../styles/Login.css"; // Custom styles for any additional styling
 import { useNavigate } from "react-router-dom";
 import { doLogin } from "../services/auth-apis";
 import { fetchCollegeById } from "../services/college-apis";
-import { FiLock, FiUser } from "react-icons/fi";
+import { FiLock, FiUser, FiEye, FiEyeOff } from "react-icons/fi";
 const Login = () => {
   const navigate = useNavigate();
 
@@ -12,14 +12,12 @@ const Login = () => {
     username: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const handleLogin = async (e) => {
     e.preventDefault();
     console.log(credentials);
 
-    if (
-      credentials.username.trim() === "" ||
-      credentials.password.trim() === ""
-    ) {
+    if (credentials.username.trim() === "" || credentials.password.trim() === "") {
       return;
     }
 
@@ -40,9 +38,7 @@ const Login = () => {
         }
       } else {
         if (user?.disabled == true) {
-          alert(
-            "Your account has been suspended. Please contact the host college!"
-          );
+          alert("Your account has been suspended. Please contact the host college!");
         } else {
           navigate(`/home`, { replace: true });
         }
@@ -85,18 +81,44 @@ const Login = () => {
                     <FiLock />
                     Enter Password :-
                   </Form.Label>
-                  <Form.Control
-                    type="password"
-                    placeholder="Enter Password"
-                    value={credentials.password}
-                    onChange={(e) =>
-                      setCredentials((prev) => ({
-                        ...prev,
-                        password: e.target.value,
-                      }))
-                    }
-                    className="border"
-                  />
+                  <div className="position-relative">
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter Password"
+                      value={credentials.password}
+                      onChange={(e) =>
+                        setCredentials((prev) => ({
+                          ...prev,
+                          password: e.target.value,
+                        }))
+                      }
+                      className="border"
+                      style={{ paddingRight: "40px" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="position-absolute"
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        padding: "0",
+                        color: "#6c757d",
+                        zIndex: 10,
+                        right: "10px",
+                        top: "35%",
+                        transform: "translateY(-50%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        width: "30px",
+                        height: "30px",
+                      }}
+                    >
+                      {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                    </button>
+                  </div>
                 </Form.Group>
 
                 <Button variant="primary" type="submit" className="w-100">

@@ -128,7 +128,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
             if (slotsOccupied + 1 > maxSlotsAvailable) {
                 // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy"); //
                 // Define the date format
-                // LocalDate comparisonDate = LocalDate.parse("10 Dec, 2024", formatter);
+                // LocalDate comparisonDate = LocalDate.parse("10 Dec, 2025", formatter);
                 // LocalDate.now().isAfter(comparisonDate)
                 if (participantDtos.get(0).getEntryType().equals(EntryType.NORMAL)) {
                     throw new RegisteredSlotsAvailableException(

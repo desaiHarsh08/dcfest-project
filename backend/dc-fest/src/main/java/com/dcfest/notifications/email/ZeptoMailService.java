@@ -44,7 +44,7 @@ public class ZeptoMailService {
             // From address
             Map<String, String> from = new HashMap<>();
             from.put("address", zeptoFrom);
-            from.put("name", "Umang DCFest 2024");
+            from.put("name", "Umang DCFest 2025");
             emailData.put("from", from);
 
             // To addresses - ZeptoMail API format
