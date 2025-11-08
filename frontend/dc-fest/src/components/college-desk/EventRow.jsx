@@ -6,12 +6,11 @@ import CategoryName from "./CategoryName";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 import { fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
 
-const EventRow = ({ index, availableEventId, collegeId, onRemove }) => {
+const EventRow = ({ index, availableEventId, collegeId }) => {
   const [event, setEvent] = useState();
   const [availableEvent, setAvailableEvent] = useState();
 
   const [participants, setParticipants] = useState([]);
-  const [otseEntry, setOtseEntry] = useState([]);
 
   useEffect(() => {
     fetchEventByAvailableEventId(availableEventId)
@@ -31,7 +30,6 @@ const EventRow = ({ index, availableEventId, collegeId, onRemove }) => {
       fetchParticipantsByEventIdAndCollegeId(event?.id, collegeId)
         .then((data) => {
           setParticipants(data);
-          setOtseEntry(data.filter((ele) => ele.entryType.toLowerCase() == "otse").length);
         })
         .catch((err) => console.log(err));
     }
@@ -46,7 +44,11 @@ const EventRow = ({ index, availableEventId, collegeId, onRemove }) => {
       <td>
         <div className="d-flex align-items-center gap-4 w-100">
           <div className="w-25 d-flex justify-content-end">
-            <img src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${availableEvent?.slug}.jpg`} alt={""} style={{ height: "52px", width: "52px", objectFit: "contain" }} />
+            <img
+              src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${availableEvent?.slug}.jpg`}
+              alt={""}
+              style={{ height: "52px", width: "52px", objectFit: "contain" }}
+            />
           </div>
           <p className="w-75 d-flex">{availableEvent?.title}</p>
         </div>

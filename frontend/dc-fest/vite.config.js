@@ -7,12 +7,15 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, import.meta.dirname, 'VITE_');
     console.log("in vite config, env:", env);
     return {
-        base: env.VITE_APP_NODE_ENV === "production" ? env.VITE_APP_PREFIX : "",
+        base: env.VITE_APP_NODE_ENV === "production" ? env.VITE_APP_PREFIX : "/fest",
         plugins: [react()],
         resolve: {
             alias: {
                 '@': path.resolve(import.meta.dirname, './src'),
             },
         },
+        server: {
+            port: env.VITE_APP_NODE_ENV === "production" ? 3007 : 5173
+        }
     };
 });
