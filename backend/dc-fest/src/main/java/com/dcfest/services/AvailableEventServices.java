@@ -16,12 +16,20 @@ public interface AvailableEventServices {
 
     AvailableEventDto getAvailableEventBySlug(String slug);
 
+    AvailableEventDto getAvailableEventBySlugAll(String slug);
+
     List<AvailableEventDto> getAvailableEventByCategorySlug(String categorySlug);
+
+    List<AvailableEventDto> getAvailableEventByCategorySlugAll(String categorySlug);
 
     AvailableEventDto updateAvailableEvent(AvailableEventDto availableEventDto);
 
     boolean deleteAvailableEvent(Long id);
 
     AvailableEventDto postCloseRegistrationProcess(Long availableEventId);
+
+    AvailableEventDto toggleRegistrationProcess(Long availableEventId);
+
+    AvailableEventDto toggleActive(Long availableEventId);
 
 }

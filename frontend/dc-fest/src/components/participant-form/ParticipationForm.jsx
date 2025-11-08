@@ -46,25 +46,10 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   useEffect(() => {
     fetchCategories()
       .then((data) => {
-        if (new Date() > new Date("2024-12-11T14:00:00")) {
-          data = data.map((category) => {
-            console.log("before, category:", category);
-            const availableOtseEvents = category.availableEvents.filter((a) => {
-              const otseRule = a.eventRules.find((r) => r.eventRuleTemplate.name == "OTSE_SLOTS")?.value;
-              console.log(otseRule);
-
-              return otseRule != 0;
-            });
-
-            category = { ...category, availableEvents: availableOtseEvents };
-            console.log("in map, ", category);
-            return category;
-          });
-          console.log(data);
-          setCategories(data);
-        } else {
-          setCategories(data);
-        }
+        // Show all events - OTSE_SLOTS only affects entry type availability, not event visibility
+        console.log("Loading all categories with events");
+        console.log("Final filtered data:", data);
+        setCategories(data);
 
         if (availableEvent) {
           const tmpCategory = data.find((ele) => ele.id == availableEvent.eventCategoryId);
@@ -73,10 +58,15 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           handleSetDefaultParticipants(availableEvent);
           console.log("available_event:", availableEvent);
         } else {
-          setSelectedCategory(data[0]);
-          setSelectedAvailableEvent(data[0]?.availableEvents[0]);
-          console.log("available_event:", data[0]?.availableEvents[0]);
-          handleSetDefaultParticipants(data[0]?.availableEvents[0]);
+          // Find the first category that has available events
+          const categoryWithEvents = data.find((cat) => cat?.availableEvents?.length > 0) || data[0];
+          setSelectedCategory(categoryWithEvents);
+          const firstEvent = categoryWithEvents?.availableEvents?.length > 0 ? categoryWithEvents.availableEvents[0] : null;
+          setSelectedAvailableEvent(firstEvent);
+          console.log("available_event:", firstEvent);
+          if (firstEvent) {
+            handleSetDefaultParticipants(firstEvent);
+          }
         }
       })
       .catch((err) => console.error("Error fetching categories:", err));
@@ -172,6 +162,11 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
   // Function to initialize participants based on event rules
   const handleSetDefaultParticipants = (selectedAvailableEvent) => {
+    if (!selectedAvailableEvent) {
+      setParticipants([participantObj]);
+      return;
+    }
+
     const newParticipants = [];
     const minParticipantsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "MIN_PARTICIPANTS");
     const accompanistRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "COLLEGE_ACCOMPANIST");
@@ -338,8 +333,8 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       console.log("error in fetchParticipantsByEventIdAndCollegeId() - ", error);
     }
 
-    // if (iccode && new Date() > new Date("2024-12-11T14:00:00") && participants.some((p) => p.entryType == "NORMAL")) {
-    //   alert(`"Oops! Umangfest-2024 registrations are closed. Don't miss out next time—contact the host college for help!`);
+    // if (iccode && new Date() > new Date("2025-12-11T14:00:00") && participants.some((p) => p.entryType == "NORMAL")) {
+    //   alert(`"Oops! Umangfest-2025 registrations are closed. Don't miss out next time—contact the host college for help!`);
     //   return;
     // }
 
@@ -372,12 +367,13 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   };
 
   const handleAddParticipant = () => {
+    if (!selectedAvailableEvent) return;
     // Grab the event_rule for `MAX_PARTICIPANTS`
     console.log("Selected events are as: ", selectedAvailableEvent);
-    const eventRule = selectedAvailableEvent.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS");
+    const eventRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS");
     console.log("eventRule:", eventRule);
     // Check if the number of participants are <= event_rule's value
-    const maxMarticipants = selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+    const maxMarticipants = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
 
     if (participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants) {
       setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
@@ -385,9 +381,10 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   };
 
   const handleAddAccompanist = () => {
+    if (!selectedAvailableEvent) return;
     // Grab the event_rule for `COLLEGE_ACCOMPANIST`
     console.log("Selected events are as: ", selectedAvailableEvent);
-    const eventRule = selectedAvailableEvent.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST");
+    const eventRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST");
     console.log("eventRule:", eventRule);
     // Check if the number of participants are <= event_rule's value
     const accompanist = eventRule?.value;
@@ -417,7 +414,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   };
 
   //   if (
-  //     // new Date() > new Date("2024-12-11T14:00:00") &&
+  //     // new Date() > new Date("2025-12-11T14:00:00") &&
   //     selectedAvailableEvent
   //   ) {
   //     const otseRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "OTSE_SLOTS");
@@ -438,7 +435,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
   return (
     <>
-      {/* {new Date() > new Date("2024-12-11T14:00:00") && (
+      {/* {new Date() > new Date("2025-12-11T14:00:00") && (
         <div className="vw-100 d-flex positon-absolute justify-content-center" style={{ top: "83px", zIndex: "1", position: "absolute" }}>
           <div className="w-100 d-flex justify-content-center align-items-center gap-2 bottom-0 border" style={{ listStyle: "none", backgroundColor: "#ff6767", color: "white" }}>
             <FaBolt />
@@ -522,10 +519,10 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       <div className="vw-100 position-relative bottom-0 d-flex justify-content-center border">
         <div className="container position-absolute bottom-0 left-0 border">
           <ul className="d-flex justify-content-between align-items-center p-0 m-0 py-2 " style={{ listStyle: "none", backgroundColor: "aliceblue" }}>
-            <li>Min. Participants: {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value}</li>
+            <li>Min. Participants: {selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value || "N/A"}</li>
             <li>
               Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} /{" "}
-              {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS").value}
+              {selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value || "N/A"}
             </li>
             <li>
               Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} /{" "}

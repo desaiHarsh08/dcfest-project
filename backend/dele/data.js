@@ -14,8 +14,8 @@ export const categories = [
                 "venues": [
                     {
                         "name": "Main Stage",
-                        "start": "2024-10-09T00:00:00",
-                        "end": "2024-10-10T00:00:00"
+                        "start": "2025-10-09T00:00:00",
+                        "end": "2025-10-10T00:00:00"
                     }
                 ],
                 "eventRules": [
@@ -59,8 +59,8 @@ export const categories = [
                 "venues": [
                     {
                         "name": "Main Stage",
-                        "start": "2024-10-09T00:00:00",
-                        "end": "2024-10-10T00:00:00"
+                        "start": "2025-10-09T00:00:00",
+                        "end": "2025-10-10T00:00:00"
                     }
                 ],
                 "eventRules": [

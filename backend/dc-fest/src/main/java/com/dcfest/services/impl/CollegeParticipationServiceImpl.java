@@ -37,10 +37,27 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     @Autowired
     private EventRuleRepository eventRuleRepository;
 
+    @Autowired
+    private CollegeRepository collegeRepository;
+
+    @Autowired
+    private AvailableEventRepository availableEventRepository;
+
     @Override
     public CollegeParticipationDto createParticipation(CollegeParticipationDto participationDto) {
+        // Validate college exists and is not archived
+        CollegeModel collegeModel = this.collegeRepository.findById(participationDto.getCollegeId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College not found or has been archived for id: " + participationDto.getCollegeId()));
+
+        // Validate available event exists
+        AvailableEventModel availableEventModel = this.availableEventRepository
+                .findById(participationDto.getAvailableEventId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Available event not found for id: " + participationDto.getAvailableEventId()));
+
         List<EventRuleModel> eventRuleModels = this.eventRuleRepository
-                .findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
+                .findByAvailableEvent(availableEventModel);
         EventRuleModel eventRuleModel = eventRuleModels.stream()
                 .filter(e -> e.getEventRuleTemplate().getName().equalsIgnoreCase("REGISTERED_SLOTS_AVAILABLE"))
                 .findFirst().orElse(null);
@@ -51,7 +68,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
         int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
 
         List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository
-                .findByAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
+                .findByAvailableEvent(availableEventModel);
 
         int slotsOccupied = collegeParticipationModels.size();
 
@@ -62,8 +79,8 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         // Create the college's participation
         CollegeParticipationModel collegeParticipationModel = new CollegeParticipationModel();
-        collegeParticipationModel.setAvailableEvent(new AvailableEventModel(participationDto.getAvailableEventId()));
-        collegeParticipationModel.setCollege(new CollegeModel(participationDto.getCollegeId()));
+        collegeParticipationModel.setAvailableEvent(availableEventModel);
+        collegeParticipationModel.setCollege(collegeModel);
 
         return this.collegeParticipationModelToDto(this.participationRepository.save(collegeParticipationModel));
     }
@@ -82,8 +99,11 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
     @Override
     public List<CollegeParticipationDto> getByAvailableEvent(Long availableEventId) {
-        AvailableEventModel availableEvent = new AvailableEventModel();
-        availableEvent.setId(availableEventId);
+        // Validate available event exists
+        AvailableEventModel availableEvent = this.availableEventRepository.findById(availableEventId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Available event not found for id: " + availableEventId));
+
         List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository
                 .findByAvailableEvent(availableEvent);
         if (collegeParticipationModels.isEmpty()) {
@@ -96,9 +116,12 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     }
 
     @Override
-    public List<CollegeParticipationDto> getByCollege(Long collegeParticipationId) {
-        CollegeModel collegeModel = new CollegeModel();
-        collegeModel.setId(collegeParticipationId);
+    public List<CollegeParticipationDto> getByCollege(Long collegeId) {
+        // Validate college exists and is not archived
+        CollegeModel collegeModel = this.collegeRepository.findById(collegeId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College not found or has been archived for id: " + collegeId));
+
         List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository
                 .findByCollege(collegeModel);
 
@@ -115,11 +138,15 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     public CollegeParticipationDto getByCollegeAndAvailableEvent(
             Long collegeId, Long availableEventId) {
 
-        CollegeModel collegeModel = new CollegeModel();
-        collegeModel.setId(collegeId);
+        // Validate college exists and is not archived
+        CollegeModel collegeModel = this.collegeRepository.findById(collegeId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "College not found or has been archived for id: " + collegeId));
 
-        AvailableEventModel availableEvent = new AvailableEventModel();
-        availableEvent.setId(availableEventId);
+        // Validate available event exists
+        AvailableEventModel availableEvent = this.availableEventRepository.findById(availableEventId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Available event not found for id: " + availableEventId));
 
         CollegeParticipationModel collegeParticipationModel = this.participationRepository
                 .findByCollegeAndAvailableEvent(collegeModel, availableEvent).orElseThrow(

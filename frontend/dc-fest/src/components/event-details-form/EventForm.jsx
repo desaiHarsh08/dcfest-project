@@ -55,7 +55,10 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
         console.log(data);
         setCategories(data);
 
-        setEvent((prev) => ({ ...prev, eventCategoryId: data[0]?.id }));
+        // Only set default category for new events, not when editing
+        if (formType.toLowerCase() === "add") {
+          setEvent((prev) => ({ ...prev, eventCategoryId: data[0]?.id }));
+        }
       })
       .catch((error) => console.log(error));
   }, []);
@@ -131,7 +134,13 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+
+    // Handle checkbox inputs
+    if (type === "checkbox") {
+      setEvent((prev) => ({ ...prev, [name]: checked }));
+      return;
+    }
 
     // If the title changes, update the slug automatically
     if (name === "title") {
@@ -203,12 +212,37 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
     newEventRounds = newEventRounds.map((round, index) => {
       if (roundIndex == index) {
         console.log(round);
-        if (name == "startTime" || name == "endTime") {
+
+        // When start time changes, combine with start date
+        if (name == "startTime") {
           return { ...round, [name]: `${round.startDate}T${value}` };
         }
+
+        // When end time changes, combine with end date
         if (name == "endTime") {
           return { ...round, [name]: `${round.endDate}T${value}` };
         }
+
+        // When start date changes, update startTime with new date
+        if (name == "startDate") {
+          const timeOnly = round.startTime.split("T")[1] || "00:00:00";
+          return {
+            ...round,
+            startDate: value,
+            startTime: `${value}T${timeOnly}`,
+          };
+        }
+
+        // When end date changes, update endTime with new date
+        if (name == "endDate") {
+          const timeOnly = round.endTime.split("T")[1] || "00:00:00";
+          return {
+            ...round,
+            endDate: value,
+            endTime: `${value}T${timeOnly}`,
+          };
+        }
+
         return { ...round, [name]: value };
       }
       return round;
@@ -239,6 +273,12 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
       return;
     }
 
+    // Validate that all rule values are provided (same validation as AddEventPage)
+    if (event?.eventRules?.filter((rule) => rule.value?.trim() == "").length > 0) {
+      alert("Please provide all rule values!");
+      return;
+    }
+
     console.log("creating event:", event);
 
     const validRounds = event.rounds.filter((r) => r.venue.trim() != "");
@@ -261,6 +301,18 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
       }
     }
 
+    // Use eventRounds state directly since it has the latest changes
+    // The event state might be stale due to async state updates
+    const processedEvent = { ...event };
+    processedEvent.rounds = eventRounds.filter((r) => r.venue.trim() !== "");
+
+    console.log("Processed event for preview:", processedEvent);
+    console.log("Event rounds from state:", eventRounds);
+    console.log("Processed rounds:", processedEvent.rounds);
+
+    // Update event state with latest rounds before opening preview
+    setEvent(processedEvent);
+
     // Open the preview modal
     setShowPreview(true);
   };
@@ -273,41 +325,12 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
   };
 
   const handleConfirmSubmit = async () => {
-    // Submit the event
-    const validRounds = event.rounds
-      .filter((r) => r.venue.trim() !== "") // Filter rounds with non-empty venues
-      .map((r) => {
-        if (formType.toLowerCase() == "add") {
-          let startTime = r.startTime;
-          let endTime = r.endTime;
-          if (!r.startTime.includes(r.startDate)) {
-            startTime = `${r.startDate}T${r.startTime}`;
-          }
-
-          if (!r.endTime.includes(r.endTime)) {
-            startTime = `${r.endDate}T${r.endTime}`;
-          }
-          return {
-            ...r,
-            startDate: r.startDate ? formatDate(new Date(r.startDate)) : null,
-            endDate: r.endDate ? formatDate(new Date(r.endDate)) : null,
-            startTime: startTime,
-            endTime: endTime,
-          };
-        } else {
-          return r;
-        }
-      });
-
-    let newEvent = { ...event, rounds: validRounds };
-    console.log("newEvent:", newEvent);
-    setEvent(newEvent);
-
+    // Event data is already processed in handleSubmit, so use it directly
     setLoading(true);
-    console.log(" confirm, newEvent:", newEvent);
+    console.log(" confirm, event:", event);
     try {
-      console.log("updating:", newEvent);
-      await onConfirmAction(newEvent);
+      console.log("updating:", event);
+      await onConfirmAction(event);
 
       alert("Event Successfully saved!");
     } catch (error) {

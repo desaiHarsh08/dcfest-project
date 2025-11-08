@@ -1,4 +1,3 @@
-import React from "react";
 import "../../styles/WelcomeSection.css";
 
 const WelcomeSection = () => {
@@ -17,13 +16,13 @@ const WelcomeSection = () => {
   return (
     <div className="welcome-section">
       <div className="main-header text-center">
-        <div className="welcome-title">WELCOME TO UMANG 2024</div>
+        <div className="welcome-title">WELCOME TO UMANG 2025!</div>
         <div className="slider">
           <div className="slider-track">
             {images.map((src, index) => (
               <img
                 key={`large-${index}`}
-                src={src}
+                src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}${src}`}
                 alt={`Slide ${index + 1}`}
                 className="slider-image"
               />
@@ -32,7 +31,7 @@ const WelcomeSection = () => {
             {images.map((src, index) => (
               <img
                 key={`small-${index}`}
-                src={src}
+                src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}${src}`}
                 alt={`Slide ${index + 1}`}
                 className="slider-image"
               />
@@ -41,8 +40,8 @@ const WelcomeSection = () => {
         </div>
         <p className="welcome-description">
           Dive into an extraordinary celebration of culture, art, and
-          excitement. Join us for "UMANG 2024" — where creativity meets
-          tradition, and every moment is unforgettable. Be ready for an
+          excitement. Join us for &ldquo;UMANG 2025&rdquo; — where creativity
+          meets tradition, and every moment is unforgettable. Be ready for an
           experience like no other!
         </p>
       </div>

@@ -38,6 +38,9 @@ public class AvailableEventDto {
 
     private String eventMasterPhone;
 
+    // Mirrors AvailableEventModel.isActive (bean property name: active)
+    private boolean active;
+
     private List<JudgeDto> judges = new ArrayList<>();
 
     private List<EventRuleDto> eventRules = new ArrayList<>();

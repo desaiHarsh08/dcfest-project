@@ -8,36 +8,39 @@ import "../../styles/GuidelinesModal.css"; // Import custom styles
 import { AuthContext } from "../../providers/AuthProvider";
 // Guidelines Modal Component
 const GuidelinesModal = ({ show, handleClose }) => (
-  <Modal show={show} onHide={handleClose} size="lg" centered>
+  <Modal show={show} onHide={handleClose} size="lg" centered className="flex flex-column justify-content-between">
     <Modal.Header closeButton className="modal-header-custom">
       <Modal.Title className="modal-title-custom">General Guidelines</Modal.Title>
     </Modal.Header>
     <Modal.Body className="modal-body-custom">
       <ul className="guidelines-list">
-        <li>Two college representatives attending the final meeting before Umang will be recognised as the official representatives of their respective colleges for UMANG 2024.</li>
-        <li>All participants must carry a valid college identity card from their respective college.</li>
-        <li>Participants cannot be changed from prelims to Finals.</li>
+        <li>All Participants must carry a valid college identity card of their respective colleges. No soft copies will be allowed.</li>
         <li>The organisers shall not reimburse any expenses incurred by any of the colleges.</li>
         <li>Colleges are required to send in one team to represent their college in each of the events.</li>
-        <li>No substitutions will be entertained. If the registered team for the preliminary round qualifies, it must perform in the finals.</li>
-        <li>Cross-college or open teams will not be entertained.</li>
+        <li>If the registered team for the preliminary round qualifies, it must perform in the finals. No substitutions will be entertained thereafter.</li>
+        <li>Cross-college teams or open teams will not be entertained.</li>
         <li>
           Obscenity and vulgarity in any form will lead to disqualification. If the participant feels that any outfit or performance is vulgar, it is strongly advised to consult the organisers before
-          the performance. In case of any dispute arising due to this, the organisers’ decision will be final and irrevocable.
+          the performance. In case of any dispute arising due to this, the organisers&apos; decision will be final and irrevocable.
         </li>
-        <li>The decision of the judges or moderators shall be final and binding for all the events.</li>
+        <li>The decision of the judges or moderators shall be final and binding for all events.</li>
         <li>Chewing pan masala, smoking, drinking, or any other related activity is prohibited in the college premises and other event venues.</li>
-        <li>No weapons are allowed on the college premises (including chains, knuckles, pen knives, lighters, etc.) Fire-producing and inflammable objects are strictly prohibited.</li>
-        <li>All the given pen drives must be in audio format, named and labelled with their respective IC codes. Management shall not be responsible for any problems related to the same.</li>
+        <li>No weapons are allowed on the college premises (including chains, knuckles, pen knives, lighters, etc.). Fire-producing and inflammable objects are strictly prohibited.</li>
+        <li>
+          All the given pen drives must be named and labeled with their respective IC codes. The files must be in audio format. Management shall not be responsible for any problems related to the
+          same.
+        </li>
         <li>The management shall not be responsible for any loss, damage, theft, etc. of your personal belongings.</li>
-        <li>Damaging or tampering with any kind of college property by anyone shall be considered a serious offense and may lead to cancellation of the college participation.</li>
-        <li>The prop list and song list must be submitted in Umang's final representative meeting. Not listing any of the above will result in disqualification.</li>
+        <li>Damaging or tampering with any kind of college property by anyone shall be considered a serious offense and may lead to cancellation of the college&apos;s participation.</li>
+        <li>The prop list and song/track list must be submitted in Umang 2025&apos;s final representative meeting. Not submitting any of the above will result in disqualification.</li>
         <li>Organisers reserve the right to modify the rules and regulations (if required).</li>
-        <li>On the Spot Entry (OTSE) is subject to available slots.</li>
-        <li>Rights to admission are reserved.</li>
+        <li>On-the-Spot Entry (OTSE) is subject to availability of slots.</li>
+        <li>Undergraduate and Postgraduate students are eligible to participate in Umang 2025.</li>
+        <li>Rights to admission is reserved.</li>
+        <li>Any student may be asked to leave the venue or campus for disciplinary concern at the discretion of the college management.</li>
       </ul>
     </Modal.Body>
-    <Modal.Footer className="modal-footer-custom">
+    <Modal.Footer className="modal-footer-custom ">
       <Button variant="secondary" onClick={handleClose} className="modal-close-btn">
         Close
       </Button>
@@ -53,12 +56,12 @@ const RegistrationRulesModal = ({ show, handleClose }) => (
     </Modal.Header>
     <Modal.Body className="modal-body-custom">
       <ul className="guidelines-list">
-        <li>All the participating colleges will have to register for all the events online through the website.</li>
-        <li>Events having restrictions on the maximum number of participants/teams shall be accepted on a first come first serve basis.</li>
-        <li>The last date for online registrations is 10th December 2024.</li>
-        <li>After registration, if a college team backs out from any event on the main day, then it will lead to a negative marking.</li>
-        <li>Participants must report to the registration desk two hours before the event.</li>
-        <li>The Registration Desk will close 30 minutes prior to the scheduled time.</li>
+        <li>All the participating colleges will have to register for all the events online through the website—</li>
+        <li>Events having restrictions on the maximum number of participants/teams shall be accepted on a first-come, first-served basis.</li>
+        <li>The last date for online registrations is 8th December 2025.</li>
+        <li>Once the event registration is over, if a college team backs out from any event on the main day, then it will lead to negative marking.</li>
+        <li>Participants must report to the registration desk two hours prior to the event.</li>
+        <li>The Registration Desk will close 45 minutes before the scheduled time for registered teams and 30 minutes before for OTSE.</li>
       </ul>
     </Modal.Body>
     <Modal.Footer className="modal-footer-custom">
@@ -96,8 +99,18 @@ const Navbar = () => {
       >
         <Container>
           <div className="navbar-brand ms-2 fs-5 font-bold d-flex align-items-center">
-            <img src="/umang-logo.jpeg" alt="Umang Logo" className="logo-img me-2" />
-            <span>UMANG 2024</span>
+            <img
+              src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/U25.png`}
+              alt="UMANG Logo"
+              className="logo-img me-2"
+              style={{
+                borderRadius: "50%",
+                width: "80px",
+                height: "80px",
+                objectFit: "cover",
+              }}
+            />
+            {/* <span>NEXUS 2025</span> */}
           </div>
           <RBNavbar.Toggle aria-controls="navbar-default" style={{ background: "none" }} />
           <RBNavbar.Collapse id="navbar-default">
@@ -106,7 +119,9 @@ const Navbar = () => {
                 <>
                   <Link
                     to={iccode ? `/${iccode}` : "/home"}
-                    style={{ background: pathname.endsWith(`/home`) || pathname.endsWith(`/home/`) ? "aliceblue" : "" }}
+                    style={{
+                      background: pathname.endsWith(`/home`) || pathname.endsWith(`/home/`) ? "aliceblue" : "",
+                    }}
                     className={`${pathname.endsWith(`/home`) || pathname.endsWith(`/home/`) ? "border" : ""} nav-link-custom text-decoration-none d-flex py-0 my-0 align-items-center`}
                   >
                     <FaHome className="me-1" /> Home

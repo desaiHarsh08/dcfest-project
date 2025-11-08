@@ -89,7 +89,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
     @Override
     public List<AvailableEventDto> getAllAvailableEvents() {
-        return this.availableEventRepository.findAll().stream()
+        return this.availableEventRepository.findAllByIsActiveTrue().stream()
                 .map(this::availableEventModelToDto)
                 .collect(Collectors.toList());
     }
@@ -99,7 +99,7 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         EventCategoryModel eventCategoryModel = new EventCategoryModel();
         eventCategoryModel.setId(eventCategoryId);
 
-        return this.availableEventRepository.findByEventCategory(eventCategoryModel).stream()
+        return this.availableEventRepository.findByEventCategoryAndIsActiveTrue(eventCategoryModel).stream()
                 .map(this::availableEventModelToDto)
                 .collect(Collectors.toList());
     }
@@ -114,7 +114,13 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
 
     @Override
     public List<AvailableEventDto> getAvailableEventByCategorySlug(String categorySlug) {
-        return this.availableEventRepository.findByCategorySlug(categorySlug).stream()
+        return this.availableEventRepository.findByCategorySlugActive(categorySlug).stream()
+                .map(this::availableEventModelToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<AvailableEventDto> getAvailableEventByCategorySlugAll(String categorySlug) {
+        return this.availableEventRepository.findByCategorySlugAll(categorySlug).stream()
                 .map(this::availableEventModelToDto)
                 .collect(Collectors.toList());
     }
@@ -122,10 +128,30 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
     @Override
     public AvailableEventDto getAvailableEventBySlug(String slug) {
         System.out.println("slug: " + slug);
-        AvailableEventModel foundAvailableEventModel = this.availableEventRepository.findBySlug(slug).orElseThrow(
-                () -> new ResourceNotFoundException("No `AVAILABLE_EVENT` exist for slug: " + slug));
+        AvailableEventModel foundAvailableEventModel = this.availableEventRepository.findBySlugAndIsActiveTrue(slug)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("No `AVAILABLE_EVENT` exist for slug: " + slug));
 
         return this.availableEventModelToDto(foundAvailableEventModel);
+    }
+
+    public AvailableEventDto getAvailableEventBySlugAll(String slug) {
+        System.out.println("slug: " + slug);
+        AvailableEventModel foundAvailableEventModel = this.availableEventRepository.findBySlug(slug)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("No `AVAILABLE_EVENT` exist for slug: " + slug));
+
+        return this.availableEventModelToDto(foundAvailableEventModel);
+    }
+
+    public AvailableEventDto toggleActive(Long availableEventId) {
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId).orElseThrow(
+                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId));
+
+        availableEventModel.setActive(!availableEventModel.isActive());
+        availableEventModel = this.availableEventRepository.save(availableEventModel);
+
+        return this.availableEventModelToDto(availableEventModel);
     }
 
     // @Override
@@ -279,13 +305,40 @@ public class AvailableEventServicesImpl implements AvailableEventServices {
         availableEventModel.setCloseRegistration(true);
         availableEventModel = this.availableEventRepository.save(availableEventModel);
 
-        List<Object> messageArr = new ArrayList<>();
+        List<String> messageArr = new ArrayList<>();
         messageArr.add(availableEventModel.getTitle());
 
         this.whatsAppService.sendWhatsAppMessage(
                 closeRegPhone,
                 messageArr,
                 "umang_reg_off",
+                null);
+
+        return this.availableEventModelToDto(availableEventModel);
+    }
+
+    @Override
+    public AvailableEventDto toggleRegistrationProcess(Long availableEventId) {
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId).orElseThrow(
+                () -> new ResourceNotFoundException("No available_event exist for id: " + availableEventId));
+
+        // Toggle the registration status
+        boolean newStatus = !availableEventModel.isCloseRegistration();
+        availableEventModel.setCloseRegistration(newStatus);
+        availableEventModel = this.availableEventRepository.save(availableEventModel);
+
+        List<String> messageArr = new ArrayList<>();
+        messageArr.add(availableEventModel.getTitle());
+
+        // Send appropriate WhatsApp message based on the new status
+        String templateName = "umang_reg_off"; // Use same template for both cases
+        String statusMessage = newStatus ? "Registration closed for" : "Registration opened for";
+        messageArr.set(0, statusMessage + " " + availableEventModel.getTitle());
+
+        this.whatsAppService.sendWhatsAppMessage(
+                closeRegPhone,
+                messageArr,
+                templateName,
                 null);
 
         return this.availableEventModelToDto(availableEventModel);

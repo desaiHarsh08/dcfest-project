@@ -6,7 +6,7 @@ import { addParticipant, deleteParticipant, fetchParticipantsByEventIdAndCollege
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import styles from "../styles/CollegeEvent.module.css";
-import { FaMapMarkerAlt, FaRegClock, FaTicketAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaRegClock, FaTicketAlt, FaCalendarAlt } from "react-icons/fa";
 import { fetchCollegeByIcCode } from "../services/college-apis";
 
 const participantObj = {
@@ -36,9 +36,9 @@ const CollegeEvent = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
-    if (new Date() > new Date("2024-12-11T14:00:00")) {
-      return;
-    }
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
+    //   return;
+    // }
     setShow(true);
   };
 
@@ -95,7 +95,7 @@ const CollegeEvent = () => {
     }
   };
   const handleDelete = async (id) => {
-    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
@@ -125,22 +125,45 @@ const CollegeEvent = () => {
     }
   };
 
-  const formatDateTime = (dateTime) => {
-    return new Date(dateTime).toLocaleString("en-US", {
-      //   weekday: "long", // Day of the week (e.g., Monday)
-      year: "numeric", // Year (e.g., 2024)
-      month: "long", // Month (e.g., November)
-      day: "numeric", // Day (e.g., 14)
-      hour: "2-digit", // Hour (e.g., 09)
-      minute: "2-digit", // Minute (e.g., 30)
-      //   second: "2-digit", // Second (e.g., 05)
-      hour12: true, // Use AM/PM format
+  // Function to format time only
+  const formatTime = (dateTime) => {
+    return new Date(dateTime).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Function to format date only
+  const formatDate = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
     console.log(`in change, ${name}: ${value}`);
+
+    // Validate phone number - only allow digits and limit to 10 digits
+    if (name === "whatsappNumber") {
+      // Remove any non-digit characters
+      const numericValue = value.replace(/\D/g, "");
+      // Limit to 10 digits
+      if (numericValue.length <= 10) {
+        setSelectedParticipant((prev) => ({ ...prev, [name]: numericValue }));
+      }
+      return;
+    }
+
+    // Validate email - basic email pattern
+    if (name === "email") {
+      setSelectedParticipant((prev) => ({ ...prev, [name]: value }));
+      return;
+    }
+
     setSelectedParticipant((prev) => {
       if (name == "male") {
         console.log({ ...prev, male: Boolean(value) });
@@ -176,13 +199,25 @@ const CollegeEvent = () => {
 
     console.log("in handleRuleChecks(), after, newParticipants:", newParticipants);
 
-    // Check for whatsapp_no.
-    if (!deleteParticipantId && (selectedParticipant?.whatsappNumber.length > 11 || selectedParticipant?.whatsappNumber.length < 10)) {
+    // Check for whatsapp_no. - must be exactly 10 digits
+    if (!deleteParticipantId && selectedParticipant?.whatsappNumber.length !== 10) {
       setIsValid(false);
       if (isSubmitting) {
-        alert(`Please provide a valid number, currently ${selectedParticipant.whatsappNumber.length}!`);
+        alert(`Please provide a valid 10-digit phone number, currently ${selectedParticipant.whatsappNumber.length} digits!`);
       }
       return false;
+    }
+
+    // Check for valid email format
+    if (!deleteParticipantId) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(selectedParticipant?.email)) {
+        setIsValid(false);
+        if (isSubmitting) {
+          alert("Please provide a valid email address!");
+        }
+        return false;
+      }
     }
 
     // Check for blank field
@@ -323,7 +358,7 @@ const CollegeEvent = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
@@ -359,7 +394,7 @@ const CollegeEvent = () => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    // if (new Date() > new Date("2024-12-11T14:00:00")) {
+    // if (new Date() > new Date("2025-12-11T14:00:00")) {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
@@ -426,7 +461,7 @@ const CollegeEvent = () => {
             <Card className="border-0 shadow-sm py-3" style={{ background: "linear-gradient(135deg,#007bff,#004080)" }}>
               <Card.Img
                 variant="top"
-                src={`/${availableEvent?.slug}.jpg`}
+                src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${availableEvent?.slug}.jpg`}
                 alt={availableEvent?.title}
                 className="img-fluid rounded-lg" // Added rounded corners and made image responsive
                 style={{ height: "200px", objectFit: "contain" }} // Ensures the image looks good within a fixed height
@@ -502,12 +537,16 @@ const CollegeEvent = () => {
                             </div>
                             <div>
                               <p>
-                                <FaRegClock className="me-2" />
-                                {formatDateTime(round?.startTime)}
+                                <FaCalendarAlt className="me-2" />
+                                <strong>Date:</strong> {formatDate(round?.startTime)}
                               </p>
                               <p>
                                 <FaRegClock className="me-2" />
-                                {formatDateTime(round?.endTime)}
+                                <strong>Start:</strong> {formatTime(round?.startTime)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                <strong>End:</strong> {formatTime(round?.endTime)}
                               </p>
                             </div>
                           </ListGroup.Item>
@@ -527,7 +566,7 @@ const CollegeEvent = () => {
                 <div className="d-flex align-items-center gap-2">
                   <h4 className="text-secondary">Participants</h4>
                   {participants.length > 0 &&
-                    // new Date() < new Date("2024-12-11T14:00:00") &&
+                    // new Date() < new Date("2025-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
                       <button
@@ -553,7 +592,7 @@ const CollegeEvent = () => {
                       </button>
                     )}
                   {participants.length > 0 &&
-                    // new Date() < new Date("2024-12-11T14:00:00") &&
+                    // new Date() < new Date("2025-12-11T14:00:00") &&
                     availableEvent &&
                     availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter((p) => p.type == "ACCOMPANIST").length && (
                       <button
@@ -580,7 +619,7 @@ const CollegeEvent = () => {
                     )}
                 </div>
                 {college &&
-                //   new Date() < new Date("2024-12-11T14:00:00") &&
+                  //   new Date() < new Date("2025-12-11T14:00:00") &&
                   participants.length == 0 &&
                   slotsOccupied != null &&
                   slotsOccupied + 1 <= availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
@@ -600,7 +639,7 @@ const CollegeEvent = () => {
                     <th>Phone</th>
                     <th>Type</th>
                     <th>Entry</th>
-                    {new Date() < new Date("2024-12-11T14:00:00") && <th>Actions</th>}
+                    {!availableEvent?.closeRegistration && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -617,7 +656,7 @@ const CollegeEvent = () => {
                         <td>
                           <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant.entryType}</Badge>
                         </td>
-                        {new Date() < new Date("2024-12-11T14:00:00") && (
+                        {!availableEvent?.closeRegistration && (
                           <td>
                             {(availableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length ||
                               participant.type === "ACCOMPANIST") && (
@@ -685,9 +724,9 @@ const CollegeEvent = () => {
                   name={`male`} // Unique name for each participant's radio group
                   checked={selectedParticipant?.male}
                   onChange={() => {
-                    if (new Date() > new Date("2024-12-11T14:00:00")) {
-                      return;
-                    }
+                    // if (new Date() > new Date("2025-12-11T14:00:00")) {
+                    //   return;
+                    // }
                     handleEditFormChange({
                       target: { name: "male", value: true },
                     });
@@ -699,9 +738,9 @@ const CollegeEvent = () => {
                   name={`male`} // Same unique name for the pair
                   checked={!selectedParticipant?.male}
                   onChange={() => {
-                    if (new Date() > new Date("2024-12-11T14:00:00")) {
-                      return;
-                    }
+                    // if (new Date() > new Date("2025-12-11T14:00:00")) {
+                    //   return;
+                    // }
                     handleEditFormChange({
                       target: { name: "male", value: false },
                     });
@@ -749,9 +788,9 @@ const CollegeEvent = () => {
               variant="primary"
               disabled={loading}
               onClick={(e) => {
-                if (new Date() > new Date("2024-12-11T14:00:00")) {
-                  return;
-                }
+                // if (new Date() > new Date("2025-12-11T14:00:00")) {
+                //   return;
+                // }
                 if (!addFlag) {
                   handleSave(e);
                 } else {

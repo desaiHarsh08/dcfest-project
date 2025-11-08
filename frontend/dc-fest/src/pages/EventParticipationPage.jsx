@@ -59,25 +59,30 @@ const EventParticipationPage = () => {
     }
   }, [user, navigate]);
 
-  // Fetch participants when eventFilter changes
+  // Fetch participants when eventFilter or selectedCollege changes
   useEffect(() => {
-    if (eventFilter && selectedCollege && colleges.length > 0) {
-      console.log(selectedCollege);
+    if (eventFilter && selectedCollege) {
+      console.log("Fetching participants for selectedCollege:", selectedCollege);
       getParticipants();
+    } else {
+      // Clear participants if no event or college is selected
+      console.log("Clearing participants - eventFilter or selectedCollege missing");
+      setParticipants([]);
+      setFilteredParticipants([]);
     }
-  }, [eventFilter, colleges]);
+  }, [eventFilter, selectedCollege]);
 
   useEffect(() => {
     if (!selectedCollege) {
       fetchColleges()
         .then((data) => {
-          console.log(data);
+          console.log("Fetched colleges:", data);
           setColleges(data);
-          console.log(
-            "data.find((c) => c.id == 27)",
-            data.find((c) => c.id == 27)
-          );
-          setSelectedCollege(data.find((c) => c.id == 27));
+          // Use the first college instead of hardcoded id 27
+          if (data.length > 0) {
+            console.log("Setting first college as selected:", data[0]);
+            setSelectedCollege(data[0]);
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -103,22 +108,38 @@ const EventParticipationPage = () => {
   //   }, [selectedAvailableEvent, selectedCollege]);
 
   useEffect(() => {
+    console.log("=== Filtering participants ===");
+    console.log("selectedCollege:", selectedCollege);
+    console.log("selectedCollege ID:", selectedCollege?.id);
+    console.log("participants.length:", participants.length);
+    console.log("selectedRound:", selectedRound);
+
+    if (participants.length > 0) {
+      console.log(
+        "All participant college IDs:",
+        participants.map((p) => ({ id: p.id, name: p.participantName, collegeId: p.collegeId }))
+      );
+    }
+
     if (selectedCollege && participants.length > 0) {
       let roundIndex = 0;
       for (let i = 0; i < selectedAvailableEvent?.rounds.length; i++) {
         if (selectedAvailableEvent?.rounds[i].id == selectedRound?.id) {
           roundIndex = i;
-          console.log("selectedRound:", selectedRound);
+          console.log("Found round at index:", roundIndex);
           break;
         }
         roundIndex += 1;
       }
 
       if (roundIndex == 0) {
-        setFilteredParticipants(participants.filter((p) => p.collegeId == selectedCollege.id));
+        const filtered = participants.filter((p) => p.collegeId == selectedCollege.id);
+        console.log("Filtered participants (round 0):", filtered.length);
+        setFilteredParticipants(filtered);
       } else {
-        console.log("before", participants);
-        setFilteredParticipants(participants.filter((p) => p.collegeId == selectedCollege.id && p.promotedRoundDtos.some((ele) => ele.roundId == selectedRound.id)));
+        const filtered = participants.filter((p) => p.collegeId == selectedCollege.id && p.promotedRoundDtos.some((ele) => ele.roundId == selectedRound.id));
+        console.log("Filtered participants (round " + roundIndex + "):", filtered.length);
+        setFilteredParticipants(filtered);
       }
       setRefetchPop((prev) => !prev); // Set refetchPop to true to refetch the POP
     }
@@ -141,7 +162,7 @@ const EventParticipationPage = () => {
             const firstEvent = firstCategory.availableEvents[0];
             setEventFilter(firstEvent.id);
             setAvailableEvent(firstEvent);
-            setSelectedCollege(colleges.find((c) => c.id == 27));
+            // Don't set selectedCollege here - it will be set after colleges load
             setSelectedRound(firstEvent.rounds[0]);
           }
         }
@@ -157,17 +178,38 @@ const EventParticipationPage = () => {
   }, []);
 
   const getParticipants = async () => {
-    console.log("eventFilter before going to trycatch:", eventFilter);
+    console.log("=== getParticipants called ===");
+    console.log("eventFilter:", eventFilter);
+    console.log("selectedCollege:", selectedCollege);
     try {
       setLoading(true);
       const event = await fetchEventByAvailableEventId(eventFilter);
-      const response = await fetchParticipantsByEventId(event.id);
-      console.log("participants:", response);
-      setParticipants(response);
-      console.log(`response for eventFilter: ${eventFilter}, participants:`, response);
-      if (response.length > 0) {
-        setSelectedCollege(colleges.find((c) => c.id == 27));
+      console.log("Fetched event:", event);
+      console.log("Event ID:", event?.id);
+      console.log("Event availableEventId:", event?.availableEventId);
+      console.log("Event eventName:", event?.eventName);
+
+      if (!event || !event.id) {
+        console.error("Event or event.id is null/undefined!");
+        setParticipants([]);
+        return;
       }
+
+      const response = await fetchParticipantsByEventId(event.id);
+      console.log("Fetched participants count:", response.length);
+      console.log("Participants:", response);
+
+      // Log individual participant details if any exist
+      if (response.length > 0) {
+        console.log("First participant:", response[0]);
+        console.log(
+          "Participant college IDs:",
+          response.map((p) => p.collegeId)
+        );
+      }
+
+      setParticipants(response);
+      // Don't override selectedCollege here - it's already set
     } catch (err) {
       console.error("Error fetching participants:", err);
       setError("Failed to load participants.");
@@ -394,7 +436,10 @@ const EventParticipationPage = () => {
               const firstEvent = tmpSelectedCategory.availableEvents[0];
               setEventFilter(firstEvent.id);
               setAvailableEvent(firstEvent);
-              setSelectedCollege(colleges.find((c) => c.id == 27));
+              // Keep the current selected college or use the first one
+              if (!selectedCollege && colleges.length > 0) {
+                setSelectedCollege(colleges[0]);
+              }
               setSelectedRound(firstEvent.rounds[0]);
             }
           }}
@@ -414,7 +459,10 @@ const EventParticipationPage = () => {
 
             const tmpAvailableEvent = selectedCategory?.availableEvents?.find((ele) => ele.id == e.target.value);
             setAvailableEvent(tmpAvailableEvent);
-            setSelectedCollege(colleges.find((c) => c.id == 27));
+            // Keep the current selected college or use the first one
+            if (!selectedCollege && colleges.length > 0) {
+              setSelectedCollege(colleges[0]);
+            }
             setSelectedRound(tmpAvailableEvent.rounds[0]);
           }}
         >
@@ -443,7 +491,7 @@ const EventParticipationPage = () => {
           </Form.Select>
         )}
 
-        {selectedCollege && participants.length > 0 && (
+        {selectedCollege && colleges.length > 0 && (
           <Form.Select
             className="event-dropdown me-2"
             value={selectedCollege.id}
@@ -451,24 +499,27 @@ const EventParticipationPage = () => {
               const tmpCollege = colleges.find((c) => c.id == e.target.value);
               console.log("on changing, tmpCollege:", tmpCollege);
               setSelectedCollege(tmpCollege);
-              // console.log("participants.filter(p.collegeId == tmpCollege.id):", participants.filter(p => p.collegeId == tmpCollege.id));
-              // setFilteredColleges(participants.filter(p => p.collegeId == tmpCollege.id));
-              // getParticipants();
             }}
           >
             {colleges?.map((college, collegeIndex) => {
-              // console.log("in loop before if:", participants)
-              if (participants.filter((p) => p.collegeId == college.id).length > 0) {
-                return (
-                  <option key={`college-${collegeIndex}`} value={college.id}>
-                    {college?.name}
-                  </option>
-                );
-              }
+              const participantCount = participants.filter((p) => p.collegeId == college.id).length;
+              return (
+                <option key={`college-${collegeIndex}`} value={college.id}>
+                  {college?.name} {participantCount > 0 ? `(${participantCount})` : ""}
+                </option>
+              );
             })}
           </Form.Select>
         )}
       </div>
+
+      {/* Show message when no participants exist */}
+      {!loading && participants.length === 0 && eventFilter && selectedCollege && (
+        <div className="alert alert-info mt-3">
+          <strong>No participants registered</strong> for this event yet. Use &quot;Add More Participants&quot; button to add participants.
+        </div>
+      )}
+
       {filteredParticipants.length > 0 && (
         <div className="d-flex justify-content-between">
           <Button variant="success" disabled={colleges.length == 0 || participants.length == 0} onClick={handleDownload}>

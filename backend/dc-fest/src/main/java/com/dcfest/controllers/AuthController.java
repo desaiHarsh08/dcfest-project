@@ -11,6 +11,7 @@ import java.util.Random;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    @Value("${app.prefix}")
+    private String APP_PREFIX;
 
     @Autowired
     private WhatsAppService whatsAppService;
@@ -97,30 +101,30 @@ public class AuthController {
 
         System.out.println(authRequest);
 
-        this.authenticateUser(authRequest.getUsername(), authRequest.getPassword());
+        // First, check if user/college exists and is not archived BEFORE authenticating
+        // Using explicit non-archived queries for maximum security
+        CollegeModel collegeModel = null;
+        UserModel userModel = this.userRepository.findByEmailAndNotArchived(authRequest.getUsername()).orElse(null);
 
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(authRequest.getUsername());
-
-        CollegeModel collegeModel = new CollegeModel();
-        UserModel userModel = this.userRepository.findByEmail(authRequest.getUsername()).orElse(null);
         if (userModel == null) {
+            // Try to find college (non-archived only)
             Integer year = authRequest.getYear() != null ? authRequest.getYear() : java.time.Year.now().getValue();
             collegeModel = this.collegeRepository
-                    .findByIcCodeAndYear(authRequest.getUsername(), year)
-                    .orElseGet(() -> this.collegeRepository.findByIcCode(authRequest.getUsername()).orElse(null));
+                    .findByIcCodeAndYearAndNotArchived(authRequest.getUsername(), year)
+                    .orElseGet(() -> this.collegeRepository.findByIcCodeAndNotArchived(authRequest.getUsername())
+                            .orElse(null));
+
             if (collegeModel == null) {
-                throw new ResourceNotFoundException("No user exsit for username:" + authRequest.getUsername());
+                throw new ResourceNotFoundException("No user exist for username: " + authRequest.getUsername());
             }
         }
 
         System.out.println("userModel: " + userModel);
-        // Block archived accounts
-        if (userModel != null && userModel.isArchived()) {
-            throw new SecurityException("Your account has been archived. Please contact support.");
-        }
-        if (userModel == null && collegeModel != null && collegeModel.isArchived()) {
-            throw new SecurityException("Your college account has been archived. Please contact support.");
-        }
+
+        // Now authenticate (only if account is not archived)
+        this.authenticateUser(authRequest.getUsername(), authRequest.getPassword());
+
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(authRequest.getUsername());
 
         String accessToken = this.jwtTokenHelper.generateToken(userDetails);
         String refreshToken = this.refreshTokenServices.createRefreshToken(authRequest.getUsername()).getRefreshToken();
@@ -154,7 +158,7 @@ public class AuthController {
     private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
-        cookie.setPath("/");
+        cookie.setPath(APP_PREFIX);
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
     }
@@ -197,25 +201,20 @@ public class AuthController {
             throw new SecurityException("Security Exception... Please try to login again!");
         }
 
-        // Resolve principal (user or college)
-        CollegeModel collegeModel = new CollegeModel();
-        UserModel userModel = this.userRepository.findByEmail(emailValue).orElse(null);
+        // Resolve principal (user or college) - using explicit non-archived queries
+        CollegeModel collegeModel = null;
+        UserModel userModel = this.userRepository.findByEmailAndNotArchived(emailValue).orElse(null);
+
         if (userModel == null) {
+            // Try to find college (non-archived only)
             Integer currentYear = java.time.Year.now().getValue();
             collegeModel = this.collegeRepository
-                    .findByIcCodeAndYear(emailValue, currentYear)
-                    .orElseGet(() -> this.collegeRepository.findByIcCode(emailValue).orElse(null));
-            if (collegeModel == null) {
-                throw new ResourceNotFoundException("No user exsit for username:" + emailValue);
-            }
-        }
+                    .findByIcCodeAndYearAndNotArchived(emailValue, currentYear)
+                    .orElseGet(() -> this.collegeRepository.findByIcCodeAndNotArchived(emailValue).orElse(null));
 
-        // Block archived accounts for refresh too
-        if (userModel != null && userModel.isArchived()) {
-            throw new SecurityException("Your account has been archived. Please contact support.");
-        }
-        if (userModel == null && collegeModel != null && collegeModel.isArchived()) {
-            throw new SecurityException("Your college account has been archived. Please contact support.");
+            if (collegeModel == null) {
+                throw new ResourceNotFoundException("No user exist for username: " + emailValue);
+            }
         }
 
         // Generate new access token
@@ -315,7 +314,7 @@ public class AuthController {
             otpRepository.save(otpModel);
 
             // Send OTP to the user (via email or SMS)
-            sendOtp(otpRequest, otp);
+            sendOtp(otpRequest, otp, "User");
 
             return ResponseEntity.ok("OTP has been generated and sent!");
         } else if (otpRequest.getPhone() != null) {
@@ -330,7 +329,7 @@ public class AuthController {
             otpRepository.save(otpModel);
 
             // Send OTP to the user (via email or SMS)
-            sendOtp(otpRequest, otp);
+            sendOtp(otpRequest, otp, "User");
 
             return ResponseEntity.ok("OTP has been generated and sent!");
         }
@@ -370,17 +369,23 @@ public class AuthController {
         return (long) (100000 + random.nextInt(900000)); // Generates a 6-digit OTP
     }
 
-    private void sendOtp(OtpRequest otpRequest, Long otp) {
+    private void sendOtp(OtpRequest otpRequest, Long otp, String username) {
         if (otpRequest.getEmail() != null) { // Send email
             emailServices.senOTP(otpRequest.getEmail(), "User", otp);
         } else if (otpRequest.getPhone() != null) { // Send phone
-            List<Object> messageArr = new ArrayList<>();
-            messageArr.add(otp.toString());
-            this.whatsAppService.sendWhatsAppMessage(
-                    otpRequest.getPhone(),
-                    messageArr,
-                    "otpveri",
-                    null);
+            try {
+                List<String> messageArr = new ArrayList<>();
+                messageArr.add(username); // User first
+                messageArr.add(otp.toString()); // OTP second
+                this.whatsAppService.sendWhatsAppMessage(
+                        otpRequest.getPhone(),
+                        messageArr,
+                        "loginotp",
+                        null);
+            } catch (Exception e) {
+                System.err.println("WhatsApp send failed (non-blocking): " + e.getMessage());
+                // Continue execution - WhatsApp failure shouldn't block OTP generation
+            }
         }
     }
 

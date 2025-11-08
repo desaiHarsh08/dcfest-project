@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>UMANG 2024 | Proof of Participants</title>
+    <title>UMANG 2025 | Proof of Participants</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -31,10 +31,6 @@
         margin: 0;
         font-size: 18px;
       }
-
-<!--      header img {-->
-<!--        height: 100px;-->
-<!--      }-->
 
       main {
         padding: 20px;
@@ -142,10 +138,10 @@
           font-size: 9px;
         }
 
-       @page {
-                            margin: 0;
-                            size: A4;
-                        }
+        @page {
+          margin: 0;
+          size: A4;
+        }
 
         .qrcode-container img {
           width: 100px;
@@ -156,7 +152,7 @@
   </head>
   <body>
     <div class="p-0 px-5 my-2">
-      <header class="w-100" style="padding:0px">
+      <header class="w-100" style="padding: 0px">
         <nav style="text-align: center; width: 100%; padding: 10px 10px 10px 0; position: relative">
           <!-- Left Logo -->
           <img
@@ -169,7 +165,7 @@
           <!-- Center Text -->
           <div style="text-align: center; display: inline-block">
             <h5 style="margin: 5px 0">The Bhawanipur Education Society College</h5>
-            <h5 style="margin: 5px 0">UMANG 2024</h5>
+            <h5 style="margin: 5px 0">UMANG 2025</h5>
             <h5 style="margin: 5px 0">Proof of Participants</h5>
           </div>
 
@@ -183,13 +179,13 @@
         </nav>
       </header>
       <main>
-        <section class="h-100" style="width: 100%; height: 100%; display: table; border: .4px solid black;">
+        <section class="h-100" style="width: 100%; height: 100%; display: table; border: 0.4px solid black">
           <!-- Left Div -->
           <div style="width: 70%; display: table-cell; vertical-align: top">
             <table class="table h-100 m-0 table-bordered" style="border: 0.4px solid; border-color: black; font-size: 12px; width: 100%; height: 100%">
-              <tbody >
+              <tbody>
                 <tr>
-                  <td class="w-50" ><strong>POP NO.:</strong></td>
+                  <td class="w-50"><strong>POP NO.:</strong></td>
                   <td class="w-50" th:text="${teamNumber}"></td>
                 </tr>
                 <tr>
@@ -247,13 +243,15 @@
               <th style="text-align: center">Participation Type</th>
             </thead>
             <tbody style="text-align: center">
-            <tr th:each="participant, iterStat : ${participants}" class="text-center">
-              <td style="text-align: center" th:text="${iterStat.index + 1}"></td> <!-- Use iterStat.index + 1 to get 1-based index -->
-              <td style="text-align: center" th:text="${participant.name}"></td>
-              <td style="text-align: center"  th:text="${participant.isMale ? 'Male' : 'Female'}"></td>
-              <td style="text-align: center" th:text="${participant.whatsappNumber}"></td>
-              <td style="text-align: center" th:text="${participant.type.name()}"></td> <!-- For enum type -->
-            </tr>
+              <tr th:each="participant, iterStat : ${participants}" class="text-center">
+                <td style="text-align: center" th:text="${iterStat.index + 1}"></td>
+                <!-- Use iterStat.index + 1 to get 1-based index -->
+                <td style="text-align: center" th:text="${participant.name}"></td>
+                <td style="text-align: center" th:text="${participant.isMale ? 'Male' : 'Female'}"></td>
+                <td style="text-align: center" th:text="${participant.whatsappNumber}"></td>
+                <td style="text-align: center" th:text="${participant.type.name()}"></td>
+                <!-- For enum type -->
+              </tr>
             </tbody>
           </table>
         </section>

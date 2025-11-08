@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
-import { FaTicketAlt, FaUsers, FaRegClock, FaMapMarkerAlt } from "react-icons/fa";
+import { FaTicketAlt, FaRegClock, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import { fetchEventBySlug } from "../services/event-apis";
 import "../styles/RootEvents.css";
 import Navbar from "../components/Navbar/Navbar";
@@ -23,18 +23,21 @@ const RootEvent = () => {
     return <p className="text-danger">{error}</p>;
   }
 
-  // Function to format date and time in AM/PM format
-  const formatDateTime = (dateTime) => {
-    console.log("in format date time:", dateTime);
-    return new Date(dateTime).toLocaleString("en-US", {
-      //   weekday: "long", // Day of the week (e.g., Monday)
-      year: "numeric", // Year (e.g., 2024)
-      month: "long", // Month (e.g., November)
-      day: "numeric", // Day (e.g., 14)
-      hour: "2-digit", // Hour (e.g., 09)
-      minute: "2-digit", // Minute (e.g., 30)
-      //   second: "2-digit", // Second (e.g., 05)
-      hour12: true, // Use AM/PM format
+  // Function to format time only
+  const formatTime = (dateTime) => {
+    return new Date(dateTime).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Function to format date only
+  const formatDate = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -66,7 +69,7 @@ const RootEvent = () => {
               <Card className="border-0 shadow-sm">
                 <Card.Img
                   variant="top"
-                  src={`/${event?.slug}.jpg`}
+                  src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${event?.slug}.jpg`}
                   alt={event?.title}
                   className="img-fluid rounded-lg" // Added rounded corners and made image responsive
                   style={{ width: "100vw", objectFit: window.innerWidth < 767 ? "cover" : "cover", height: window.innerWidth < 767 ? "" : "100vh" }} // Ensures the image looks good within a fixed height
@@ -146,12 +149,16 @@ const RootEvent = () => {
                               </div>
                               <div>
                                 <p>
-                                  <FaRegClock className="me-2" />
-                                  {formatDateTime(round?.startTime)}
+                                  <FaCalendarAlt className="me-2" />
+                                  <strong>Date:</strong> {formatDate(round?.startTime)}
                                 </p>
                                 <p>
                                   <FaRegClock className="me-2" />
-                                  {formatDateTime(round?.endTime)}
+                                  <strong>Start:</strong> {formatTime(round?.startTime)}
+                                </p>
+                                <p>
+                                  <FaRegClock className="me-2" />
+                                  <strong>End:</strong> {formatTime(round?.endTime)}
                                 </p>
                               </div>
                             </ListGroup.Item>

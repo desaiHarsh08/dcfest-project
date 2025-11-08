@@ -5,7 +5,7 @@ const ScoreDetails = ({ selectedCategory, selectedAvailableEvent, selectedRound 
   const formatDateTime = (dateTime) => {
     return new Date(dateTime).toLocaleString("en-US", {
       //   weekday: "long", // Day of the week (e.g., Monday)
-      year: "numeric", // Year (e.g., 2024)
+      year: "numeric", // Year (e.g., 2025)
       month: "long", // Month (e.g., November)
       day: "numeric", // Day (e.g., 14)
       hour: "2-digit", // Hour (e.g., 09)
@@ -37,7 +37,7 @@ const ScoreDetails = ({ selectedCategory, selectedAvailableEvent, selectedRound 
             <BsCalendar /> EVENT NAME :
           </strong>
           {/* <span>{selectedCategory?.name}</span> */}
-            <span className="mx-2">{selectedAvailableEvent?.title}</span>
+          <span className="mx-2">{selectedAvailableEvent?.title}</span>
         </div>
         <div className="col">
           <strong>

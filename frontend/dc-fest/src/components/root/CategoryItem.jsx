@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect, useRef, useState } from "react";
 import { Card } from "react-bootstrap";
 import "../../styles/CategoryItem.css";
 import { Link } from "react-router-dom";
@@ -55,7 +56,12 @@ const CategoryItem = ({ categoryItem }) => {
           {categoryItem?.availableEvents?.map((event, index) => (
             <Link to={`event/${event.slug}`} key={index} style={{ textDecoration: "none" }}>
               <Card className="event-card" style={{ minWidth: "350px", minHeight: "350px" }}>
-                <Card.Img variant="top" src={`/${event.slug}.jpg`} alt={event.title} className="img-fluid event-img" />
+                <Card.Img
+                  variant="top"
+                  src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${event.slug}.jpg`}
+                  alt={event.title}
+                  className="img-fluid event-img"
+                />
                 <Card.Body>
                   <Card.Title className="text-center event-title">{event.title}</Card.Title>
                   <Card.Text className="text-center">{truncateText(event?.oneLiner || "No description available", 100)}</Card.Text>

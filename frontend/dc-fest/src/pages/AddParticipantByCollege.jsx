@@ -56,7 +56,7 @@ export default function AddParticipantByCollege() {
   }, [eventId]);
 
   useEffect(() => {
-    if ((event && college && slotsOccupied && availableEvent)) {
+    if (event && college && slotsOccupied && availableEvent) {
       fetchParticipantsByEventIdAndCollegeId(eventId, college.id).then((data) => {
         console.log(data);
         setParticipants(data);
@@ -64,7 +64,7 @@ export default function AddParticipantByCollege() {
 
         if (!maxSlotsAvailable) navigate(`/${iccode}/${eventId}`);
 
-        // if (data.length > 0 || slotsOccupied + 1 > maxSlotsAvailable || new Date() > new Date("2024-12-11T14:00:00")) {
+        // if (data.length > 0 || slotsOccupied + 1 > maxSlotsAvailable || new Date() > new Date("2025-12-11T14:00:00")) {
         //   navigate(`/${iccode}/${eventId}`);
         // }
       });

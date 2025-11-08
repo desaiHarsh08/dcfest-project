@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Col, Container, Row, ListGroup, Badge } from "react-bootstrap";
-import { FaMapMarkerAlt, FaEdit, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaEdit, FaArrowLeft, FaCalendarAlt, FaRegClock } from "react-icons/fa";
 import EditModal from "../components/event/EditModal";
 import { fetchEventBySlug } from "../services/event-apis";
 import { AiFillDelete } from "react-icons/ai";
 import ConfirmationModal from "../components/event/ConfirmationModal";
-import { closeAvailableEvent, deleteAvailableEvent } from "../services/available-events-apis";
+import { deleteAvailableEvent, toggleAvailableEventRegistration, toggleAvailableEventActive } from "../services/available-events-apis";
 
 const EventPage = () => {
   const { eventSlug } = useParams();
@@ -16,10 +16,13 @@ const EventPage = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openCloseRegModal, setOpenCloseRegModal] = useState(false);
+  const [openToggleActiveModal, setOpenToggleActiveModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchEventBySlug(eventSlug)
+    // Admin route under /home should include inactive
+    const includeInactive = true;
+    fetchEventBySlug(eventSlug, includeInactive)
       .then((data) => setEvent(data))
       .catch((err) => {
         console.log(err);
@@ -38,23 +41,26 @@ const EventPage = () => {
   const closeModal = () => setModalOpen(false);
 
   if (error) {
-    return <p className="text-danger">{error}</p>;
+    const msg = error?.response?.data?.message || error?.message || "Failed to load event";
+    return <p className="text-danger">{msg}</p>;
   }
 
-  // Utility function to format date and time
-  const formatDateTime = (dateTime) => {
-    const date = new Date(dateTime);
-    const formattedDate = date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-    const formattedTime = date.toLocaleTimeString("en-IN", {
+  // Function to format time only
+  const formatTime = (dateTime) => {
+    return new Date(dateTime).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
     });
-    return `${formattedDate}, ${formattedTime}`;
+  };
+
+  // Function to format date only
+  const formatDate = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   const handleDeleteEvent = async () => {
@@ -79,18 +85,33 @@ const EventPage = () => {
 
   const handleCloseRegistration = async (event) => {
     setIsLoading(true);
-    const newAvailableEvent = { ...event, closeRegistration: true };
     try {
-      const response = await closeAvailableEvent(newAvailableEvent.id);
-      console.log("closed reg, response:", response);
-      setEvent(newAvailableEvent);
-      alert("Registration closed successfully.");
+      const response = await toggleAvailableEventRegistration(event.id);
+      console.log("toggled reg, response:", response);
+      console.log("New closeRegistration status:", response.closeRegistration);
+      setEvent(response);
+      console.log("Event state updated");
+      // Remove alert since we have modal confirmation
     } catch (error) {
       console.log(error);
-      alert("Oops! Unable to close the registration.");
+      alert("Oops! Unable to toggle the registration.");
     } finally {
       setIsLoading(false);
       setOpenCloseRegModal(false);
+    }
+  };
+
+  const handleToggleActive = async (event) => {
+    setIsLoading(true);
+    try {
+      const response = await toggleAvailableEventActive(event.id);
+      setEvent(response);
+    } catch (error) {
+      console.log(error);
+      alert("Unable to toggle active state.");
+    } finally {
+      setIsLoading(false);
+      setOpenToggleActiveModal(false);
     }
   };
 
@@ -126,7 +147,7 @@ const EventPage = () => {
           {/* Event Image */}
           <Col md={6} className="mb-4">
             <Card className="border-0 shadow-sm">
-              <Card.Img variant="top" src={`/${event?.slug}.jpg`} alt={event?.title} className="img-fluid rounded-lg" style={{ height: "100vh", width: "100vw", objectFit: "cover" }} />
+              <Card.Img variant="top" src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${event?.slug}.jpg`} alt={event?.title} className="img-fluid rounded-lg" style={{ height: "100vh", width: "100vw", objectFit: "cover" }} />
             </Card>
           </Col>
 
@@ -220,7 +241,15 @@ const EventPage = () => {
                             <div>
                               <p>
                                 <FaCalendarAlt className="me-2" />
-                                {formatDateTime(round?.startTime)} - {formatDateTime(round?.endTime)}
+                                <strong>Date:</strong> {formatDate(round?.startTime)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                <strong>Start:</strong> {formatTime(round?.startTime)}
+                              </p>
+                              <p>
+                                <FaRegClock className="me-2" />
+                                <strong>End:</strong> {formatTime(round?.endTime)}
                               </p>
                             </div>
                           </ListGroup.Item>
@@ -243,16 +272,27 @@ const EventPage = () => {
                   title="Confirm?"
                   message={"Are your sure that you want to delete this event. This process cannot be undone."}
                 />
-                <Button variant={event?.closeRegistration ? "info" : "success"} onClick={() => setOpenCloseRegModal(true)}>
-                  {event?.closeRegistration ? "Closed" : "Open"}
+                <Button variant={event?.closeRegistration ? "success" : "info"} onClick={() => setOpenCloseRegModal(true)}>
+                  {event?.closeRegistration ? "Open Registration" : "Close Registration"}
+                </Button>
+                <Button className="ms-2" variant={event?.active ? "secondary" : "primary"} onClick={() => setOpenToggleActiveModal(true)}>
+                  {event?.active ? "Deactivate" : "Activate"}
                 </Button>
                 <ConfirmationModal
                   show={openCloseRegModal}
                   onHide={() => setOpenCloseRegModal(false)}
-                  onConfirm={handleCloseRegistration}
+                  onConfirm={() => handleCloseRegistration(event)}
                   isLoading={isLoading}
                   title="Confirm?"
-                  message={"Are your sure that you want to toggle the registration for this event."}
+                  message={`Are you sure that you want to ${event?.closeRegistration ? "open" : "close"} the registration for this event?`}
+                />
+                <ConfirmationModal
+                  show={openToggleActiveModal}
+                  onHide={() => setOpenToggleActiveModal(false)}
+                  onConfirm={() => handleToggleActive(event)}
+                  isLoading={isLoading}
+                  title="Confirm?"
+                  message={`Are you sure that you want to ${event?.active ? "deactivate" : "activate"} this event?`}
                 />
               </Card.Body>
             </Card>

@@ -176,7 +176,9 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+], {
+    basename: import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : "/fest",
+});
 
 const App = () => <RouterProvider router={router} />;
 

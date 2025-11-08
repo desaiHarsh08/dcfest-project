@@ -46,6 +46,8 @@ public class AvailableEventModel {
 
     private String eventMasterPhone;
 
+    private boolean isActive =  false;
+
     public AvailableEventModel(Long id) {
         this.id = id;
     }

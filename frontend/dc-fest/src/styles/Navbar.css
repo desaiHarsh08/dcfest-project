@@ -1,57 +1,111 @@
-/* Navbar styles */
+/* Enhanced Navbar styles */
 .navbar {
-    transition: background-color 0.3s ease;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    padding: 12px 0;
 }
 
-/* Navbar hover effect */
 .navbar:hover {
-    background-color: #f8f9fa !important;  /* Lighten on hover */
-}
-
-/* Navbar links */
-.nav-link-custom {
-    font-size: 1rem; /* Adjust font size */
-    font-weight: 500; /* Semi-bold */
-    color: #333; 
-    padding: 10px 15px; /* Padding for better clickability */
-    border-radius: 5px; /* Rounded corners */
-    transition: background-color 0.3s, color 0.3s; /* Transition for hover effects */
-    /* text-decoration: none; Remove text decoration */
-}
-
-/* Navbar link hover effects */
-.nav-link-custom:hover {
-    /* background-color: #007bff; Change background on hover */
-    /* color: #fff; Change text color on hover */
-    /* text-decoration: underline !important; */
-    /* color: black !important; */
-    color: rgb(32, 92, 205) !important;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
 }
 
 /* Brand styles */
 .navbar-brand {
-    font-weight: bold; /* Make brand bold */
+    display: flex;
+    align-items: center;
+    font-weight: 800;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo-img {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 0;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Enhanced Navbar links */
+.nav-link-custom {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    padding: 12px 18px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    text-decoration: none !important;
+    margin: 0 4px;
+}
+
+.nav-link-custom:hover {
+    color: #1f2937 !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* Enhanced Login Button */
+.nav-link-custom[style*="background: cornflowerblue"] {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    color: white !important;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+}
+
+.nav-link-custom[style*="background: cornflowerblue"]:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    color: white !important;
+}
+
+/* Guidelines and Rules buttons */
+.nav-link-custom:not([style*="background: cornflowerblue"]) {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.nav-link-custom:not([style*="background: cornflowerblue"]):hover {
+    border-color: rgba(59, 130, 246, 0.3);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .nav-link-custom {
-        font-size: 0.9rem; /* Smaller font size for mobile */
+        font-size: 0.9rem;
+        padding: 10px 14px;
+        margin: 2px 0;
+    }
+    
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+    
+    .logo-img {
+        height: 35px;
     }
 }
-.navbar-brand {
-    display: flex;
-    align-items: center;
-}
 
-.logo-img {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-.nav-link-custom {
-    font-size: 1rem;
-    color: #333;
+@media (max-width: 576px) {
+    .navbar {
+        padding: 8px 0;
+    }
+    
+    .nav-link-custom {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
 }

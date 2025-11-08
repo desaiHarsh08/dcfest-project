@@ -1,23 +1,28 @@
 /* eslint-disable react/prop-types */
 import { Modal, Button, Card, ListGroup, Badge, Row, Col } from "react-bootstrap";
-import { FaTicketAlt, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
+import { FaTicketAlt, FaMapMarkerAlt, FaCalendarAlt, FaRegClock } from "react-icons/fa";
 
 const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoading }) => {
-  console.log(formType);
-  const formatDateTime = (dateTime) => {
-    const date = new Date(dateTime);
-    console.log(dateTime);
-    const formattedDate = date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-    const formattedTime = date.toLocaleTimeString("en-IN", {
+  console.log("PreviewModal - formType:", formType);
+  console.log("PreviewModal - event:", event);
+  console.log("PreviewModal - rounds:", event?.rounds);
+
+  // Function to format time only
+  const formatTime = (dateTime) => {
+    return new Date(dateTime).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
     });
-    return `${formattedDate}, ${formattedTime}`;
+  };
+
+  // Function to format date only
+  const formatDate = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   return (
@@ -111,8 +116,15 @@ const PreviewModal = ({ show, event, onClose, onConfirm, formType = "Add", isLoa
                                   <div>
                                     <p>
                                       <FaCalendarAlt className="me-2" />
-                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.startTime}` : round.startTime)} -{" "}
-                                      {formatDateTime(formType.toLowerCase() == "add" ? `${round?.endTime}` : round?.endTime)}
+                                      <strong>Date:</strong> {formatDate(formType.toLowerCase() == "add" ? `${round?.startTime}` : round.startTime)}
+                                    </p>
+                                    <p>
+                                      <FaRegClock className="me-2" />
+                                      <strong>Start:</strong> {formatTime(formType.toLowerCase() == "add" ? `${round?.startTime}` : round.startTime)}
+                                    </p>
+                                    <p>
+                                      <FaRegClock className="me-2" />
+                                      <strong>End:</strong> {formatTime(formType.toLowerCase() == "add" ? `${round?.endTime}` : round?.endTime)}
                                     </p>
                                   </div>
                                 </ListGroup.Item>

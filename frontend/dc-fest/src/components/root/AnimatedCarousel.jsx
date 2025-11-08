@@ -67,13 +67,13 @@ const AnimatedCarousel = () => {
           <Carousel.Item key={item.imgSlug}>
             <div
               className="carousel-image h-100"
-              style={{ backgroundImage: `url(/${item.imgSlug}.jpg)` }} // Set background image
+              style={{ backgroundImage: `url(${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${item.imgSlug}.jpg)` }} // Set background image
             >
               <div className="carousel-overlay"></div> {/* Black overlay */}
               <Carousel.Caption className="text-center">
                 <h3 className="py-2">{item.category}</h3>
               </Carousel.Caption>
-              <div className="carousel-welcome">{/* <h1 className='text-white'>WELCOME TO "UMANG 2024"</h1> */}</div>
+              <div className="carousel-welcome">{/* <h1 className='text-white'>WELCOME TO "UMANG 2025"</h1> */}</div>
             </div>
           </Carousel.Item>
         ))}

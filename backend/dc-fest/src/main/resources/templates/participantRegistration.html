@@ -1,32 +1,43 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="UTF-8">
-    <title>Event Participation Confirmation - Umang DCFest 2024</title>
-</head>
-<body>
-<p>Dear <span th:text="${name}">[Participant's Name]</span>,</p>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Event Participation Confirmation - Umang <span id="currentYear"></span></title>
+  </head>
+  <body>
+    <p>Dear <span th:text="${name}">[Participant's Name]</span>,</p>
 
-<p>We are pleased to confirm your participation in the event <strong>
-    <span th:text="${eventModel.availableEvent.title}">[Event Title]</span></strong> as part of Umang DCFest 2024.</p>
+    <p>
+      We are pleased to confirm your participation in the event <strong> <span th:text="${eventModel.availableEvent.title}">[Event Title]</span></strong> as part of Umang
+      <span id="currentYear2"></span>.
+    </p>
 
-<p><strong>Event Details:</strong></p>
-<ul>
-    <li><strong>Event Name:</strong> <span th:text="${eventModel.availableEvent.title}">[Event Title]</span></li>
+    <p><strong>Event Details:</strong></p>
+    <ul>
+      <li><strong>Event Name:</strong> <span th:text="${eventModel.availableEvent.title}">[Event Title]</span></li>
 
-    <!-- Loop through each venueModel in venueModels to display the venue details -->
-    <li th:each="venueModel : ${venueModels}">
-        <strong>Venue:</strong> <span th:text="${venueModel.name}">[Venue Name]</span><br>
+      <!-- Loop through each venueModel in venueModels to display the venue details -->
+      <li th:each="venueModel : ${venueModels}">
+        <strong>Venue:</strong> <span th:text="${venueModel.name}">[Venue Name]</span><br />
         <strong>Date & Time:</strong>
         <span th:text="${#temporals.format(venueModel.start.toLocalDate(), 'yyyy-MM-dd')}">[Event Date]</span> at
         <span th:text="${#temporals.format(venueModel.start.toLocalTime(), 'HH:mm')}">[Start Time]</span> to
         <span th:text="${#temporals.format(venueModel.end.toLocalTime(), 'HH:mm')}">[End Time]</span>
-    </li>
-</ul>
+      </li>
+    </ul>
 
-<p>We look forward to your participation. Please feel free to contact us if you have any questions.</p>
+    <p>We look forward to your participation. Please feel free to contact us if you have any questions.</p>
 
-<p>Best regards,<br>
-    The Umang DCFest Team</p>
-</body>
+    <p>
+      Best regards,<br />
+      The Umang <span id="currentYear3"></span> Team
+    </p>
+
+    <script>
+      // Set current year dynamically
+      document.getElementById("currentYear").textContent = new Date().getFullYear();
+      document.getElementById("currentYear2").textContent = new Date().getFullYear();
+      document.getElementById("currentYear3").textContent = new Date().getFullYear();
+    </script>
+  </body>
 </html>
