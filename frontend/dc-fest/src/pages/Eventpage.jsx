@@ -147,7 +147,7 @@ const EventPage = () => {
           {/* Event Image */}
           <Col md={6} className="mb-4">
             <Card className="border-0 shadow-sm">
-              <Card.Img variant="top" src={`/${event?.slug}.jpg`} alt={event?.title} className="img-fluid rounded-lg" style={{ height: "100vh", width: "100vw", objectFit: "cover" }} />
+              <Card.Img variant="top" src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${event?.slug}.jpg`} alt={event?.title} className="img-fluid rounded-lg" style={{ height: "100vh", width: "100vw", objectFit: "cover" }} />
             </Card>
           </Col>
 

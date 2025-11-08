@@ -11,6 +11,7 @@ import java.util.Random;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    @Value("${app.prefix}")
+    private String APP_PREFIX;
 
     @Autowired
     private WhatsAppService whatsAppService;
@@ -154,7 +158,7 @@ public class AuthController {
     private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
-        cookie.setPath("/");
+        cookie.setPath(APP_PREFIX);
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
     }

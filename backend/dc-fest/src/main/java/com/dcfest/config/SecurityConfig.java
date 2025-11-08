@@ -65,7 +65,11 @@ public class SecurityConfig {
                     "http://localhost:3000",
                     "http://13.235.168.107:3007",
                     "https://umang2025.thebesc.in/",
-                    "http://localhost:5173"));
+                    "http://localhost:5173",
+                    "https://besc.academic360.app/",
+                    "https://besc.academic360.app/fest/",
+                    "http://localhost:5173/fest/"
+                    ));
             corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
             corsConfiguration.setAllowCredentials(true);
             corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));

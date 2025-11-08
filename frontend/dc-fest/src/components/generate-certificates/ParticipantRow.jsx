@@ -11,7 +11,7 @@ export default function ParticipantRow({ srno, participant, onGenerateCertificat
       <td>
         <div className="d-flex align-items-center gap-4 w-100">
           <div className="w-25 d-flex justify-content-end">
-            <img src={`/${category?.slug}.jpg`} alt={""} style={{ height: "52px", width: "52px", objectFit: "contain" }} />
+            <img src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${category?.slug}.jpg`} alt={""} style={{ height: "52px", width: "52px", objectFit: "contain" }} />
           </div>
           <p className="w-75 d-flex">{category?.name}</p>
         </div>
@@ -19,7 +19,7 @@ export default function ParticipantRow({ srno, participant, onGenerateCertificat
       <td>
         <div className="d-flex align-items-center gap-4 w-100">
           <div className="w-25 d-flex justify-content-end">
-            <img src={`/${availableEvent?.slug}.jpg`} alt={""} style={{ height: "52px", width: "52px", objectFit: "contain" }} />
+            <img src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${availableEvent?.slug}.jpg`} alt={""} style={{ height: "52px", width: "52px", objectFit: "contain" }} />
           </div>
           <p className="w-75 d-flex">{availableEvent?.title}</p>
         </div>

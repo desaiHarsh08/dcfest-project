@@ -69,7 +69,7 @@ const RootEvent = () => {
               <Card className="border-0 shadow-sm">
                 <Card.Img
                   variant="top"
-                  src={`/${event?.slug}.jpg`}
+                  src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${event?.slug}.jpg`}
                   alt={event?.title}
                   className="img-fluid rounded-lg" // Added rounded corners and made image responsive
                   style={{ width: "100vw", objectFit: window.innerWidth < 767 ? "cover" : "cover", height: window.innerWidth < 767 ? "" : "100vh" }} // Ensures the image looks good within a fixed height

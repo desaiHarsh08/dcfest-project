@@ -461,7 +461,7 @@ const CollegeEvent = () => {
             <Card className="border-0 shadow-sm py-3" style={{ background: "linear-gradient(135deg,#007bff,#004080)" }}>
               <Card.Img
                 variant="top"
-                src={`/${availableEvent?.slug}.jpg`}
+                src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${availableEvent?.slug}.jpg`}
                 alt={availableEvent?.title}
                 className="img-fluid rounded-lg" // Added rounded corners and made image responsive
                 style={{ height: "200px", objectFit: "contain" }} // Ensures the image looks good within a fixed height

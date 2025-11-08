@@ -63,7 +63,7 @@ const FineArts = () => {
                     <Card className="event-card" key={index}> {/* Custom card */}
                         <Card.Img
                             variant="top"
-                            src={event.image}
+                            src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}${event.image}`}
                             alt={event.alt}
                             className='img-fluid event-img'
                         />

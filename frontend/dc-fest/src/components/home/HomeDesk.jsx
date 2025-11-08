@@ -20,6 +20,26 @@ import { MdEmail } from "react-icons/md";
 const HomeDesk = () => {
   const { user } = useContext(AuthContext);
   console.log("welcome Dear User!", user);
+
+  // Helper function to get image src with prefix handling
+  const getImageSrc = (imgSrc) => {
+    if (typeof imgSrc !== "string") {
+      // For imported images (processed by Vite), use as-is
+      return imgSrc;
+    }
+    // For string paths, check if prefix is already included
+    const prefix = import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : "";
+    if (prefix && imgSrc.startsWith(prefix)) {
+      // Prefix already included, return as-is
+      return imgSrc;
+    }
+    // Add prefix only if it's a string path starting with '/'
+    if (imgSrc.startsWith("/")) {
+      return `${prefix}${imgSrc}`;
+    }
+    // For relative paths or other cases, return as-is
+    return imgSrc;
+  };
   const cardsData = [
     {
       title: "Categories",
@@ -126,7 +146,7 @@ const HomeDesk = () => {
                 <Link to={card.link} className="text-decoration-none h-100">
                   <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
                     <div className="card-overlay">
-                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                      <Card.Img variant="top" src={getImageSrc(card.imgSrc)} alt={card.title} className="card-image" />
                     </div>
                     <Card.Body className="p-4">
                       <div className="icon-container mb-3">{card.icon}</div>
@@ -144,7 +164,7 @@ const HomeDesk = () => {
                 <Link to={card.link} className="text-decoration-none h-100">
                   <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
                     <div className="card-overlay">
-                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                      <Card.Img variant="top" src={getImageSrc(card.imgSrc)} alt={card.title} className="card-image" />
                     </div>
                     <Card.Body className="p-4">
                       <div className="icon-container mb-3">{card.icon}</div>
@@ -162,7 +182,7 @@ const HomeDesk = () => {
                 <Link to={card.link} className="text-decoration-none h-100">
                   <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
                     <div className="card-overlay">
-                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                      <Card.Img variant="top" src={getImageSrc(card.imgSrc)} alt={card.title} className="card-image" />
                     </div>
                     <Card.Body className="p-4">
                       <div className="icon-container mb-3">{card.icon}</div>
@@ -180,7 +200,7 @@ const HomeDesk = () => {
                 <Link to={card.link} className="text-decoration-none h-100">
                   <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
                     <div className="card-overlay">
-                      <Card.Img variant="top" src={card.imgSrc} alt={card.title} className="card-image" />
+                      <Card.Img variant="top" src={getImageSrc(card.imgSrc)} alt={card.title} className="card-image" />
                     </div>
                     <Card.Body className="p-4">
                       <div className="icon-container mb-3">{card.icon}</div>

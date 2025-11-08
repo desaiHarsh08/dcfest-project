@@ -114,7 +114,7 @@ const EventCard = ({ event, college }) => {
       <Col xs={12} sm={6} md={4} lg={3} className="mb-4">
         <Card className={`h-100 shadow-sm ${styles.eventCard} border-0`}>
           <div className={`${styles.imageContainer} overflow-hidden`}>
-            <Card.Img variant="top" src={`/${event.slug}.jpg`} alt={event.title} className={`img-fluid rounded-top ${styles.cardImage}`} style={{ height: "200px", objectFit: "cover" }} />
+            <Card.Img variant="top" src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${event.slug}.jpg`} alt={event.title} className={`img-fluid rounded-top ${styles.cardImage}`} style={{ height: "200px", objectFit: "cover" }} />
           </div>
           <Card.Body className="d-flex flex-column p-4">
             <Card.Title className={`fs-5 text-center fw-bold ${styles.cardTitle}`}>{event.title}</Card.Title>

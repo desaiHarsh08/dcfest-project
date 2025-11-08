@@ -1,4 +1,3 @@
-import React from "react";
 import "../../styles/WelcomeSection.css";
 
 const WelcomeSection = () => {
@@ -23,7 +22,7 @@ const WelcomeSection = () => {
             {images.map((src, index) => (
               <img
                 key={`large-${index}`}
-                src={src}
+                src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}${src}`}
                 alt={`Slide ${index + 1}`}
                 className="slider-image"
               />
@@ -32,7 +31,7 @@ const WelcomeSection = () => {
             {images.map((src, index) => (
               <img
                 key={`small-${index}`}
-                src={src}
+                src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}${src}`}
                 alt={`Slide ${index + 1}`}
                 className="slider-image"
               />

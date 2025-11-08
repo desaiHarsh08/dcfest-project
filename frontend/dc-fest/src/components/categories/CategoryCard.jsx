@@ -20,7 +20,7 @@ const CategoryCard = ({ category }) => {
         <Card className={`h-100 shadow-sm border ${styles["custom-card"]}`}>
           <Card.Img
             variant="top"
-            src={`/${category.slug}.jpg`}
+            src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${category.slug}.jpg`}
             alt={category.slug}
             className="img-fluid custom-img"
             style={{
