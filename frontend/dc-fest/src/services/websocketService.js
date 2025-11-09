@@ -55,13 +55,26 @@ export const initWebSocket = () => {
     }
 
     const wsUrl = `${BACKEND_URL}/ws`;
+
+    // In production, use only XHR transports to avoid WebSocket upgrade issues with proxies/load balancers
+    // WebSocket connections often fail in production due to proxy/load balancer configurations
+    // XHR transports are more reliable and don't require WebSocket upgrade support
+    const isProduction = import.meta.env.VITE_APP_NODE_ENV === "production";
+    const transports = isProduction
+        ? ['xhr-streaming', 'xhr-polling']  // Only XHR in production (no WebSocket to avoid errors)
+        : ['websocket', 'xhr-streaming', 'xhr-polling']; // Prefer WebSocket in development
+
     console.log("🔌 Initializing WebSocket connection to:", wsUrl);
+    console.log("📡 Transport priority:", transports.join(" → "));
 
     try {
         const socket = new SockJS(wsUrl, null, {
-            transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
-            timeout: 5000,
+            transports: transports,
+            timeout: 10000, // Increased timeout for production
         });
+
+        // Track connection state to suppress unnecessary errors
+        let connectionEstablished = false;
 
         stompClient = new Client({
             webSocketFactory: () => socket,
@@ -69,6 +82,7 @@ export const initWebSocket = () => {
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
             onConnect: () => {
+                connectionEstablished = true;
                 console.log("✅ WebSocket connected via STOMP");
                 // Execute all queued callbacks
                 connectionCallbacks.forEach(callback => {
@@ -81,13 +95,26 @@ export const initWebSocket = () => {
                 connectionCallbacks.length = 0; // Clear the queue
             },
             onDisconnect: () => {
+                connectionEstablished = false;
                 console.log("❌ WebSocket disconnected");
             },
             onStompError: (frame) => {
-                console.error("❌ STOMP error:", frame);
+                // Only log STOMP errors if connection was never established
+                if (!connectionEstablished) {
+                    console.error("❌ STOMP error:", frame);
+                } else {
+                    console.warn("⚠️ STOMP warning (connection active):", frame);
+                }
             },
             onWebSocketError: (event) => {
-                console.error("❌ WebSocket error:", event);
+                // Only log WebSocket errors if connection was never established
+                // This helps suppress fallback transport errors when connection succeeds
+                if (!connectionEstablished) {
+                    console.error("❌ WebSocket error:", event);
+                } else {
+                    // Connection succeeded via fallback, this is just informational
+                    console.debug("ℹ️ WebSocket transport fallback (connection active)");
+                }
             },
         });
 
