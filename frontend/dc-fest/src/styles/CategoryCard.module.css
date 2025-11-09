@@ -21,9 +21,18 @@
 }
 
 .card-title {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #333;
+    min-height: 2.8rem; /* Ensure consistent height for titles */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
 }
 
 .card-text {
