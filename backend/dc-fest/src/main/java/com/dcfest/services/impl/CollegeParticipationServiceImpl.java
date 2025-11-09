@@ -246,24 +246,35 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         AvailableEventModel availableEventModel = existCollegeParticipationModel.getAvailableEvent();
 
-        // Fetch the event from available_event
+        // Fetch the event from available_event (may be null if no participants added yet)
         EventModel eventModel = this.eventRepository
                 .findByAvailableEvent(availableEventModel)
                 .orElse(null);
-        if (eventModel == null) {
-            throw new IllegalArgumentException("Unable to find the event from the available_event");
-        }
 
         // Check if the deleted college was in the waiting list
         String deletedCollegeSequence = existCollegeParticipationModel.getWaitingListSequence();
         boolean wasInWaitingList = deletedCollegeSequence != null && deletedCollegeSequence.startsWith("WL_");
 
-        // Delete the participants
-        List<ParticipantModel> participantModels = this.participantRepository
-                .findByEvent_IdAndCollegeId(eventModel.getId(), existCollegeParticipationModel.getCollege().getId());
-        for (ParticipantModel participantModel : participantModels) {
-            if (!this.participantServices.deleteParticipant(participantModel.getId())) {
-                throw new IllegalArgumentException("Unable to delete the participants");
+        // Delete the participants only if EventModel exists
+        if (eventModel != null) {
+            List<ParticipantModel> participantModels = this.participantRepository
+                    .findByEvent_IdAndCollegeId(eventModel.getId(), existCollegeParticipationModel.getCollege().getId());
+            for (ParticipantModel participantModel : participantModels) {
+                if (!this.participantServices.deleteParticipant(participantModel.getId())) {
+                    throw new IllegalArgumentException("Unable to delete the participants");
+                }
+            }
+        } else {
+            // If EventModel doesn't exist, try to delete participants by availableEventId and collegeId
+            // This handles the case where college enrolled but hasn't added participants yet
+            List<ParticipantModel> participantModels = this.participantRepository
+                    .findByAvailableEventId(availableEventModel.getId()).stream()
+                    .filter(p -> p.getCollege().getId().equals(existCollegeParticipationModel.getCollege().getId()))
+                    .collect(Collectors.toList());
+            for (ParticipantModel participantModel : participantModels) {
+                if (!this.participantServices.deleteParticipant(participantModel.getId())) {
+                    throw new IllegalArgumentException("Unable to delete the participants");
+                }
             }
         }
 
@@ -279,16 +290,23 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
         // After deletion, check if we should promote waiting list participants
         // (This will promote the first waiting list college if there's a vacant
         // registration slot)
-        promoteWaitingListParticipant(eventModel, availableEventModel);
+        // Only promote if EventModel exists, otherwise we can't count slots properly
+        if (eventModel != null) {
+            promoteWaitingListParticipant(eventModel, availableEventModel);
+        }
 
         // Emit WebSocket event for quota update after deletion
         try {
             Long availableEventId = availableEventModel.getId();
-            Long slotsOccupied = this.participantServices.slotsOccupied(eventModel.getId());
+            Long slotsOccupied = eventModel != null 
+                    ? this.participantServices.slotsOccupied(eventModel.getId())
+                    : 0L; // If no EventModel, no slots are occupied
             Long waitingListSlotsOccupied = this.participantServices
                     .waitingListSlotsOccupiedByAvailableEventId(availableEventId);
             webSocketService.emitQuotaUpdate(availableEventId, slotsOccupied, waitingListSlotsOccupied);
-            webSocketService.emitParticipantRemoved(availableEventId, eventModel.getId());
+            if (eventModel != null) {
+                webSocketService.emitParticipantRemoved(availableEventId, eventModel.getId());
+            }
         } catch (Exception e) {
             System.err.println("Error emitting WebSocket event: " + e.getMessage());
         }
