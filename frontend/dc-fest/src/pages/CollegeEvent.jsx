@@ -64,14 +64,24 @@ const CollegeEvent = () => {
       } catch (err) {
         console.error("Error fetching event:", err);
         // If event doesn't exist yet (404), try to get availableEventId from college's participation
+        // Also handle the case where eventId might actually be an availableEventId
         if (college?.id) {
           try {
-            const participations = await fetchParticipationEventsByCollegeId(college.id);
-            // Find the participation that matches this eventId (if event exists) or find by availableEventId
-            const participation = participations.find((p) => p.eventId === Number(eventId) || p.availableEventId);
-            if (participation?.availableEventId) {
-              const availableEventData = await fetchAvailableEventsById(participation.availableEventId);
+            // First, try to treat eventId as availableEventId directly
+            try {
+              const availableEventData = await fetchAvailableEventsById(eventId);
               setAvailableEvent(availableEventData);
+            } catch (availableEventErr) {
+              // If that fails, try to find from participations
+              const participations = await fetchParticipationEventsByCollegeId(college.id);
+              // Find the participation that matches this eventId (if event exists) or matches availableEventId
+              const participation = participations.find(
+                (p) => p.eventId === Number(eventId) || p.availableEventId === Number(eventId)
+              );
+              if (participation?.availableEventId) {
+                const availableEventData = await fetchAvailableEventsById(participation.availableEventId);
+                setAvailableEvent(availableEventData);
+              }
             }
           } catch (participationErr) {
             console.error("Error fetching participation:", participationErr);

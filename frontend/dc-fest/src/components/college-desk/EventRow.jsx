@@ -161,8 +161,12 @@ const EventRow = ({ index, availableEventId, collegeId }) => {
       </td>
       <td>{participants.length}</td>
       <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-        {event?.id ? (
-          <Link to={`${event.id}`} className="btn btn-primary text-decoration-none">
+        {/* Show View button if college has enrolled (has participation) OR if event exists */}
+        {collegeParticipation || event?.id ? (
+          <Link 
+            to={event?.id ? `${event.id}` : `${availableEventId}`} 
+            className="btn btn-primary text-decoration-none"
+          >
             View
           </Link>
         ) : (

@@ -375,7 +375,7 @@ const EventCard = ({ event, college }) => {
                                   width: "20%",
                                 }}
                               >
-                                Quota
+                                Slots
                               </th>
                               <th
                                 style={{
