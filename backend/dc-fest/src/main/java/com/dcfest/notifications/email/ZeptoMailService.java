@@ -31,12 +31,34 @@ public class ZeptoMailService {
 
     public void sendEmail(String to, String subject, String htmlContent, List<Attachment> attachments) {
         try {
-            String url = zeptoUrl + "v1.1/email";
+            // Ensure URL is properly formatted with protocol
+            String baseUrl = zeptoUrl;
+            if (baseUrl == null || baseUrl.isEmpty()) {
+                throw new IllegalStateException("zepto.url is not configured in application properties");
+            }
+            // Remove trailing slash if present, then add it back
+            baseUrl = baseUrl.trim();
+            if (!baseUrl.endsWith("/")) {
+                baseUrl = baseUrl + "/";
+            }
+            // Ensure URL has protocol
+            if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+                baseUrl = "https://" + baseUrl;
+            }
+            String url = baseUrl + "v1.1/email";
 
             // Prepare headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Zoho-enczapikey " + zeptoToken);
+
+            System.out.println("ZeptoMail Configuration:");
+            System.out.println("URL: " + zeptoUrl);
+            System.out.println("From: " + zeptoFrom);
+            System.out.println("Token length: " + (zeptoToken != null ? zeptoToken.length() : 0));
+            System.out.println("Token starts with: "
+                    + (zeptoToken != null && zeptoToken.length() > 10 ? zeptoToken.substring(0, 10) + "..." : "N/A"));
+            System.out.println("Full URL: " + url);
 
             // Prepare email data
             Map<String, Object> emailData = new HashMap<>();
@@ -44,7 +66,7 @@ public class ZeptoMailService {
             // From address
             Map<String, String> from = new HashMap<>();
             from.put("address", zeptoFrom);
-            from.put("name", "Umang DCFest 2025");
+            from.put("name", "Umang 2025");
             emailData.put("from", from);
 
             // To addresses - ZeptoMail API format
@@ -80,9 +102,36 @@ public class ZeptoMailService {
                 System.err.println("Response: " + response.getBody());
             }
 
+        } catch (org.springframework.web.client.HttpClientErrorException.Unauthorized e) {
+            System.err.println("==========================================");
+            System.err.println("ZeptoMail 401 Unauthorized Error");
+            System.err.println("==========================================");
+            System.err.println("Error sending email to: " + to);
+            System.err.println("URL: " + zeptoUrl + "v1.1/email");
+            System.err.println("From address: " + zeptoFrom);
+            System.err.println("Token configured: "
+                    + (zeptoToken != null && !zeptoToken.isEmpty() ? "Yes (length: " + zeptoToken.length() + ")"
+                            : "No"));
+            System.err.println("Response status: " + e.getStatusCode());
+            System.err.println("Response body: " + e.getResponseBodyAsString());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+
+            System.err.println("\nPossible causes:");
+            System.err.println("1. Token is expired or invalid - Check ZeptoMail dashboard");
+            System.err.println("2. IP restrictions - Add production server IP to ZeptoMail whitelist");
+            System.err.println("3. Token mismatch - Verify token in ZeptoMail Mail Agent Setup");
+            System.err
+                    .println("4. From email not verified - Ensure donotreply@thebges.edu.in is verified in ZeptoMail");
+            System.err.println("==========================================");
+
+            e.printStackTrace();
+            throw new RuntimeException(
+                    "Failed to send email: ZeptoMail API authentication failed. Please verify the API token and IP restrictions in ZeptoMail dashboard.",
+                    e);
         } catch (Exception e) {
             System.err.println("Error sending email to " + to + ": " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         }
     }
 

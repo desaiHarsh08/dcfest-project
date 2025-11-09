@@ -3,15 +3,16 @@ package com.dcfest.notifications.email;
 import com.dcfest.constants.RoundType;
 import com.dcfest.models.AvailableEventModel;
 import com.dcfest.models.RoundModel;
+import com.dcfest.services.AcademicYearService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -23,9 +24,25 @@ public class EmailServices {
     @Autowired
     private TemplateEngine templateEngine;
 
+    @Autowired
+    private AcademicYearService academicYearService;
+
+    /**
+     * Get the academic year from database, with fallback to current year + 1 if not
+     * found
+     */
+    private String getAcademicYear() {
+        try {
+            return academicYearService.getActiveAcademicYear().getYear();
+        } catch (Exception e) {
+            // Fallback to current year + 1 if no active academic year is found
+            return String.valueOf(LocalDate.now().getYear() + 1);
+        }
+    }
+
     @Async
     public void sendCollegeRegistrationEmail(String to, String collegeName) {
-        String subject = "Confirmation of Participation for Umang 2025";
+        String subject = "Confirmation of Participation for Umang " + getAcademicYear();
 
         try {
             // Create the HTML content using Thymeleaf template
@@ -43,7 +60,7 @@ public class EmailServices {
 
     @Async
     public void senOTP(String to, String username, Long otp) {
-        String subject = "Verify your account for Umang " + (new Date().getYear() + 1);
+        String subject = "Verify your account for Umang " + getAcademicYear();
 
         try {
             // Create the HTML content using Thymeleaf template
@@ -90,7 +107,7 @@ public class EmailServices {
 
     @Async
     public void sendResetPasswordEmail(String to, String name, String iccode, String password, String institutionName) {
-        String subject = "Reset Password Success - (Umang 2025)";
+        String subject = "Reset Password Success - (Umang " + getAcademicYear() + ")";
 
         try {
             // Create the HTML content using Thymeleaf template

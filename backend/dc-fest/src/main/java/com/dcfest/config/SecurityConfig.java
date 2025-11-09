@@ -1,8 +1,6 @@
 package com.dcfest.config;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -66,15 +64,18 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration corsConfiguration = new CorsConfiguration();
-            // Use setAllowedOriginPatterns for better flexibility with paths
+            // Use setAllowedOriginPatterns for better flexibility
+            // Note: Origin patterns should not include path wildcards (/**)
+            // The origin is just protocol + domain + port
             corsConfiguration.setAllowedOriginPatterns(Arrays.asList(
                     "http://localhost:3000",
                     "http://localhost:3007",
                     "http://localhost:5173",
-                    "http://localhost:5173/**",
                     "http://13.235.168.107:3007",
-                    "https://umang2025.thebesc.in/**",
-                    "https://besc.academic360.app/**"));
+                    "https://umang2025.thebesc.in",
+                    "https://besc.academic360.app",
+                    "https://besc.academic360.app/fest",
+                    "https://*.academic360.app")); // Allow all subdomains of academic360.app
             corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
             corsConfiguration.setAllowCredentials(true);
             corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
