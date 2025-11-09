@@ -7,19 +7,35 @@ if (typeof global === 'undefined') {
 }
 
 /**
- * Get the base backend URL without any path prefixes
- * Extracts just the protocol + domain + port from the backend URL
+ * Get the base backend URL for WebSocket connection
+ * In production, preserve the full path if it exists (e.g., /fest/backend/)
+ * WebSocket endpoint will be appended to this base URL
  */
 const getBaseBackendUrl = () => {
     if (import.meta.env.VITE_APP_NODE_ENV === "production") {
         const backendUrl = import.meta.env.VITE_APP_BACKEND_URL || "http://localhost:5003";
         try {
             const url = new URL(backendUrl);
-            // Return just the origin (protocol + host + port)
-            return url.origin;
-        } catch {
-            // If URL parsing fails, return as is
-            return backendUrl;
+            // In production, preserve the path if it exists (e.g., /fest/backend/)
+            // Remove trailing slash if present, we'll add it when constructing the WebSocket URL
+            let baseUrl = url.origin;
+            if (url.pathname && url.pathname !== "/") {
+                // Preserve the path (e.g., /fest/backend)
+                baseUrl = url.origin + url.pathname.replace(/\/$/, ""); // Remove trailing slash
+            }
+            console.log("🔌 WebSocket backend URL:", baseUrl);
+            return baseUrl;
+        } catch (error) {
+            console.error("Error parsing backend URL:", error);
+            // If URL parsing fails, try to extract manually
+            if (backendUrl.startsWith("http://") || backendUrl.startsWith("https://")) {
+                // Extract protocol + host + path (without trailing slash)
+                const match = backendUrl.match(/^(https?:\/\/[^/]+(?:\/[^/]+)*)/);
+                if (match) {
+                    return match[1].replace(/\/$/, ""); // Remove trailing slash
+                }
+            }
+            return backendUrl.replace(/\/$/, ""); // Remove trailing slash
         }
     }
     return "http://localhost:5003";
@@ -38,34 +54,49 @@ export const initWebSocket = () => {
         return stompClient;
     }
 
-    const socket = new SockJS(`${BACKEND_URL}/ws`);
-    stompClient = new Client({
-        webSocketFactory: () => socket,
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
-        onConnect: () => {
-            console.log("✅ WebSocket connected via STOMP");
-            // Execute all queued callbacks
-            connectionCallbacks.forEach(callback => {
-                try {
-                    callback();
-                } catch (error) {
-                    console.error("Error executing connection callback:", error);
-                }
-            });
-            connectionCallbacks.length = 0; // Clear the queue
-        },
-        onDisconnect: () => {
-            console.log("❌ WebSocket disconnected");
-        },
-        onStompError: (frame) => {
-            console.error("❌ STOMP error:", frame);
-        },
-    });
+    const wsUrl = `${BACKEND_URL}/ws`;
+    console.log("🔌 Initializing WebSocket connection to:", wsUrl);
 
-    stompClient.activate();
-    return stompClient;
+    try {
+        const socket = new SockJS(wsUrl, null, {
+            transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
+            timeout: 5000,
+        });
+
+        stompClient = new Client({
+            webSocketFactory: () => socket,
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+            onConnect: () => {
+                console.log("✅ WebSocket connected via STOMP");
+                // Execute all queued callbacks
+                connectionCallbacks.forEach(callback => {
+                    try {
+                        callback();
+                    } catch (error) {
+                        console.error("Error executing connection callback:", error);
+                    }
+                });
+                connectionCallbacks.length = 0; // Clear the queue
+            },
+            onDisconnect: () => {
+                console.log("❌ WebSocket disconnected");
+            },
+            onStompError: (frame) => {
+                console.error("❌ STOMP error:", frame);
+            },
+            onWebSocketError: (event) => {
+                console.error("❌ WebSocket error:", event);
+            },
+        });
+
+        stompClient.activate();
+        return stompClient;
+    } catch (error) {
+        console.error("❌ Failed to initialize WebSocket:", error);
+        return null;
+    }
 };
 
 /**
