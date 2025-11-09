@@ -218,14 +218,15 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     const registeredSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate?.name === "REGISTERED_SLOTS_AVAILABLE");
     const waitingListSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate?.name === "WAITING_LIST_SLOTS");
     const maxSlots = registeredSlotsRule ? Number(registeredSlotsRule.value) : null;
-    const maxWaitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : null;
+    // If waiting list rule is not present, treat it as 0 slots
+    const maxWaitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : 0;
     
     // Determine if waiting list should be used
     // Priority: If college is already in waiting list, use WAITING_LIST
     // Otherwise, check if registration is full and waiting list is available
     const isRegistrationFull = slotsOccupied != null && maxSlots != null && slotsOccupied >= maxSlots;
     const isWaitingListAvailable = isRegistrationFull && 
-                                   maxWaitingListSlots != null && 
+                                   maxWaitingListSlots > 0 && 
                                    waitingListSlotsOccupied != null && 
                                    waitingListSlotsOccupied < maxWaitingListSlots;
     

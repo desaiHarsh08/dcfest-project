@@ -329,7 +329,8 @@ const EventCard = ({ event, college }) => {
             <div className="mb-3 d-flex justify-content-center align-items-center flex-column" style={{ minHeight: user.type === "ADMIN" ? "auto" : "48px" }}>
               {(() => {
                 const maxSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "REGISTERED_SLOTS_AVAILABLE")?.value;
-                const waitingListSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "WAITING_LIST_SLOTS")?.value;
+                // If waiting list rule is not present, treat it as 0 slots
+                const waitingListSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "WAITING_LIST_SLOTS")?.value || "0";
                 const vacantSlots = maxSlots && slotsOccupied !== null ? parseInt(maxSlots) - slotsOccupied : null;
                 const isRegistrationFull = vacantSlots !== null && vacantSlots <= 0;
                 const vacantWaitingListSlots = waitingListSlots && waitingListSlotsOccupied !== null ? parseInt(waitingListSlots) - waitingListSlotsOccupied : null;
@@ -721,13 +722,18 @@ const EventCard = ({ event, college }) => {
                       }
 
                       const maxSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "REGISTERED_SLOTS_AVAILABLE")?.value;
-                      const waitingListSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "WAITING_LIST_SLOTS")?.value;
+                      // If waiting list rule is not present, treat it as 0 slots
+                      const waitingListSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "WAITING_LIST_SLOTS")?.value || "0";
                       const isRegistrationOpen = !event?.closeRegistration && slotsOccupied !== null && maxSlots && slotsOccupied < parseInt(maxSlots);
 
                       // Check if waiting list is available when registration is full
                       // Registration must not be closed, registration slots must be full, and waiting list must have slots
                       const isWaitingListAvailable =
-                        !event?.closeRegistration && !isRegistrationOpen && waitingListSlots && waitingListSlotsOccupied !== null && parseInt(waitingListSlots) > waitingListSlotsOccupied;
+                        !event?.closeRegistration &&
+                        !isRegistrationOpen &&
+                        parseInt(waitingListSlots) > 0 &&
+                        waitingListSlotsOccupied !== null &&
+                        parseInt(waitingListSlots) > waitingListSlotsOccupied;
 
                       if (isRegistrationOpen) {
                         return (

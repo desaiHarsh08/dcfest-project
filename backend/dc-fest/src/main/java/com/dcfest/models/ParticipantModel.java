@@ -74,6 +74,7 @@ public class ParticipantModel {
     private ParticipantType type = ParticipantType.PERFORMER;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "entry_type", length = 20)
     private EntryType entryType = EntryType.NORMAL;
 
     @Enumerated(EnumType.STRING)

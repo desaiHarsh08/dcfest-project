@@ -236,13 +236,11 @@ public class ParticipantServicesImpl implements ParticipantServices {
         if (otseSlotsEventRule == null) {
             throw new IllegalArgumentException("Unable to get the OTSE slots available rule");
         }
-        // Retrieve the WAITING_LIST_SLOTS (or quota count)
+        // Retrieve the WAITING_LIST_SLOTS (or quota count) - Optional
         EventRuleModel waitingListSlotsEventRule = eventRuleModels.stream()
                 .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS")).findAny()
                 .orElse(null);
-        if (waitingListSlotsEventRule == null) {
-            throw new IllegalArgumentException("Unable to get the WAITING_LIST slots available rule");
-        }
+        // WAITING_LIST_SLOTS is optional - if it doesn't exist, waiting list is not available
 
         // Check for enrollment
         List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository
@@ -307,45 +305,52 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 // If registration slots are full, check EntryType
                 EntryType entryType = participantDtos.get(0).getEntryType();
                 if (entryType.equals(EntryType.NORMAL)) {
-                    // Check if waiting list is available (waitingListSlotsEventRule is already
-                    // defined above and validated)
-                    int maxWaitingListSlots = Integer.parseInt(waitingListSlotsEventRule.getValue());
-                    Long waitingListSlotsOccupiedCount = this
-                            .waitingListSlotsOccupiedByAvailableEventId(availableEventModel.getId());
+                    // Check if waiting list is available (waitingListSlotsEventRule is optional)
+                    if (waitingListSlotsEventRule != null) {
+                        int maxWaitingListSlots = Integer.parseInt(waitingListSlotsEventRule.getValue());
+                        Long waitingListSlotsOccupiedCount = this
+                                .waitingListSlotsOccupiedByAvailableEventId(availableEventModel.getId());
 
-                    if (waitingListSlotsOccupiedCount != null && waitingListSlotsOccupiedCount < maxWaitingListSlots) {
-                        // Waiting list is available, but EntryType is NORMAL - this should be handled
-                        // by frontend
-                        // For now, allow it and backend will set it to WAITING_LIST based on QuotaType
+                        if (waitingListSlotsOccupiedCount != null && waitingListSlotsOccupiedCount < maxWaitingListSlots) {
+                            // Waiting list is available, but EntryType is NORMAL - this should be handled
+                            // by frontend
+                            // For now, allow it and backend will set it to WAITING_LIST based on QuotaType
+                        } else {
+                            // Waiting list is also full
+                            throw new RegisteredSlotsAvailableException(
+                                    "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+                        }
                     } else {
-                        // Waiting list is also full
+                        // No waiting list available - registration is full
                         throw new RegisteredSlotsAvailableException(
                                 "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
                     }
-                }
-                // If EntryType is WAITING_LIST or OTSE, allow it to proceed
-                int otseSlotsAvailable = Integer.parseInt(otseSlotsEventRule.getValue());
-                if (otseSlotsAvailable == 0) {
-                    throw new OTSESlotsException("No OTSE slots available");
-                }
-
-                // Grab the unique colleges
-                List<ParticipantModel> allParticipantModels = this.participantRepository
-                        .findByEvents_Id(participantDtos.get(0).getEventIds().get(0));
-                List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream()
-                        .filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
-                List<Long> collegesIds = new ArrayList<>();
-                for (ParticipantModel participantModel : fiteredParticipantsByType) {
-                    if (collegesIds.contains(participantModel.getCollege().getId())) {
-                        continue;
+                } else if (entryType.equals(EntryType.OTSE)) {
+                    // If EntryType is OTSE, check OTSE slots availability
+                    int otseSlotsAvailable = Integer.parseInt(otseSlotsEventRule.getValue());
+                    if (otseSlotsAvailable == 0) {
+                        throw new OTSESlotsException("No OTSE slots available");
                     }
-                    collegesIds.add(participantModel.getCollege().getId());
-                }
 
-                int otseSlotsOccupied = collegesIds.size();
-                if (otseSlotsOccupied + 1 > otseSlotsAvailable) {
-                    throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
+                    // Grab the unique colleges
+                    List<ParticipantModel> allParticipantModels = this.participantRepository
+                            .findByEvents_Id(participantDtos.get(0).getEventIds().get(0));
+                    List<ParticipantModel> fiteredParticipantsByType = allParticipantModels.stream()
+                            .filter(p -> p.getEntryType().equals(EntryType.OTSE)).toList();
+                    List<Long> collegesIds = new ArrayList<>();
+                    for (ParticipantModel participantModel : fiteredParticipantsByType) {
+                        if (collegesIds.contains(participantModel.getCollege().getId())) {
+                            continue;
+                        }
+                        collegesIds.add(participantModel.getCollege().getId());
+                    }
+
+                    int otseSlotsOccupied = collegesIds.size();
+                    if (otseSlotsOccupied + 1 > otseSlotsAvailable) {
+                        throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
+                    }
                 }
+                // If EntryType is WAITING_LIST, allow it to proceed (no additional checks needed)
 
             }
         }

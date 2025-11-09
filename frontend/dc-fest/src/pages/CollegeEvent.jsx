@@ -662,7 +662,8 @@ const CollegeEvent = () => {
                     const registeredSlotsRule = availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE");
                     const maxSlots = registeredSlotsRule ? Number(registeredSlotsRule.value) : null;
                     const waitingListSlotsRule = availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "WAITING_LIST_SLOTS");
-                    const waitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : null;
+                    // If waiting list rule is not present, treat it as 0 slots
+                    const waitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : 0;
                     const waitingListSlotsOccupied = availableEvent?.waitingListSlotsOccupied;
                     const canAdd =
                       slotsOccupied == null ||
