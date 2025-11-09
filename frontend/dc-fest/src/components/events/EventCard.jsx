@@ -331,9 +331,11 @@ const EventCard = ({ event, college }) => {
                 const maxSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "REGISTERED_SLOTS_AVAILABLE")?.value;
                 // If waiting list rule is not present, treat it as 0 slots
                 const waitingListSlots = event?.eventRules?.find((ele) => ele.eventRuleTemplate?.name === "WAITING_LIST_SLOTS")?.value || "0";
-                const vacantSlots = maxSlots && slotsOccupied !== null ? parseInt(maxSlots) - slotsOccupied : null;
+                // Ensure vacantSlots never goes negative
+                const vacantSlots = maxSlots && slotsOccupied !== null ? Math.max(0, parseInt(maxSlots) - slotsOccupied) : null;
                 const isRegistrationFull = vacantSlots !== null && vacantSlots <= 0;
-                const vacantWaitingListSlots = waitingListSlots && waitingListSlotsOccupied !== null ? parseInt(waitingListSlots) - waitingListSlotsOccupied : null;
+                // Ensure vacantWaitingListSlots never goes negative
+                const vacantWaitingListSlots = waitingListSlots && waitingListSlotsOccupied !== null ? Math.max(0, parseInt(waitingListSlots) - waitingListSlotsOccupied) : null;
                 const hasWaitingListAvailable = isRegistrationFull && vacantWaitingListSlots !== null && vacantWaitingListSlots > 0;
 
                 // For admin: show three-column table with Reg. Quota, Waiting Quota, and OTSE Quota
@@ -342,16 +344,19 @@ const EventCard = ({ event, college }) => {
 
                   // Reg. Quota
                   const maxRegSlots = maxSlots ? parseInt(maxSlots) : 0;
-                  const vacantRegSlots = maxRegSlots > 0 && slotsOccupied !== null ? maxRegSlots - slotsOccupied : 0;
+                  // Ensure vacantRegSlots never goes negative
+                  const vacantRegSlots = maxRegSlots > 0 && slotsOccupied !== null ? Math.max(0, maxRegSlots - slotsOccupied) : 0;
 
                   // Waiting Quota
                   const maxWaitingListSlots = waitingListSlots ? parseInt(waitingListSlots) : 0;
+                  // Ensure vacantWaitingListSlots never goes negative
                   const vacantWaitingListSlots =
-                    maxWaitingListSlots > 0 && waitingListSlotsOccupied !== null ? maxWaitingListSlots - waitingListSlotsOccupied : maxWaitingListSlots > 0 ? maxWaitingListSlots : 0;
+                    maxWaitingListSlots > 0 && waitingListSlotsOccupied !== null ? Math.max(0, maxWaitingListSlots - waitingListSlotsOccupied) : maxWaitingListSlots > 0 ? maxWaitingListSlots : 0;
 
                   // OTSE Quota
                   const maxOtsesSlots = otseSlots ? parseInt(otseSlots) : 0;
-                  const vacantOtsesSlots = maxOtsesSlots > 0 && otseSlotsOccupied !== null ? maxOtsesSlots - otseSlotsOccupied : maxOtsesSlots > 0 ? maxOtsesSlots : 0;
+                  // Ensure vacantOtsesSlots never goes negative
+                  const vacantOtsesSlots = maxOtsesSlots > 0 && otseSlotsOccupied !== null ? Math.max(0, maxOtsesSlots - otseSlotsOccupied) : maxOtsesSlots > 0 ? maxOtsesSlots : 0;
 
                   // Total quota sum
                   const totalQuotaSum = maxRegSlots + maxWaitingListSlots + maxOtsesSlots;
@@ -749,7 +754,8 @@ const EventCard = ({ event, college }) => {
                           </Button>
                         );
                       } else if (isWaitingListAvailable) {
-                        const vacantWaitingListSlots = parseInt(waitingListSlots) - waitingListSlotsOccupied;
+                        // Ensure vacantWaitingListSlots never goes negative
+                        const vacantWaitingListSlots = Math.max(0, parseInt(waitingListSlots) - waitingListSlotsOccupied);
                         return (
                           <Button variant="warning" onClick={handleCollegeRegister} disabled={isLoading} className="d-flex align-items-center">
                             {isLoading ? (
