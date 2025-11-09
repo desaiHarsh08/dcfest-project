@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { addParticipant, createParticipants, fetchSlotsOccupiedForEvent, fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
+import { fetchParticipationByCollegeIdAndAvailableEventId } from "../../services/college-participation-apis";
 
 export default function AddParticipantModal({
   handleModalClose,
@@ -26,10 +27,28 @@ export default function AddParticipantModal({
   const [isValid, setIsValid] = useState(false);
   const [slotsOccupied, setSlotsOccupied] = useState();
   const [event, setEvent] = useState();
+  const [collegeParticipation, setCollegeParticipation] = useState(null);
 
   useEffect(() => {
-    setNewParticipant((prev) => ({ ...newParticipant, group }));
-  }, [group]);
+    setNewParticipant((prev) => ({ ...prev, group }));
+  }, [group, setNewParticipant]);
+
+  // Sync collegeId with selectedCollege whenever it changes
+  useEffect(() => {
+    if (selectedCollege?.id) {
+      setNewParticipant((prev) => {
+        // Only update if collegeId is different to avoid unnecessary re-renders
+        if (prev?.collegeId !== selectedCollege.id) {
+          console.log("Syncing collegeId from", prev?.collegeId, "to selectedCollege.id:", selectedCollege.id);
+          return {
+            ...prev,
+            collegeId: selectedCollege.id, // Always sync with selectedCollege
+          };
+        }
+        return prev;
+      });
+    }
+  }, [selectedCollege?.id, setNewParticipant]);
 
   useEffect(() => {
     console.log("in ue of a-p, availableEvent:", availableEvent);
@@ -37,27 +56,57 @@ export default function AddParticipantModal({
 
   useEffect(() => {
     console.log(availableEvent, participants);
-    // Fetch the event
+    // Fetch the event and determine entryType
     (async () => {
       if (!event) {
         try {
           console.log("in add_part. modal, group:", group, "participants:", participants);
           const response = await fetchEventByAvailableEventId(availableEvent.id);
           setEvent(response);
+
+          // Determine entryType: check if college is in waiting list or use existing participant's entryType
+          let defaultEntryType = participants[0]?.entryType || "NORMAL";
+
+          // If no existing participants, check college participation for waiting list status
+          if (participants.length === 0 && selectedCollege && availableEvent) {
+            try {
+              const collegeParticipationData = await fetchParticipationByCollegeIdAndAvailableEventId(selectedCollege.id, availableEvent.id);
+              setCollegeParticipation(collegeParticipationData);
+
+              // If college has waiting list sequence, use WAITING_LIST entry type
+              if (collegeParticipationData?.waitingListSequence && collegeParticipationData.waitingListSequence.startsWith("WL_")) {
+                defaultEntryType = "WAITING_LIST";
+                console.log("College is in waiting list, setting entryType to WAITING_LIST");
+              }
+            } catch (error) {
+              console.log("Error fetching college participation:", error);
+              // Default to NORMAL if fetch fails
+            }
+          } else if (participants.length > 0) {
+            // If there are existing participants, fetch college participation for reference
+            try {
+              const collegeParticipationData = await fetchParticipationByCollegeIdAndAvailableEventId(selectedCollege.id, availableEvent.id);
+              setCollegeParticipation(collegeParticipationData);
+            } catch (error) {
+              console.log("Error fetching college participation:", error);
+            }
+          }
+
           const tmpParticipant = {
-            collegeId: selectedCollege.id,
+            collegeId: selectedCollege?.id, // Ensure we use the current selectedCollege
             name: "",
             email: "",
             whatsappNumber: "",
             handPreference: "RIGHT_HANDED",
             male: false,
             group: group,
-            entryType: participants[0]?.entryType,
+            entryType: defaultEntryType,
             eventIds: [response.id],
             present: false,
             qrcode: participants[0]?.qrcode,
             teamNumber: participants[0]?.teamNumber,
           };
+          console.log("Initializing newParticipant with collegeId:", tmpParticipant.collegeId, "selectedCollege.id:", selectedCollege?.id);
           console.log("tmpParticipant:", tmpParticipant);
           setNewParticipant((prev) => tmpParticipant);
         } catch (error) {
@@ -65,7 +114,7 @@ export default function AddParticipantModal({
         }
       }
     })();
-  }, [availableEvent, group, event, participants, selectedCollege.id, setNewParticipant, newParticipant]);
+  }, [availableEvent, group, event, participants, selectedCollege, setNewParticipant]);
 
   useEffect(() => {
     console.log("in ue, newParticipant:", newParticipant);
@@ -84,8 +133,35 @@ export default function AddParticipantModal({
   };
 
   const handleRuleChecks = (isSubmitting, deleteParticipantId) => {
-    if (participants.length == 0 || !newParticipant || !availableEvent) {
-      return;
+    // Allow adding first participant - don't return early if participants.length == 0
+    if (!newParticipant || !availableEvent) {
+      return false;
+    }
+
+    // If no existing participants and we're adding the first one, allow it
+    if (participants.length == 0 && !deleteParticipantId) {
+      // Basic validation for first participant
+      if (!newParticipant.name?.trim() || !newParticipant.email?.trim() || !newParticipant?.whatsappNumber?.trim()) {
+        if (isSubmitting) {
+          alert("Please fill in all required fields (Name, Email, Phone)!");
+        }
+        return false;
+      }
+      // Check phone number length
+      if (newParticipant?.whatsappNumber.length > 11 || newParticipant?.whatsappNumber.length < 10) {
+        if (isSubmitting) {
+          alert(`Please provide a valid phone number (10-11 digits), currently ${newParticipant?.whatsappNumber.length}!`);
+        }
+        return false;
+      }
+      // If basic validation passes, allow adding first participant
+      setIsValid(true);
+      return true;
+    }
+
+    // If participants array is empty and we're trying to delete, that's invalid
+    if (participants.length == 0 && deleteParticipantId) {
+      return false;
     }
 
     console.log("in handleRuleChecks(), prev, participants:", participants);
@@ -270,13 +346,21 @@ export default function AddParticipantModal({
 
     console.log(newParticipant);
 
+    // Use existing participant data for entryType, teamNumber, and eventIds if available
+    // But ALWAYS use selectedCollege.id for collegeId to ensure it matches the current selection
+    const existingParticipant = filteredParticipants.length > 0 ? filteredParticipants[0] : participants.length > 0 ? participants[0] : null;
+
     const tmpParticipant = {
       ...newParticipant,
-      collegeId: filteredParticipants[0].collegeId,
-      entryType: filteredParticipants[0].entryType,
-      teamNumber: filteredParticipants[0].teamNumber,
-      eventIds: filteredParticipants[0].eventIds,
+      // Always use selectedCollege.id as the source of truth for collegeId
+      collegeId: selectedCollege?.id || newParticipant.collegeId,
+      entryType: existingParticipant?.entryType || newParticipant.entryType || "NORMAL",
+      teamNumber: existingParticipant?.teamNumber || newParticipant.teamNumber,
+      eventIds: existingParticipant?.eventIds || newParticipant.eventIds || (event?.id ? [event.id] : []),
     };
+
+    // Log for debugging
+    console.log("Creating participant with collegeId:", tmpParticipant.collegeId, "selectedCollege.id:", selectedCollege?.id);
     if (tmpParticipant.type == null) {
       alert("Please provide the valid participant type!");
       return;
@@ -422,16 +506,17 @@ export default function AddParticipantModal({
               <Form.Select
                 aria-label="Default select example"
                 name="entryType"
-                value={newParticipant?.entryType}
+                value={newParticipant?.entryType || "NORMAL"}
                 onChange={(e) => {
-                  setGroup(e.target.value);
                   handleInputChange(e);
                 }}
-                disabled
+                disabled={collegeParticipation?.waitingListSequence?.startsWith("WL_")}
               >
                 <option value="NORMAL">NORMAL</option>
                 <option value="OTSE">OTSE</option>
+                {collegeParticipation?.waitingListSequence?.startsWith("WL_") && <option value="WAITING_LIST">WAITING_LIST</option>}
               </Form.Select>
+              {/* {collegeParticipation?.waitingListSequence?.startsWith("WL_") && <Form.Text className="text-muted ms-2">College is in waiting list</Form.Text>} */}
             </Form.Group>
           </Form>
         </Modal.Body>

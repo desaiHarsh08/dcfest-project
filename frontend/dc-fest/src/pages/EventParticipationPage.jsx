@@ -6,7 +6,7 @@ import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import "../styles/EventParticipationPage.css"; // Import custom CSS
 import { fetchCategories } from "../services/categories-api";
-import { deleteParticipant, disableParticipation, fetchParticipantsByEventId, updateParticipant } from "../services/participants-api";
+import { deleteParticipant, disableParticipation, fetchParticipantsByEventId, fetchParticipantsByEventIdAndCollegeId, updateParticipant } from "../services/participants-api";
 import { fetchEventByAvailableEventId } from "../services/event-apis";
 import ParticipantRow from "../components/event-participation/ParticipantRow";
 import { fetchColleges } from "../services/college-apis";
@@ -63,6 +63,10 @@ const EventParticipationPage = () => {
   useEffect(() => {
     if (eventFilter && selectedCollege) {
       console.log("Fetching participants for selectedCollege:", selectedCollege);
+      console.log("Event filter:", eventFilter, "College ID:", selectedCollege.id);
+      // Clear previous participants before fetching new ones to avoid stale data
+      setParticipants([]);
+      setFilteredParticipants([]);
       getParticipants();
     } else {
       // Clear participants if no event or college is selected
@@ -117,11 +121,26 @@ const EventParticipationPage = () => {
     if (participants.length > 0) {
       console.log(
         "All participant college IDs:",
-        participants.map((p) => ({ id: p.id, name: p.participantName, collegeId: p.collegeId }))
+        participants.map((p) => ({ 
+          id: p.id, 
+          name: p.participantName || p.name, 
+          collegeId: p.collegeId,
+          collegeIdType: typeof p.collegeId,
+          entryType: p.entryType,
+          quotaType: p.quotaType
+        }))
       );
+    } else {
+      console.log("No participants found in participants array");
     }
 
-    if (selectedCollege && participants.length > 0) {
+    // Since we're now using college-specific endpoint, all participants should already belong to selectedCollege
+    // We only need to filter by round, not by college
+    if (selectedCollege && participants.length >= 0) {
+      console.log("=== Starting filter process ===");
+      console.log("Selected college:", selectedCollege.name, "ID:", selectedCollege.id, "Type:", typeof selectedCollege.id);
+      console.log("Total participants before filter:", participants.length);
+      
       let roundIndex = 0;
       for (let i = 0; i < selectedAvailableEvent?.rounds.length; i++) {
         if (selectedAvailableEvent?.rounds[i].id == selectedRound?.id) {
@@ -133,17 +152,35 @@ const EventParticipationPage = () => {
       }
 
       if (roundIndex == 0) {
-        const filtered = participants.filter((p) => p.collegeId == selectedCollege.id);
-        console.log("Filtered participants (round 0):", filtered.length);
-        setFilteredParticipants(filtered);
+        // For round 0, all participants from the college-specific endpoint should be shown
+        // No need to filter by college since backend already did that
+        console.log("Round 0 - showing all participants (already filtered by college in backend)");
+        const waitingListInFiltered = participants.filter((p) => p.entryType === "WAITING_LIST" || p.quotaType === "WAITING_LIST_QUOTA");
+        console.log("Waiting list participants:", waitingListInFiltered.length);
+        setFilteredParticipants(participants);
       } else {
-        const filtered = participants.filter((p) => p.collegeId == selectedCollege.id && p.promotedRoundDtos.some((ele) => ele.roundId == selectedRound.id));
+        // For non-zero rounds, filter by promotion status
+        const filtered = participants.filter((p) => {
+          // If promotedRoundDtos is null/undefined/empty, exclude participant (they haven't been promoted to this round)
+          if (!p.promotedRoundDtos || p.promotedRoundDtos.length === 0) {
+            return false;
+          }
+          // Check if participant was promoted to this round
+          return p.promotedRoundDtos.some((ele) => ele.roundId == selectedRound.id);
+        });
         console.log("Filtered participants (round " + roundIndex + "):", filtered.length);
+        // Log waiting list participants in filtered results
+        const waitingListInFiltered = filtered.filter((p) => p.entryType === "WAITING_LIST" || p.quotaType === "WAITING_LIST_QUOTA");
+        console.log("Waiting list participants in filtered (round " + roundIndex + "):", waitingListInFiltered.length);
         setFilteredParticipants(filtered);
       }
       setRefetchPop((prev) => !prev); // Set refetchPop to true to refetch the POP
+    } else if (selectedCollege && participants.length === 0) {
+      // No participants found - set empty array
+      console.log("No participants found for selected college");
+      setFilteredParticipants([]);
     }
-  }, [selectedCollege, participants, selectedRound]);
+  }, [selectedCollege, participants, selectedRound, selectedAvailableEvent]);
 
   // Fetch categories and initialize filters
   useEffect(() => {
@@ -195,8 +232,19 @@ const EventParticipationPage = () => {
         return;
       }
 
-      const response = await fetchParticipantsByEventId(event.id);
-      console.log("Fetched participants count:", response.length);
+      // Use college-specific endpoint when college is selected for more accurate results
+      let response;
+      if (selectedCollege && selectedCollege.id) {
+        console.log(`Fetching participants for event ${event.id} and college ${selectedCollege.id}`);
+        response = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
+        console.log(`Fetched ${response.length} participants for college ${selectedCollege.id}`);
+      } else {
+        // Fallback to fetching all participants if no college is selected
+        console.log(`Fetching all participants for event ${event.id}`);
+        response = await fetchParticipantsByEventId(event.id);
+        console.log(`Fetched ${response.length} total participants for event`);
+      }
+
       console.log("Participants:", response);
 
       // Log individual participant details if any exist
@@ -206,6 +254,19 @@ const EventParticipationPage = () => {
           "Participant college IDs:",
           response.map((p) => p.collegeId)
         );
+        // Log entry types and quota types to debug waiting list participants
+        console.log(
+          "Participant entry types:",
+          response.map((p) => ({ id: p.id, name: p.participantName || p.name, entryType: p.entryType, quotaType: p.quotaType }))
+        );
+        // Check for waiting list participants
+        const waitingListParticipants = response.filter((p) => p.entryType === "WAITING_LIST" || p.quotaType === "WAITING_LIST_QUOTA");
+        console.log("Waiting list participants found:", waitingListParticipants.length);
+        if (waitingListParticipants.length > 0) {
+          console.log("Waiting list participants:", waitingListParticipants);
+        }
+      } else {
+        console.log("No participants found for this event and college combination");
       }
 
       setParticipants(response);
@@ -213,6 +274,7 @@ const EventParticipationPage = () => {
     } catch (err) {
       console.error("Error fetching participants:", err);
       setError("Failed to load participants.");
+      setParticipants([]);
     } finally {
       setLoading(false);
     }
@@ -496,9 +558,15 @@ const EventParticipationPage = () => {
             className="event-dropdown me-2"
             value={selectedCollege.id}
             onChange={(e) => {
-              const tmpCollege = colleges.find((c) => c.id == e.target.value);
-              console.log("on changing, tmpCollege:", tmpCollege);
-              setSelectedCollege(tmpCollege);
+              // Handle both string and number IDs
+              const selectedValue = e.target.value;
+              const tmpCollege = colleges.find((c) => String(c.id) === String(selectedValue) || Number(c.id) === Number(selectedValue));
+              console.log("College dropdown changed - selected value:", selectedValue, "found college:", tmpCollege);
+              if (tmpCollege) {
+                setSelectedCollege(tmpCollege);
+              } else {
+                console.error("College not found for value:", selectedValue, "Available colleges:", colleges.map(c => ({ id: c.id, name: c.name })));
+              }
             }}
           >
             {colleges?.map((college, collegeIndex) => {
@@ -520,9 +588,10 @@ const EventParticipationPage = () => {
         </div>
       )}
 
-      {filteredParticipants.length > 0 && (
-        <div className="d-flex justify-content-between">
-          <Button variant="success" disabled={colleges.length == 0 || participants.length == 0} onClick={handleDownload}>
+      {/* Action buttons - show when event and college are selected */}
+      {eventFilter && selectedCollege && selectedAvailableEvent && (
+        <div className="d-flex justify-content-between mt-3 mb-3">
+          <Button variant="success" disabled={colleges.length == 0 || filteredParticipants.length == 0} onClick={handleDownload}>
             <FaDownload /> Download
           </Button>
           <div>
@@ -534,12 +603,16 @@ const EventParticipationPage = () => {
             >
               <FaPlus /> Add More Participants
             </Button>
-            <Button variant="info" onClick={() => setShowDisableTeamModal(true)}>
-              Remove Team
-            </Button>
-            <Button variant="secondary" onClick={() => handleCloseRegistration(selectedAvailableEvent)} disabled={selectedAvailableEvent?.closeRegistration}>
-              {selectedAvailableEvent?.closeRegistration ? "Closed" : "Close Registration?"}
-            </Button>
+            {filteredParticipants.length > 0 && (
+              <>
+                <Button variant="info" onClick={() => setShowDisableTeamModal(true)} className="ms-2">
+                  Remove Team
+                </Button>
+                <Button variant="secondary" onClick={() => handleCloseRegistration(selectedAvailableEvent)} disabled={selectedAvailableEvent?.closeRegistration} className="ms-2">
+                  {selectedAvailableEvent?.closeRegistration ? "Closed" : "Close Registration?"}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}
