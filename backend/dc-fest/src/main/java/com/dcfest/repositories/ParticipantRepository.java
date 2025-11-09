@@ -52,4 +52,14 @@ public interface ParticipantRepository extends JpaRepository<ParticipantModel, L
             "WHERE e.id = :eventId AND p.disableParticipation = false")
     Long countDistinctCollegesForEvent(@Param("eventId") Long eventId);
 
+    @Query("SELECT COUNT(DISTINCT p.college.id) " +
+            "FROM ParticipantModel p JOIN p.events e " +
+            "WHERE e.id = :eventId AND p.quotaType = :quotaType AND p.disableParticipation = false")
+    Long countDistinctCollegesForEventByQuotaType(@Param("eventId") Long eventId, @Param("quotaType") com.dcfest.constants.QuotaType quotaType);
+
+    @Query("SELECT COUNT(DISTINCT p.college.id) " +
+            "FROM ParticipantModel p JOIN p.events e " +
+            "WHERE e.availableEvent.id = :availableEventId AND p.quotaType = :quotaType AND p.disableParticipation = false")
+    Long countDistinctCollegesForAvailableEventByQuotaType(@Param("availableEventId") Long availableEventId, @Param("quotaType") com.dcfest.constants.QuotaType quotaType);
+
 }

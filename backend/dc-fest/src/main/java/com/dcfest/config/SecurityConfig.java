@@ -46,8 +46,12 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/api/categories/**",
                                 "/api/colleges/**",
-                                "/api/available-events/**"
-                        ).permitAll()
+                                "/api/available-events/**",
+                                "/api/events/**", // Allow GET requests to events (reading event data)
+                                "/api/academic-years/active",
+                                "/api/academic-years/registration-deadline-status",
+                                "/ws/**") // Allow WebSocket connections
+                        .permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(this.jwtAuthenticationEntryPoint))
@@ -58,22 +62,23 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration corsConfiguration = new CorsConfiguration();
-            corsConfiguration.setAllowedOrigins(Arrays.asList(
+            // Use setAllowedOriginPatterns for better flexibility with paths
+            corsConfiguration.setAllowedOriginPatterns(Arrays.asList(
                     "http://localhost:3000",
-                    "http://13.235.168.107:3007",
-                    "https://umang2025.thebesc.in/",
+                    "http://localhost:3007",
                     "http://localhost:5173",
-                    "https://besc.academic360.app/",
-                    "https://besc.academic360.app/fest/",
-                    "http://localhost:5173/fest/"
-                    ));
-            corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
+                    "http://localhost:5173/**",
+                    "http://13.235.168.107:3007",
+                    "https://umang2025.thebesc.in/**",
+                    "https://besc.academic360.app/**"));
+            corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
             corsConfiguration.setAllowCredentials(true);
-            corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
-            corsConfiguration.setExposedHeaders(List.of("Authorization"));
+            corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
+            corsConfiguration.setExposedHeaders(Arrays.asList("Authorization"));
             corsConfiguration.setMaxAge(3600L);
 
             return corsConfiguration;

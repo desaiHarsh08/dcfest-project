@@ -8,9 +8,8 @@ const UserForm = ({ formType, user, onUserChange, onSave, index }) => {
 
   return (
     <>
-      <div className="d-flex justify-content-between">
-        {formType == "ADD" && <h1 className="text-center mb-4">Settings</h1>}
-        <Button variant={formType === "ADD" ? "primary" : "success"} size="sm" className="mb-4" onClick={() => setShowModal(true)}>
+      <div className="d-flex justify-content-end mb-3">
+        <Button variant={formType === "ADD" ? "primary" : "success"} size="sm" onClick={() => setShowModal(true)}>
           {formType === "ADD" ? "Add User" : <FaEdit />}
         </Button>
       </div>

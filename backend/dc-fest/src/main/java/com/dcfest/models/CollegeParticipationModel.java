@@ -41,6 +41,14 @@ public class CollegeParticipationModel {
 
     private String teamNumber;
 
+    /**
+     * Waiting list sequence number for this college participation.
+     * Format: WL_001, WL_002, etc.
+     * Only set when registration slots are full and college is in waiting list.
+     * Null for regular registrations.
+     */
+    private String waitingListSequence;
+
     @jakarta.persistence.Column(name = "is_archived")
     private boolean isArchived = false;
 

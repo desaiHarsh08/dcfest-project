@@ -1,3 +1,5 @@
 #shared-area{
-    height: calc(100% - 57.6px );
+    height: calc(100vh - 57.6px);
+    overflow-y: auto;
+    overflow-x: hidden;
 }

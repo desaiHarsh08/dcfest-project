@@ -1,0 +1,14 @@
+.academic-year-modal .modal-dialog {
+  max-width: 900px;
+  width: 90%;
+}
+
+.academic-year-modal .modal-content {
+  width: 100%;
+}
+
+.academic-year-modal .form-control {
+  width: 100%;
+  min-width: 200px;
+}
+

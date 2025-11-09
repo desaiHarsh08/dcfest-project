@@ -5,11 +5,14 @@ import "./index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Provider } from "react-redux";
 import { store } from "./app/store.js";
+import AcademicYearProvider from "./components/AcademicYearProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
 //   <StrictMode>
     <Provider store={store}>
-      <App />
+      <AcademicYearProvider>
+        <App />
+      </AcademicYearProvider>
     </Provider>
 //   </StrictMode>
 );

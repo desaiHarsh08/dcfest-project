@@ -3,13 +3,16 @@
 import { useEffect } from "react";
 import { Badge, Form } from "react-bootstrap";
 
-const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent, iccode }) => {
+const ParticipantFields = ({ participant, participantIndex, onChange, selectedAvailableEvent, iccode, hasNormalParticipants = false }) => {
   useEffect(() => {}, [selectedAvailableEvent]);
 
   // Check if OTSE slots are available
   const otseSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "OTSE_SLOTS");
   const otseSlotsAvailable = otseSlotsRule ? Number(otseSlotsRule.value) : 0;
   const isOtseAvailable = otseSlotsAvailable > 0;
+
+  // Check if WAITING_LIST is available (from participant object set by ParticipationForm)
+  const isWaitingListAvailable = participant?.isWaitingListAvailable === true;
 
   return (
     <div className="card p-3 rounded-0">
@@ -69,12 +72,29 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
       </Form.Group>
       <Form.Group className="mb-5">
         <Form.Label>Entry Type</Form.Label>
-        <Form.Select aria-label="Default select example" name="entryType" disabled={!!iccode} value={participant.entryType} onChange={(e) => onChange(e, participantIndex)}>
-          <option value={"NORMAL"}>NORMAL</option>
+        <Form.Select
+          aria-label="Default select example"
+          name="entryType"
+          disabled={!!iccode || participant.isWaitingListForced}
+          value={participant.entryType}
+          onChange={(e) => {
+            // Prevent selecting NORMAL if college already has NORMAL participants
+            if (e.target.value === "NORMAL" && hasNormalParticipants) {
+              alert("Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. Please select OTSE or WAITING_LIST instead.");
+              return;
+            }
+            onChange(e, participantIndex);
+          }}
+        >
+          <option value={"NORMAL"} disabled={hasNormalParticipants}>
+            NORMAL {hasNormalParticipants ? "(Already Added)" : ""}
+          </option>
           <option value={"OTSE"} disabled={!isOtseAvailable}>
             OTSE {!isOtseAvailable ? "(Not Available)" : ""}
           </option>
+          {isWaitingListAvailable && <option value={"WAITING_LIST"}>WAITING_LIST</option>}
         </Form.Select>
+        {hasNormalParticipants && <Form.Text className="text-muted">Your college already has participants with NORMAL entry type. Only one NORMAL entry is allowed per college.</Form.Text>}
       </Form.Group>
     </div>
   );

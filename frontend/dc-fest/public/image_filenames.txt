@@ -1,0 +1,61 @@
+================================================================================
+EXTRACTED IMAGE FILENAMES
+================================================================================
+
+Total images: 48
+Location: C:\Users\desai\OneDrive\Desktop\script-slugs\Event_illustrations[1] (2)\public
+
+--------------------------------------------------------------------------------
+FILENAMES:
+--------------------------------------------------------------------------------
+
+1. adverse.jpg
+2. ancient-arms-modern-minds.jpg
+3. astra-aura.jpg
+4. auction-battle-of-warriors.jpg
+5. barter-trading.jpg
+6. battle-of-brands.jpg
+7. calligraphy.jpg
+8. charcoal-painting.jpg
+9. chitragupt-ki-adalat.jpg
+10. colourful-cutouts.jpg
+11. dub-it-out-chitra-vaani.jpg
+12. duo-act.jpg
+13. echoes-of-governance.jpg
+14. face-painting.jpg
+15. gothic-chit-painting.jpg
+16. history-quiz.jpg
+17. jewellery-making.jpg
+18. karma-ka-khel.jpg
+19. litscape.jpg
+20. moba-legend-mobile-legends-5v5.jpg
+21. monochrome-painting.jpg
+22. mystery-box.jpg
+23. open-mytho-quiz.jpg
+24. pac-man.jpg
+25. parody-parliament.jpg
+26. puzzle-painting.jpg
+27. rangoli.jpg
+28. remix-roulette.jpg
+29. revamp.jpg
+30. revive-reform-rise.jpg
+31. rhythm-resonance.jpg
+32. riddles.jpg
+33. rifle-shooting-female.jpg
+34. script-writing.jpg
+35. sculpture-making.jpg
+36. shark-tank.jpg
+37. spin-a-story.jpg
+38. stone-painting.jpg
+39. stress-interview.jpg
+40. survival-arena.jpg
+41. the-lost-scrolls-an-ancient-comic-book-competition.jpg
+42. the-royal-conspiracy.jpg
+43. this-gen-tax-pitch.jpg
+44. tweetsutra.jpg
+45. twist-in-the-tale.jpg
+46. war-of-generations.jpg
+47. war-of-instruments.jpg
+48. war-of-rjs.jpg
+
+================================================================================

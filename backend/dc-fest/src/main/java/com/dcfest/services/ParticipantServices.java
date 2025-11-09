@@ -23,6 +23,12 @@ public interface ParticipantServices {
 
     Long slotsOccupied(Long eventId);
 
+    Long waitingListSlotsOccupied(Long eventId);
+
+    Long waitingListSlotsOccupiedByAvailableEventId(Long availableEventId);
+
+    Long otseSlotsOccupiedByAvailableEventId(Long availableEventId);
+
     PageResponse<ParticipantDto> getParticipantByIsPresent(int pageNumber, boolean isPresent);
 
     List<ParticipantDto> getParticipantByEventId(Long eventId);

@@ -41,6 +41,21 @@ public class ParticipantController {
         return new ResponseEntity<>(participantServices.slotsOccupied(eventId), HttpStatus.OK);
     }
 
+    @GetMapping("/waiting-list-occupied-slots")
+    public ResponseEntity<Long> getWaitingListSlotsOccupied(@RequestParam("eventId") Long eventId) {
+        return new ResponseEntity<>(participantServices.waitingListSlotsOccupied(eventId), HttpStatus.OK);
+    }
+
+    @GetMapping("/waiting-list-occupied-slots-by-available-event")
+    public ResponseEntity<Long> getWaitingListSlotsOccupiedByAvailableEvent(@RequestParam("availableEventId") Long availableEventId) {
+        return new ResponseEntity<>(participantServices.waitingListSlotsOccupiedByAvailableEventId(availableEventId), HttpStatus.OK);
+    }
+
+    @GetMapping("/otse-occupied-slots-by-available-event")
+    public ResponseEntity<Long> getOtsesSlotsOccupiedByAvailableEvent(@RequestParam("availableEventId") Long availableEventId) {
+        return new ResponseEntity<>(participantServices.otseSlotsOccupiedByAvailableEventId(availableEventId), HttpStatus.OK);
+    }
+
     @GetMapping("/correct-group-names")
     public ResponseEntity<?> correctGroupNames() {
         return new ResponseEntity<>(participantServices.correctGroupNameForParticipants(), HttpStatus.OK);

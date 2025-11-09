@@ -27,7 +27,6 @@ const UserList = ({ users, setUsers }) => {
 
   return (
     <Card className="mb-4">
-      <Card.Header as="h5">User List</Card.Header>
       <Card.Body>
         <Table bordered responsive>
           <thead>

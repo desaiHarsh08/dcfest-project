@@ -56,6 +56,30 @@ export const fetchSlotsOccupiedForEvent = async (eventId) => {
     return response.data;
 };
 
+export const fetchWaitingListSlotsOccupiedForEvent = async (eventId) => {
+    const response = await API.get(`/api/participants/waiting-list-occupied-slots?eventId=${eventId}`, {
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
+export const fetchWaitingListSlotsOccupiedByAvailableEvent = async (availableEventId) => {
+    const response = await API.get(`/api/participants/waiting-list-occupied-slots-by-available-event?availableEventId=${availableEventId}`, {
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
+export const fetchOtsesSlotsOccupiedByAvailableEvent = async (availableEventId) => {
+    const response = await API.get(`/api/participants/otse-occupied-slots-by-available-event?availableEventId=${availableEventId}`, {
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
 
 export const fetchParticipantsByEventIdAndCollegeId = async (eventId, collegeId) => {
     const response = await API.get(`/api/participants/college-event?eventId=${eventId}&collegeId=${collegeId}`, {

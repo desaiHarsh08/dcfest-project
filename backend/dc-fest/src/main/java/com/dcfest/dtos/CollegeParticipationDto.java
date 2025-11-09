@@ -17,5 +17,6 @@ public class CollegeParticipationDto {
 
     private String teamNumber;
 
+    private String waitingListSequence;
 
 }

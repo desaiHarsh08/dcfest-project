@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { addParticipant, createParticipants, fetchSlotsOccupiedForEvent } from "../../services/participants-api";
+import { addParticipant, createParticipants, fetchSlotsOccupiedForEvent, fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 
 export default function AddParticipantModal({
@@ -281,6 +281,22 @@ export default function AddParticipantModal({
       alert("Please provide the valid participant type!");
       return;
     }
+
+    // Check if trying to add NORMAL entry type when college already has NORMAL participants
+    if (tmpParticipant.entryType === "NORMAL" && event && selectedCollege) {
+      try {
+        const existingParticipants = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
+        const hasNormal = existingParticipants.some((p) => p.entryType === "NORMAL");
+        if (hasNormal) {
+          alert("Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking NORMAL participants:", error);
+        // Continue if check fails - backend will validate
+      }
+    }
+
     console.log("tmpParticipant:", tmpParticipant);
     setLoadingSave(true);
     try {

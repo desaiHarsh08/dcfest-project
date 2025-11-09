@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { fetchEventById } from "../services/event-apis";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchCollegeByIcCode } from "../services/college-apis";
-import { fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent } from "../services/participants-api";
+import { fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent, fetchWaitingListSlotsOccupiedByAvailableEvent } from "../services/participants-api";
+import { fetchParticipationByCollegeIdAndAvailableEventId } from "../services/college-participation-apis";
 
 export default function AddParticipantByCollege() {
   const navigate = useNavigate();
@@ -19,12 +20,21 @@ export default function AddParticipantByCollege() {
   const [error, setError] = useState(null); // Track error state
   const [participants, setParticipants] = useState([]);
   const [slotsOccupied, setSlotsOccupied] = useState();
+  const [waitingListSlotsOccupied, setWaitingListSlotsOccupied] = useState(null);
+  const [collegeParticipation, setCollegeParticipation] = useState(null);
 
   useEffect(() => {
     fetchCollegeByIcCode(iccode)
       .then((data) => setCollege(data))
       .catch((err) => console.log(err));
-  }, []);
+  }, [iccode]);
+
+  // Fetch college participation when both college and availableEvent are available
+  useEffect(() => {
+    if (college && availableEvent) {
+      fetchCollegeParticipation(college.id, availableEvent.id);
+    }
+  }, [college, availableEvent]);
 
   useEffect(() => {
     if (!eventId) {
@@ -46,7 +56,16 @@ export default function AddParticipantByCollege() {
       .then((availableEventData) => {
         console.log("Available Event data:", availableEventData);
         setAvailableEvent(availableEventData);
-        getSlotsOccupied(availableEventData.id);
+        // getSlotsOccupied uses eventId (EventModel ID), not availableEventId
+        if (eventId) {
+          getSlotsOccupied(eventId);
+        }
+        // Fetch waiting list slots if event has waiting list quota
+        const hasWaitingList = availableEventData.eventRules?.some((ele) => ele.eventRuleTemplate?.name === "WAITING_LIST_SLOTS");
+        if (hasWaitingList && availableEventData.id) {
+          getWaitingListSlotsOccupied(availableEventData.id);
+        }
+        // Note: College participation will be fetched in the useEffect that depends on college and availableEvent
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
@@ -83,6 +102,29 @@ export default function AddParticipantByCollege() {
     }
   };
 
+  const getWaitingListSlotsOccupied = async (availableEventId) => {
+    try {
+      const response = await fetchWaitingListSlotsOccupiedByAvailableEvent(availableEventId);
+      console.log("Waiting list slots occupied:", response);
+      setWaitingListSlotsOccupied(response);
+    } catch (error) {
+      console.log("Error fetching waiting list slots:", error);
+      setWaitingListSlotsOccupied(0);
+    }
+  };
+
+  const fetchCollegeParticipation = async (collegeId, availableEventId) => {
+    try {
+      const response = await fetchParticipationByCollegeIdAndAvailableEventId(collegeId, availableEventId);
+      console.log("College participation:", response);
+      setCollegeParticipation(response);
+    } catch (error) {
+      console.log("Error fetching college participation:", error);
+      // If participation doesn't exist, that's okay - college hasn't enrolled yet
+      setCollegeParticipation(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container vh-100 d-flex flex-column justify-content-center align-items-center">
@@ -116,7 +158,17 @@ export default function AddParticipantByCollege() {
           &larr; Back
         </Link>
       </div>
-      {iccode && availableEvent && college && <ParticipationForm formType="REGISTRATION" iccode={iccode} availableEvent={availableEvent} college={college} />}
+      {iccode && availableEvent && college && (
+        <ParticipationForm 
+          formType="REGISTRATION" 
+          iccode={iccode} 
+          availableEvent={availableEvent} 
+          college={college}
+          slotsOccupied={slotsOccupied}
+          waitingListSlotsOccupied={waitingListSlotsOccupied}
+          collegeParticipation={collegeParticipation}
+        />
+      )}
     </div>
   );
 }

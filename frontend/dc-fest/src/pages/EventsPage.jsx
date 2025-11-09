@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
 import EventCard from "../components/events/EventCard";
@@ -7,17 +7,31 @@ import { fetchAvailableEventsByCategorySlug } from "../services/available-events
 import { fetchCollegeByIcCode } from "../services/college-apis";
 import { useSelector } from "react-redux";
 import { selectCategories } from "../app/slices/categoriesSlice";
+import { selectAcademicYearYear } from "../app/slices/academicYearSlice";
 import Navbar from "../components/Navbar/Navbar";
 
 const EventsPage = () => {
   const categories = useSelector(selectCategories);
+  const year = useSelector(selectAcademicYearYear);
   const { categorySlug, iccode } = useParams();
   const [events, setEvents] = useState([]);
   const [college, setCollege] = useState();
   const [error, setError] = useState(null); // State to hold any fetch errors
 
+  const getCollege = useCallback(async () => {
+    if (!iccode) return;
+    try {
+      const response = await fetchCollegeByIcCode(iccode);
+      setCollege(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [iccode]);
+
   useEffect(() => {
-    getCollege();
+    if (iccode) {
+      getCollege();
+    }
     // const categoryId = categories.find(c -> c?.slug == categorySlug)?.id;
     // if (categoryId) {
     // In admin routes (no iccode), include inactive events as well
@@ -29,21 +43,12 @@ const EventsPage = () => {
         setError(err);
       });
     // }
-  }, [categorySlug]);
-
-  const getCollege = async () => {
-    try {
-      const response = await fetchCollegeByIcCode(iccode);
-      setCollege(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  }, [categorySlug, iccode, getCollege]);
 
   return (
     <>
       {iccode && <Navbar />}
-      <Container>
+      <Container className="pb-5">
         {/* Breadcrumbs */}
         <Row>
           <Col>
@@ -63,7 +68,7 @@ const EventsPage = () => {
         {/* Page Title */}
         <Row className="mb-4">
           <Col>
-            <h1 className="text-center mt-5">List of Events for UMANG 2025</h1>
+            <h1 className="text-center mt-5">List of Events for UMANG {year}</h1>
           </Col>
         </Row>
 

@@ -2,15 +2,18 @@ package com.dcfest.services.impl;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 
 import com.dcfest.constants.*;
 import com.dcfest.dtos.ParticipantAttendanceDto;
+import com.dcfest.models.AcademicYearModel;
 import com.dcfest.dtos.PromotedRoundDto;
 import com.dcfest.exceptions.OTSESlotsException;
 import com.dcfest.exceptions.RegisteredSlotsAvailableException;
+import com.dcfest.exceptions.RegistrationDeadlineClosedException;
 import com.dcfest.models.*;
 import com.dcfest.repositories.*;
 import com.dcfest.services.ParticipantAttendanceServices;
@@ -63,6 +66,141 @@ public class ParticipantServicesImpl implements ParticipantServices {
     @Autowired
     private EventRuleRepository eventRuleRepository;
 
+    @Autowired
+    private AcademicYearRepository academicYearRepository;
+
+    @Autowired
+    private com.dcfest.services.WebSocketService webSocketService;
+
+    @Autowired
+    private com.dcfest.services.AcademicYearService academicYearService;
+
+    /**
+     * Determines the quota type based on academic year, available quotas, and
+     * registration slot availability
+     */
+    private QuotaType determineQuotaType(AvailableEventModel availableEventModel,
+            List<EventRuleModel> eventRuleModels, EventModel eventModel) {
+        // First, check if registration slots are full
+        EventRuleModel registeredSlotsRule = eventRuleModels.stream()
+                .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("REGISTERED_SLOTS_AVAILABLE"))
+                .findFirst()
+                .orElse(null);
+
+        if (registeredSlotsRule != null && eventModel != null) {
+            int maxSlotsAvailable = Integer.parseInt(registeredSlotsRule.getValue());
+            Long slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId());
+
+            // If registration slots are full, check for waiting list
+            if (slotsOccupied >= maxSlotsAvailable) {
+                EventRuleModel waitingListSlotsEventRule = eventRuleModels.stream()
+                        .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS"))
+                        .findAny()
+                        .orElse(null);
+
+                if (waitingListSlotsEventRule != null) {
+                    int maxWaitingListSlots = Integer.parseInt(waitingListSlotsEventRule.getValue());
+                    Long waitingListSlotsOccupied = this
+                            .waitingListSlotsOccupiedByAvailableEventId(availableEventModel.getId());
+
+                    // If waiting list slots are available, use WAITING_LIST_QUOTA
+                    if (waitingListSlotsOccupied != null && waitingListSlotsOccupied < maxWaitingListSlots) {
+                        return QuotaType.WAITING_LIST_QUOTA;
+                    }
+                }
+
+                // If waiting list is full or doesn't exist, check for OTSE
+                EventRuleModel otseSlotsEventRule = eventRuleModels.stream()
+                        .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("OTSE_SLOTS"))
+                        .findAny()
+                        .orElse(null);
+
+                if (otseSlotsEventRule != null && Integer.parseInt(otseSlotsEventRule.getValue()) > 0) {
+                    return QuotaType.OTSE_QUOTA;
+                }
+            }
+        }
+
+        // Get active academic year
+        AcademicYearModel activeAcademicYear = academicYearRepository.findByIsActiveTrue()
+                .orElse(null);
+
+        // If no active academic year or current date is before endDate, use
+        // REGISTRATION_QUOTA
+        if (activeAcademicYear == null) {
+            return QuotaType.REGISTRATION_QUOTA;
+        }
+
+        java.time.LocalDateTime currentDateTime = java.time.LocalDateTime.now();
+
+        // If current datetime is before endDate, use REGISTRATION_QUOTA
+        if (currentDateTime.isBefore(activeAcademicYear.getEndDate())) {
+            return QuotaType.REGISTRATION_QUOTA;
+        }
+
+        // After endDate, check for WAITING_LIST quota first (optional)
+        EventRuleModel waitingListSlotsEventRule = eventRuleModels.stream()
+                .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS"))
+                .findAny()
+                .orElse(null);
+
+        // If WAITING_LIST quota exists and has available slots, use it
+        if (waitingListSlotsEventRule != null && Integer.parseInt(waitingListSlotsEventRule.getValue()) > 0) {
+            return QuotaType.WAITING_LIST_QUOTA;
+        }
+
+        // If WAITING_LIST quota doesn't exist, check for OTSE quota (optional)
+        EventRuleModel otseSlotsEventRule = eventRuleModels.stream()
+                .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("OTSE_SLOTS"))
+                .findAny()
+                .orElse(null);
+
+        // If OTSE quota exists and has available slots, use it
+        if (otseSlotsEventRule != null && Integer.parseInt(otseSlotsEventRule.getValue()) > 0) {
+            return QuotaType.OTSE_QUOTA;
+        }
+
+        // Default to REGISTRATION_QUOTA if WAITING_LIST doesn't exist and OTSE doesn't
+        // exist or is not available
+        return QuotaType.REGISTRATION_QUOTA;
+    }
+
+    /**
+     * Generates the next WL sequence number (WL_001, WL_002, etc.)
+     */
+    private String generateWLQSequenceNumber(Long eventId) {
+        // Find all participants with WAITING_LIST_QUOTA for this event
+        List<ParticipantModel> allParticipants = participantRepository.findByEvents_Id(eventId);
+
+        List<ParticipantModel> waitingListParticipants = allParticipants.stream()
+                .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
+                .filter(p -> p.getQuotaCount() != null && p.getQuotaCount().startsWith("WL_"))
+                .toList();
+
+        if (waitingListParticipants.isEmpty()) {
+            return "WL_001";
+        }
+
+        // Extract sequence numbers and find the maximum
+        int maxSequence = waitingListParticipants.stream()
+                .map(p -> {
+                    String quotaCount = p.getQuotaCount();
+                    if (quotaCount != null && quotaCount.startsWith("WL_")) {
+                        try {
+                            return Integer.parseInt(quotaCount.substring(3)); // Extract number after "WL_" (3 chars)
+                        } catch (NumberFormatException e) {
+                            return 0;
+                        }
+                    }
+                    return 0;
+                })
+                .max(Integer::compare)
+                .orElse(0);
+
+        // Return next sequence number
+        return String.format("WL_%03d", maxSequence + 1);
+    }
+
     @Override
     public List<ParticipantDto> createParticipants(List<ParticipantDto> participantDtos) {
         CollegeModel collegeModel = this.collegeRepository.findById(participantDtos.get(0).getCollegeId()).orElseThrow(
@@ -85,18 +223,25 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         List<EventRuleModel> eventRuleModels = this.eventRuleRepository.findByAvailableEvent(availableEventModel);
 
-        // Retrieve the REGISTERED_SLOTS_AVAILABLE
+        // Retrieve the REGISTERED_SLOTS_AVAILABLE (or quota count)
         EventRuleModel eventRuleModel = eventRuleModels.stream()
                 .filter(ele -> ele.getEventRuleTemplate().getId().equals(6L)).findAny().orElse(null);
         if (eventRuleModel == null) {
             throw new RegisteredSlotsAvailableException("Unable to get the Maximum slots available");
         }
-        // Retrieve the OTSE_SLOTS
+        // Retrieve the OTSE_SLOTS (or quota count)
         EventRuleModel otseSlotsEventRule = eventRuleModels.stream()
                 .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("OTSE_SLOTS")).findAny()
                 .orElse(null);
         if (otseSlotsEventRule == null) {
             throw new IllegalArgumentException("Unable to get the OTSE slots available rule");
+        }
+        // Retrieve the WAITING_LIST_SLOTS (or quota count)
+        EventRuleModel waitingListSlotsEventRule = eventRuleModels.stream()
+                .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS")).findAny()
+                .orElse(null);
+        if (waitingListSlotsEventRule == null) {
+            throw new IllegalArgumentException("Unable to get the WAITING_LIST slots available rule");
         }
 
         // Check for enrollment
@@ -106,18 +251,51 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 .filter(cp -> cp.getCollege().getId().equals(participantDtos.get(0).getCollegeId())).findAny()
                 .orElse(null);
         if (collegeParticipationModels.isEmpty() || existingCollegeParticipation == null) {
+            // Check if registration is open (startDate <= currentDateTime <= endDate)
+            if (!academicYearService.isRegistrationOpen()) {
+                AcademicYearModel activeAcademicYear = academicYearRepository.findByIsActiveTrue()
+                        .orElse(null);
+
+                if (activeAcademicYear == null) {
+                    throw new RegistrationDeadlineClosedException(
+                            "No active academic year found. Registration is not available.");
+                }
+
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                if (currentDateTime.isBefore(activeAcademicYear.getStartDate())) {
+                    throw new RegistrationDeadlineClosedException(
+                            "Registration has not started yet. Please wait until the registration period begins.");
+                } else {
+                    throw new RegistrationDeadlineClosedException(
+                            "Registration deadline has passed. New event registrations and waiting list applications are no longer accepted.");
+                }
+            }
             // Use already fetched and validated collegeModel
-            this.collegeParticipationRepository.save(new CollegeParticipationModel(
-                    null,
-                    collegeModel,
-                    availableEventModel,
-                    null,
-                    false));
+            CollegeParticipationModel newParticipation = new CollegeParticipationModel();
+            newParticipation.setCollege(collegeModel);
+            newParticipation.setAvailableEvent(availableEventModel);
+            newParticipation.setTeamNumber(null);
+            newParticipation.setWaitingListSequence(null);
+            newParticipation.setArchived(false);
+            this.collegeParticipationRepository.save(newParticipation);
         }
 
         // Check the unique college
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(
                 participantDtos.get(0).getEventIds().get(0), participantDtos.get(0).getCollegeId());
+
+        // Check if trying to add NORMAL entry type when college already has NORMAL
+        // participants
+        EntryType requestedEntryType = participantDtos.get(0).getEntryType();
+        if (EntryType.NORMAL.equals(requestedEntryType) && !participantModels.isEmpty()) {
+            boolean hasNormalParticipants = participantModels.stream()
+                    .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType()));
+            if (hasNormalParticipants) {
+                throw new IllegalArgumentException(
+                        "Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
+            }
+        }
+
         if (participantModels.isEmpty()) { // Unique (New) College participant
 
             int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
@@ -126,14 +304,26 @@ public class ParticipantServicesImpl implements ParticipantServices {
             System.out.println("Slots occupied: " + slotsOccupied);
 
             if (slotsOccupied + 1 > maxSlotsAvailable) {
-                // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy"); //
-                // Define the date format
-                // LocalDate comparisonDate = LocalDate.parse("10 Dec, 2025", formatter);
-                // LocalDate.now().isAfter(comparisonDate)
-                if (participantDtos.get(0).getEntryType().equals(EntryType.NORMAL)) {
-                    throw new RegisteredSlotsAvailableException(
-                            "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+                // If registration slots are full, check EntryType
+                EntryType entryType = participantDtos.get(0).getEntryType();
+                if (entryType.equals(EntryType.NORMAL)) {
+                    // Check if waiting list is available (waitingListSlotsEventRule is already
+                    // defined above and validated)
+                    int maxWaitingListSlots = Integer.parseInt(waitingListSlotsEventRule.getValue());
+                    Long waitingListSlotsOccupiedCount = this
+                            .waitingListSlotsOccupiedByAvailableEventId(availableEventModel.getId());
+
+                    if (waitingListSlotsOccupiedCount != null && waitingListSlotsOccupiedCount < maxWaitingListSlots) {
+                        // Waiting list is available, but EntryType is NORMAL - this should be handled
+                        // by frontend
+                        // For now, allow it and backend will set it to WAITING_LIST based on QuotaType
+                    } else {
+                        // Waiting list is also full
+                        throw new RegisteredSlotsAvailableException(
+                                "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+                    }
                 }
+                // If EntryType is WAITING_LIST or OTSE, allow it to proceed
                 int otseSlotsAvailable = Integer.parseInt(otseSlotsEventRule.getValue());
                 if (otseSlotsAvailable == 0) {
                     throw new OTSESlotsException("No OTSE slots available");
@@ -196,21 +386,61 @@ public class ParticipantServicesImpl implements ParticipantServices {
         if (participantDtos.get(0).getEntryType().equals(EntryType.NORMAL)) {
             System.out.println("in normal");
             group = collegeModel.getIcCode() + "_" + String.format("%02d", 1);
+        } else if (participantDtos.get(0).getEntryType().equals(EntryType.WAITING_LIST)) {
+            System.out.println("in waiting list");
+            // For waiting list, use a similar group naming pattern
+            group = collegeModel.getIcCode() + "_WL_" + String.format("%02d", 1);
         } else {
             System.out.println("in otse, groups: " + groups);
             count = groups.stream().filter(grp -> grp.contains("_OTSE")).toList().size();
             group = collegeModel.getIcCode() + "_OTSE_" + String.format("%02d", count + 1);
         }
 
+        // Check if college has a waiting list sequence (assigned during enrollment)
+        CollegeParticipationModel collegeParticipation = this.collegeParticipationRepository
+                .findByCollegeAndAvailableEvent(collegeModel, availableEventModel)
+                .orElse(null);
+
+        String collegeWaitingListSequence = null;
+        if (collegeParticipation != null && collegeParticipation.getWaitingListSequence() != null) {
+            collegeWaitingListSequence = collegeParticipation.getWaitingListSequence();
+        }
+
+        // Determine quota type based on academic year, slot availability, and event
+        // rules
+        QuotaType quotaType = determineQuotaType(availableEventModel, eventRuleModels, eventModel);
+
+        // If college has waiting list sequence, use WAITING_LIST_QUOTA
+        if (collegeWaitingListSequence != null) {
+            quotaType = QuotaType.WAITING_LIST_QUOTA;
+        }
+
         // Create the participants
         List<ParticipantModel> savedParticipantModels = new ArrayList<>();
-        for (ParticipantDto participantDto : participantDtos) {
+        for (int i = 0; i < participantDtos.size(); i++) {
+            ParticipantDto participantDto = participantDtos.get(i);
             ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
             participantModel.setCollege(collegeModel);
             participantModel.setEntryType(participantModel.getEntryType());
             participantModel.getEvents().add(eventModel);
             participantModel.setHandPreference(participantDto.getHandPreference());
             participantModel.setGroup(group);
+
+            // Set quota type and count
+            participantModel.setQuotaType(quotaType);
+            if (quotaType == QuotaType.WAITING_LIST_QUOTA) {
+                // Use college's waiting list sequence (assigned during enrollment)
+                if (collegeWaitingListSequence != null) {
+                    participantModel.setQuotaCount(collegeWaitingListSequence);
+                } else {
+                    // Fallback: generate sequence if college doesn't have one (shouldn't happen)
+                    String quotaCount = generateWLQSequenceNumber(eventModel.getId());
+                    participantModel.setQuotaCount(quotaCount);
+                }
+                // Automatically set EntryType to WAITING_LIST when QuotaType is
+                // WAITING_LIST_QUOTA
+                participantModel.setEntryType(EntryType.WAITING_LIST);
+            }
 
             // Save the participant
             participantModel = this.participantRepository.save(participantModel);
@@ -220,6 +450,17 @@ public class ParticipantServicesImpl implements ParticipantServices {
             this.eventRepository.save(eventModel);
 
             savedParticipantModels.add(participantModel);
+        }
+
+        // Emit WebSocket event for quota update
+        try {
+            Long availableEventId = availableEventModel.getId();
+            Long slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId());
+            Long waitingListSlotsOccupied = this.waitingListSlotsOccupiedByAvailableEventId(availableEventId);
+            webSocketService.emitQuotaUpdate(availableEventId, slotsOccupied, waitingListSlotsOccupied);
+            webSocketService.emitParticipantAdded(availableEventId, eventModel.getId());
+        } catch (Exception e) {
+            System.err.println("Error emitting WebSocket event: " + e.getMessage());
         }
 
         return savedParticipantModels.stream().map(this::participantModelToDto).collect(Collectors.toList());
@@ -262,13 +503,47 @@ public class ParticipantServicesImpl implements ParticipantServices {
         CollegeParticipationModel existingCollegeParticipation = collegeParticipationModels.stream()
                 .filter(cp -> cp.getCollege().getId().equals(participantDto.getCollegeId())).findAny().orElse(null);
         if (collegeParticipationModels.isEmpty() || existingCollegeParticipation == null) {
+            // Check if registration is open (startDate <= currentDateTime <= endDate)
+            if (!academicYearService.isRegistrationOpen()) {
+                AcademicYearModel activeAcademicYear = academicYearRepository.findByIsActiveTrue()
+                        .orElse(null);
+
+                if (activeAcademicYear == null) {
+                    throw new RegistrationDeadlineClosedException(
+                            "No active academic year found. Registration is not available.");
+                }
+
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                if (currentDateTime.isBefore(activeAcademicYear.getStartDate())) {
+                    throw new RegistrationDeadlineClosedException(
+                            "Registration has not started yet. Please wait until the registration period begins.");
+                } else {
+                    throw new RegistrationDeadlineClosedException(
+                            "Registration deadline has passed. New event registrations and waiting list applications are no longer accepted.");
+                }
+            }
             // Use already fetched and validated collegeModel
-            this.collegeParticipationRepository.save(new CollegeParticipationModel(
-                    null,
-                    collegeModel,
-                    availableEventModel,
-                    null,
-                    false));
+            CollegeParticipationModel newParticipation = new CollegeParticipationModel();
+            newParticipation.setCollege(collegeModel);
+            newParticipation.setAvailableEvent(availableEventModel);
+            newParticipation.setTeamNumber(null);
+            newParticipation.setWaitingListSequence(null);
+            newParticipation.setArchived(false);
+            this.collegeParticipationRepository.save(newParticipation);
+        }
+
+        // Check if trying to add NORMAL entry type when college already has NORMAL
+        // participants
+        EntryType requestedEntryType = participantDto.getEntryType();
+        if (EntryType.NORMAL.equals(requestedEntryType)) {
+            List<ParticipantModel> existingParticipants = this.participantRepository.findByEvent_IdAndCollegeId(
+                    participantDto.getEventIds().get(0), participantDto.getCollegeId());
+            boolean hasNormalParticipants = existingParticipants.stream()
+                    .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType()));
+            if (hasNormalParticipants) {
+                throw new IllegalArgumentException(
+                        "Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
+            }
         }
 
         // Fetch the participant
@@ -339,6 +614,25 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         }
 
+        // Check if college has a waiting list sequence (assigned during enrollment)
+        CollegeParticipationModel collegeParticipation = this.collegeParticipationRepository
+                .findByCollegeAndAvailableEvent(collegeModel, availableEventModel)
+                .orElse(null);
+
+        String collegeWaitingListSequence = null;
+        if (collegeParticipation != null && collegeParticipation.getWaitingListSequence() != null) {
+            collegeWaitingListSequence = collegeParticipation.getWaitingListSequence();
+        }
+
+        // Determine quota type based on academic year, slot availability, and event
+        // rules
+        QuotaType quotaType = determineQuotaType(availableEventModel, eventRuleModels, eventModel);
+
+        // If college has waiting list sequence, use WAITING_LIST_QUOTA
+        if (collegeWaitingListSequence != null) {
+            quotaType = QuotaType.WAITING_LIST_QUOTA;
+        }
+
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
         participantModel.setCollege(collegeModel);
@@ -347,11 +641,38 @@ public class ParticipantServicesImpl implements ParticipantServices {
         participantModel.setHandPreference(participantDto.getHandPreference());
         participantModel.setGroup(participantDto.getGroup());
 
+        // Set quota type and count
+        participantModel.setQuotaType(quotaType);
+        if (quotaType == QuotaType.WAITING_LIST_QUOTA) {
+            // Use college's waiting list sequence (assigned during enrollment)
+            if (collegeWaitingListSequence != null) {
+                participantModel.setQuotaCount(collegeWaitingListSequence);
+            } else {
+                // Fallback: generate sequence if college doesn't have one (shouldn't happen)
+                String quotaCount = generateWLQSequenceNumber(eventModel.getId());
+                participantModel.setQuotaCount(quotaCount);
+            }
+            // Automatically set EntryType to WAITING_LIST when QuotaType is
+            // WAITING_LIST_QUOTA
+            participantModel.setEntryType(EntryType.WAITING_LIST);
+        }
+
         // Save the participant
         participantModel = this.participantRepository.save(participantModel);
         // Save the events
         eventModel.getParticipants().add(participantModel);
         this.eventRepository.save(eventModel);
+
+        // Emit WebSocket event for quota update
+        try {
+            Long availableEventId = availableEventModel.getId();
+            Long slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId());
+            Long waitingListSlotsOccupied = this.waitingListSlotsOccupiedByAvailableEventId(availableEventId);
+            webSocketService.emitQuotaUpdate(availableEventId, slotsOccupied, waitingListSlotsOccupied);
+            webSocketService.emitParticipantAdded(availableEventId, eventModel.getId());
+        } catch (Exception e) {
+            System.err.println("Error emitting WebSocket event: " + e.getMessage());
+        }
 
         return this.participantModelToDto(participantModel);
     }
@@ -362,6 +683,51 @@ public class ParticipantServicesImpl implements ParticipantServices {
         Long tmpSlotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventId);
         System.out.println(tmpSlotsOccupied);
         return tmpSlotsOccupied;
+    }
+
+    @Override
+    public Long waitingListSlotsOccupied(Long eventId) {
+        return this.participantRepository.countDistinctCollegesForEventByQuotaType(eventId,
+                QuotaType.WAITING_LIST_QUOTA);
+    }
+
+    @Override
+    public Long waitingListSlotsOccupiedByAvailableEventId(Long availableEventId) {
+        // Count colleges with waitingListSequence set (assigned during enrollment)
+        // This is the primary source of truth for waiting list queue
+        try {
+            AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId)
+                    .orElse(null);
+            if (availableEventModel == null) {
+                return 0L;
+            }
+
+            List<CollegeParticipationModel> allParticipations = this.collegeParticipationRepository
+                    .findByAvailableEvent(availableEventModel);
+
+            // Count colleges with waitingListSequence set
+            long collegesInWaitingList = allParticipations.stream()
+                    .filter(cp -> cp.getWaitingListSequence() != null && cp.getWaitingListSequence().startsWith("WL_"))
+                    .count();
+
+            return collegesInWaitingList;
+        } catch (Exception e) {
+            System.err.println("Error calculating waiting list slots: " + e.getMessage());
+            // Fallback: count colleges with participants in WAITING_LIST_QUOTA
+            return this.participantRepository
+                    .countDistinctCollegesForAvailableEventByQuotaType(availableEventId, QuotaType.WAITING_LIST_QUOTA);
+        }
+    }
+
+    @Override
+    public Long otseSlotsOccupiedByAvailableEventId(Long availableEventId) {
+        try {
+            return this.participantRepository
+                    .countDistinctCollegesForAvailableEventByQuotaType(availableEventId, QuotaType.OTSE_QUOTA);
+        } catch (Exception e) {
+            System.err.println("Error calculating OTSE slots: " + e.getMessage());
+            return 0L;
+        }
     }
 
     public byte[] generateQRCodeImage(String data, int width, int height) throws Exception {
@@ -516,8 +882,11 @@ public class ParticipantServicesImpl implements ParticipantServices {
         ParticipantModel participant = this.participantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Participant not found with ID: " + id));
 
+        // Store event info before deletion for WebSocket emission
+        List<EventModel> events = new ArrayList<>(participant.getEvents());
+
         // Remove the participant from each event's participants list
-        for (EventModel event : participant.getEvents()) {
+        for (EventModel event : events) {
             event.getParticipants().remove(participant);
             this.eventRepository.save(event); // Save each event after removing the participant
         }
@@ -535,6 +904,19 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         // Now delete the participant
         this.participantRepository.deleteById(id);
+
+        // Emit WebSocket event for quota update after deletion
+        try {
+            for (EventModel event : events) {
+                Long availableEventId = event.getAvailableEvent().getId();
+                Long slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(event.getId());
+                Long waitingListSlotsOccupied = this.waitingListSlotsOccupiedByAvailableEventId(availableEventId);
+                webSocketService.emitQuotaUpdate(availableEventId, slotsOccupied, waitingListSlotsOccupied);
+                webSocketService.emitParticipantRemoved(availableEventId, event.getId());
+            }
+        } catch (Exception e) {
+            System.err.println("Error emitting WebSocket event: " + e.getMessage());
+        }
 
         return true;
     }

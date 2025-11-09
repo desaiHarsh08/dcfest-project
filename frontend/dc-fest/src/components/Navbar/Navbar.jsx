@@ -6,8 +6,10 @@ import { FaHome, FaCog, FaSignInAlt, FaSignOutAlt, FaBook } from "react-icons/fa
 import "../../styles/Navbar.css";
 import "../../styles/GuidelinesModal.css"; // Import custom styles
 import { AuthContext } from "../../providers/AuthProvider";
+import { useSelector } from "react-redux";
+import { selectAcademicYearYear } from "../../app/slices/academicYearSlice";
 // Guidelines Modal Component
-const GuidelinesModal = ({ show, handleClose }) => (
+const GuidelinesModal = ({ show, handleClose, year }) => (
   <Modal show={show} onHide={handleClose} size="lg" centered className="flex flex-column justify-content-between">
     <Modal.Header closeButton className="modal-header-custom">
       <Modal.Title className="modal-title-custom">General Guidelines</Modal.Title>
@@ -32,10 +34,10 @@ const GuidelinesModal = ({ show, handleClose }) => (
         </li>
         <li>The management shall not be responsible for any loss, damage, theft, etc. of your personal belongings.</li>
         <li>Damaging or tampering with any kind of college property by anyone shall be considered a serious offense and may lead to cancellation of the college&apos;s participation.</li>
-        <li>The prop list and song/track list must be submitted in Umang 2025&apos;s final representative meeting. Not submitting any of the above will result in disqualification.</li>
+        <li>The prop list and song/track list must be submitted in Umang {year}&apos;s final representative meeting. Not submitting any of the above will result in disqualification.</li>
         <li>Organisers reserve the right to modify the rules and regulations (if required).</li>
         <li>On-the-Spot Entry (OTSE) is subject to availability of slots.</li>
-        <li>Undergraduate and Postgraduate students are eligible to participate in Umang 2025.</li>
+        <li>Undergraduate and Postgraduate students are eligible to participate in Umang {year}.</li>
         <li>Rights to admission is reserved.</li>
         <li>Any student may be asked to leave the venue or campus for disciplinary concern at the discretion of the college management.</li>
       </ul>
@@ -49,7 +51,7 @@ const GuidelinesModal = ({ show, handleClose }) => (
 );
 
 // Registration Rules Modal Component
-const RegistrationRulesModal = ({ show, handleClose }) => (
+const RegistrationRulesModal = ({ show, handleClose, year }) => (
   <Modal show={show} onHide={handleClose} size="lg" centered>
     <Modal.Header closeButton className="modal-header-custom">
       <Modal.Title className="modal-title-custom">Registration Rules</Modal.Title>
@@ -58,7 +60,7 @@ const RegistrationRulesModal = ({ show, handleClose }) => (
       <ul className="guidelines-list">
         <li>All the participating colleges will have to register for all the events online through the website—</li>
         <li>Events having restrictions on the maximum number of participants/teams shall be accepted on a first-come, first-served basis.</li>
-        <li>The last date for online registrations is 8th December 2025.</li>
+        <li>The last date for online registrations is 8th December {year}.</li>
         <li>Once the event registration is over, if a college team backs out from any event on the main day, then it will lead to negative marking.</li>
         <li>Participants must report to the registration desk two hours prior to the event.</li>
         <li>The Registration Desk will close 45 minutes before the scheduled time for registered teams and 30 minutes before for OTSE.</li>
@@ -75,6 +77,7 @@ const RegistrationRulesModal = ({ show, handleClose }) => (
 const Navbar = () => {
   const { pathname } = useLocation();
   const { iccode } = useParams();
+  const year = useSelector(selectAcademicYearYear);
 
   const [expanded, setExpanded] = useState(false);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
@@ -163,10 +166,10 @@ const Navbar = () => {
       </RBNavbar>
 
       {/* Guidelines Modal */}
-      <GuidelinesModal show={showGuidelinesModal} handleClose={handleGuidelinesClose} />
+      <GuidelinesModal show={showGuidelinesModal} handleClose={handleGuidelinesClose} year={year} />
 
       {/* Registration Rules Modal */}
-      <RegistrationRulesModal show={showRegistrationRulesModal} handleClose={handleRegistrationRulesClose} />
+      <RegistrationRulesModal show={showRegistrationRulesModal} handleClose={handleRegistrationRulesClose} year={year} />
     </>
   );
 };

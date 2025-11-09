@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import { addParticipant, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent, updateParticipant } from "../services/participants-api";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
+import { fetchParticipationEventsByCollegeId } from "../services/college-participation-apis";
 import styles from "../styles/CollegeEvent.module.css";
 import { FaMapMarkerAlt, FaRegClock, FaTicketAlt, FaCalendarAlt } from "react-icons/fa";
 import { fetchCollegeByIcCode } from "../services/college-apis";
@@ -45,15 +46,43 @@ const CollegeEvent = () => {
   const [selectedParticipant, setSelectedParticipant] = useState(participantObj);
 
   useEffect(() => {
-    fetchEventById(eventId)
-      .then((data) => {
-        fetchAvailableEventsById(data.availableEventId).then((data) => {
-          setAvailableEvent(data);
-          getSlotsOccupied();
-        });
-      })
-      .catch((err) => console.log(err));
-  }, [eventId]);
+    const fetchEventData = async () => {
+      try {
+        // Try to fetch the event by ID first
+        const eventData = await fetchEventById(eventId);
+        if (eventData?.availableEventId) {
+          const availableEventData = await fetchAvailableEventsById(eventData.availableEventId);
+          setAvailableEvent(availableEventData);
+          // Fetch slots occupied after setting available event
+          try {
+            const response = await fetchSlotsOccupiedForEvent(eventId);
+            setSlotsOccupied(response);
+          } catch (error) {
+            console.log("Error fetching slots occupied:", error);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching event:", err);
+        // If event doesn't exist yet (404), try to get availableEventId from college's participation
+        if (college?.id) {
+          try {
+            const participations = await fetchParticipationEventsByCollegeId(college.id);
+            // Find the participation that matches this eventId (if event exists) or find by availableEventId
+            const participation = participations.find((p) => p.eventId === Number(eventId) || p.availableEventId);
+            if (participation?.availableEventId) {
+              const availableEventData = await fetchAvailableEventsById(participation.availableEventId);
+              setAvailableEvent(availableEventData);
+            }
+          } catch (participationErr) {
+            console.error("Error fetching participation:", participationErr);
+          }
+        }
+      }
+    };
+    if (eventId) {
+      fetchEventData();
+    }
+  }, [eventId, college?.id]);
 
   useEffect(() => {
     (async () => {
@@ -65,25 +94,22 @@ const CollegeEvent = () => {
         console.log(error);
       }
     })();
-  }, []);
+  }, [iccode]);
 
   useEffect(() => {
-    if (college) {
-      getParticipants();
+    if (college && eventId) {
+      const fetchParticipants = async () => {
+        try {
+          const response = await fetchParticipantsByEventIdAndCollegeId(eventId, college.id);
+          setParticipants(response);
+          console.log(response);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      fetchParticipants();
     }
-  }, [college]);
-
-  const getSlotsOccupied = async () => {
-    try {
-      console.log("here fetching, eventId:", eventId);
-      const response = await fetchSlotsOccupiedForEvent(eventId);
-      console.log("response:", availableEvent?.title, response);
-      setSlotsOccupied(response);
-    } catch (error) {
-      console.log(error);
-      alert("Unable to fetch the details!");
-    }
-  };
+  }, [college, eventId]);
 
   const getParticipants = async () => {
     try {
@@ -621,12 +647,24 @@ const CollegeEvent = () => {
                 {college &&
                   //   new Date() < new Date("2025-12-11T14:00:00") &&
                   participants.length == 0 &&
-                  slotsOccupied != null &&
-                  slotsOccupied + 1 <= availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE")?.value && (
-                    <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
-                      Register Participant
-                    </Link>
-                  )}
+                  availableEvent &&
+                  (() => {
+                    const registeredSlotsRule = availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE");
+                    const maxSlots = registeredSlotsRule ? Number(registeredSlotsRule.value) : null;
+                    const waitingListSlotsRule = availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "WAITING_LIST_SLOTS");
+                    const waitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : null;
+                    const waitingListSlotsOccupied = availableEvent?.waitingListSlotsOccupied;
+                    const canAdd =
+                      slotsOccupied == null ||
+                      maxSlots == null ||
+                      (maxSlots > 0 && (slotsOccupied == null || slotsOccupied < maxSlots)) ||
+                      (waitingListSlots > 0 && (waitingListSlotsOccupied == null || waitingListSlotsOccupied < waitingListSlots));
+                    return canAdd ? (
+                      <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
+                        Register Participant
+                      </Link>
+                    ) : null;
+                  })()}
               </div>
 
               {/* Participants Table */}

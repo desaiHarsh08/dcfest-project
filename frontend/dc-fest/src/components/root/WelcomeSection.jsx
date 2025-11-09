@@ -1,6 +1,9 @@
 import "../../styles/WelcomeSection.css";
+import { useSelector } from "react-redux";
+import { selectAcademicYearYear } from "../../app/slices/academicYearSlice";
 
 const WelcomeSection = () => {
+  const year = useSelector(selectAcademicYearYear);
   const images = [
     "/E1.jpg",
     "/E2.jpg",
@@ -16,7 +19,7 @@ const WelcomeSection = () => {
   return (
     <div className="welcome-section">
       <div className="main-header text-center">
-        <div className="welcome-title">WELCOME TO UMANG 2025!</div>
+        <div className="welcome-title">WELCOME TO UMANG {year}!</div>
         <div className="slider">
           <div className="slider-track">
             {images.map((src, index) => (
@@ -40,7 +43,7 @@ const WelcomeSection = () => {
         </div>
         <p className="welcome-description">
           Dive into an extraordinary celebration of culture, art, and
-          excitement. Join us for &ldquo;UMANG 2025&rdquo; — where creativity
+          excitement. Join us for &ldquo;UMANG {year}&rdquo; — where creativity
           meets tradition, and every moment is unforgettable. Be ready for an
           experience like no other!
         </p>

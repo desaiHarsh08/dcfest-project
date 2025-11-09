@@ -1,7 +1,10 @@
 import { Container, Row, Col } from "react-bootstrap";
 import "../../styles/Footer.css"; // Assuming you want custom styling
+import { useSelector } from "react-redux";
+import { selectAcademicYearYear } from "../../app/slices/academicYearSlice";
 
 const Footer = () => {
+  const year = useSelector(selectAcademicYearYear);
     return (
         <footer className="footer bg-dark text-light">
             <Container>
@@ -13,7 +16,7 @@ const Footer = () => {
                             className="footer-logo img-fluid me-2" // reduced space between logo and text
                         />
                         <p className="footer-text mb-0">
-                            UMANG &copy; 2025 | All rights reserved
+                            UMANG &copy; {year} | All rights reserved
                         </p>
                     </Col>
                 </Row>

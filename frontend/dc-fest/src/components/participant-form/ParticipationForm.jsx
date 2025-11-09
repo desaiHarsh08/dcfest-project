@@ -27,7 +27,7 @@ const participantObj = {
   handPreference: "RIGHT_HANDED",
 };
 
-const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, college }) => {
+const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, college, slotsOccupied, waitingListSlotsOccupied, collegeParticipation }) => {
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
@@ -41,6 +41,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   const [validated, setValidated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [actualParticipatedColleges, setActualParticipatedColleges] = useState([]);
+  const [hasNormalParticipants, setHasNormalParticipants] = useState(false);
 
   // Fetch categories on initial load
   useEffect(() => {
@@ -55,7 +56,8 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           const tmpCategory = data.find((ele) => ele.id == availableEvent.eventCategoryId);
           setSelectedCategory(tmpCategory);
           setSelectedAvailableEvent(availableEvent);
-          handleSetDefaultParticipants(availableEvent);
+          // Don't call handleSetDefaultParticipants here - wait for slots to be loaded
+          // It will be called in the useEffect that depends on slotsOccupied
           console.log("available_event:", availableEvent);
         } else {
           // Find the first category that has available events
@@ -98,14 +100,23 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   }, [iccode, selectedCollege]);
 
   // Set default participants based on the selected event rules
+  // Only update when we have slot information (for college end registration)
   useEffect(() => {
-    (async () => {
-      if (selectedAvailableEvent && actualParticipatedColleges.length > 0) {
-        // await handleFilterColleges();
+    if (selectedAvailableEvent && actualParticipatedColleges.length > 0) {
+      // If iccode is provided (college end), wait for slots and college participation to be loaded
+      if (iccode) {
+        // Only set defaults if we have slot information
+        // collegeParticipation can be null (not enrolled) or an object (enrolled), but not undefined
+        if (slotsOccupied !== undefined && waitingListSlotsOccupied !== null) {
+          console.log("Calling handleSetDefaultParticipants with collegeParticipation:", collegeParticipation);
+          handleSetDefaultParticipants(selectedAvailableEvent);
+        }
+      } else {
+        // Admin end - set defaults immediately
         handleSetDefaultParticipants(selectedAvailableEvent);
       }
-    })();
-  }, [selectedAvailableEvent, actualParticipatedColleges]);
+    }
+  }, [selectedAvailableEvent, actualParticipatedColleges, slotsOccupied, waitingListSlotsOccupied, collegeParticipation, iccode]);
 
   const handleFilterColleges = async () => {
     const event = await getEvent(selectedAvailableEvent?.id);
@@ -134,6 +145,34 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   useEffect(() => {
     isValidDetails();
   }, [participants]);
+
+  // Check if college already has NORMAL entry type participants
+  useEffect(() => {
+    const checkNormalParticipants = async () => {
+      if (!selectedCollege || !selectedAvailableEvent) {
+        setHasNormalParticipants(false);
+        return;
+      }
+
+      try {
+        const event = await getEvent(selectedAvailableEvent.id);
+        if (!event) {
+          setHasNormalParticipants(false);
+          return;
+        }
+
+        const existingParticipants = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
+        const hasNormal = existingParticipants.some((p) => p.entryType === "NORMAL");
+        setHasNormalParticipants(hasNormal);
+        console.log("College has NORMAL participants:", hasNormal);
+      } catch (error) {
+        console.error("Error checking NORMAL participants:", error);
+        setHasNormalParticipants(false);
+      }
+    };
+
+    checkNormalParticipants();
+  }, [selectedCollege, selectedAvailableEvent]);
 
   // Function to handle form input changes
   const handleChange = (e, participantIndex) => {
@@ -167,16 +206,50 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       return;
     }
 
+    // Check if college is already in waiting list (has waitingListSequence set)
+    const isCollegeInWaitingList = collegeParticipation?.waitingListSequence != null && 
+                                   collegeParticipation.waitingListSequence.startsWith("WL_");
+
+    console.log("handleSetDefaultParticipants - collegeParticipation:", collegeParticipation);
+    console.log("handleSetDefaultParticipants - isCollegeInWaitingList:", isCollegeInWaitingList);
+    console.log("handleSetDefaultParticipants - waitingListSequence:", collegeParticipation?.waitingListSequence);
+
+    // Check if registration slots are full and waiting list should be used
+    const registeredSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate?.name === "REGISTERED_SLOTS_AVAILABLE");
+    const waitingListSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate?.name === "WAITING_LIST_SLOTS");
+    const maxSlots = registeredSlotsRule ? Number(registeredSlotsRule.value) : null;
+    const maxWaitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : null;
+    
+    // Determine if waiting list should be used
+    // Priority: If college is already in waiting list, use WAITING_LIST
+    // Otherwise, check if registration is full and waiting list is available
+    const isRegistrationFull = slotsOccupied != null && maxSlots != null && slotsOccupied >= maxSlots;
+    const isWaitingListAvailable = isRegistrationFull && 
+                                   maxWaitingListSlots != null && 
+                                   waitingListSlotsOccupied != null && 
+                                   waitingListSlotsOccupied < maxWaitingListSlots;
+    
+    // If college is already in waiting list, use WAITING_LIST; otherwise check slot availability
+    const defaultEntryType = isCollegeInWaitingList ? "WAITING_LIST" : (isWaitingListAvailable ? "WAITING_LIST" : "NORMAL");
+
+    console.log("handleSetDefaultParticipants - defaultEntryType:", defaultEntryType);
+
     const newParticipants = [];
     const minParticipantsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "MIN_PARTICIPANTS");
     const accompanistRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name === "COLLEGE_ACCOMPANIST");
 
     if (minParticipantsRule) {
       for (let i = 0; i < Number(minParticipantsRule.value); i++) {
-        newParticipants.push(participantObj);
+        newParticipants.push({
+          ...participantObj,
+          entryType: defaultEntryType,
+          isWaitingListAvailable: isWaitingListAvailable || isCollegeInWaitingList,
+          isWaitingListForced: isCollegeInWaitingList || isWaitingListAvailable, // Force WAITING_LIST if college is in waiting list or registration is full
+        });
       }
     }
 
+    console.log("handleSetDefaultParticipants - newParticipants:", newParticipants);
     setParticipants(newParticipants);
   };
   // Function to validate participant details
@@ -320,7 +393,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       console.log("checking from db whether exist: ", res);
       if (res.length > 0) {
         if (participants[0].entryType == "NORMAL" && res.filter((p) => p.entryType == "NORMAL").length > 0) {
-          alert("Your college had already added the participants as `NORMAL` entry, you may edit the details now!");
+          alert("Your college has already added participants with `NORMAL` entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
           return;
         }
 
@@ -478,6 +551,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                             onChange={handleChange}
                             selectedAvailableEvent={selectedAvailableEvent}
                             iccode={iccode}
+                            hasNormalParticipants={hasNormalParticipants}
                           />
                         ))}
                       </div>

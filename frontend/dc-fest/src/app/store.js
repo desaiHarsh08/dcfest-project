@@ -4,6 +4,7 @@ import toggleRefetchReducer from './slices/toggleRefetchSlice'
 import categoriesReducer from './slices/categoriesSlice'
 import resetPasswordOneTimeReducer from './slices/resetPasswordOneTimeSlice'
 import collegeReducer from './slices/collegeSlice'
+import academicYearReducer from './slices/academicYearSlice'
 
 export const store = configureStore({
     reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
         refetch: toggleRefetchReducer,
         categories: categoriesReducer,
         resetPasswordOneTime: resetPasswordOneTimeReducer,
-        college: collegeReducer
+        college: collegeReducer,
+        academicYear: academicYearReducer
     },
 })

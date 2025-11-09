@@ -9,10 +9,17 @@ export default defineConfig(({ mode }) => {
     return {
         base: env.VITE_APP_NODE_ENV === "production" ? env.VITE_APP_PREFIX : "/fest",
         plugins: [react()],
+        define: {
+            global: 'globalThis',
+        },
         resolve: {
             alias: {
                 '@': path.resolve(import.meta.dirname, './src'),
+                buffer: 'buffer',
             },
+        },
+        optimizeDeps: {
+            include: ['sockjs-client', '@stomp/stompjs', 'buffer'],
         },
         server: {
             port: env.VITE_APP_NODE_ENV === "production" ? 3007 : 5173

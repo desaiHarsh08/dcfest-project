@@ -2,5 +2,6 @@ package com.dcfest.constants;
 
 public enum EntryType {
     OTSE,
-    NORMAL
+    NORMAL,
+    WAITING_LIST,
 }

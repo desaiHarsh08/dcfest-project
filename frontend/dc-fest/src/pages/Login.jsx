@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 import "../styles/Login.css"; // Custom styles for any additional styling
 import { useNavigate } from "react-router-dom";
 import { doLogin } from "../services/auth-apis";
 import { fetchCollegeById } from "../services/college-apis";
 import { FiLock, FiUser, FiEye, FiEyeOff } from "react-icons/fi";
+import { AuthContext } from "../providers/AuthProvider";
+import { useSelector } from "react-redux";
+import { selectAcademicYearYear } from "../app/slices/academicYearSlice";
+
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+  const year = useSelector(selectAcademicYearYear);
 
   const [credentials, setCredentials] = useState({
     username: "",
@@ -24,9 +30,15 @@ const Login = () => {
     try {
       const { accessToken, user } = await doLogin({
         ...credentials,
-        year: 2025,
+        year: year ? parseInt(year) : null,
       });
       console.log(accessToken, user);
+      
+      // Store the token and user in AuthContext
+      if (accessToken && user) {
+        login(accessToken, user);
+      }
+      
       if (!user?.type || user?.type === "COLLEGE_REPRESENTATIVE") {
         try {
           const res = await fetchCollegeById(user?.collegeId || user?.id);
@@ -55,7 +67,7 @@ const Login = () => {
         <Col md={5}>
           <Card className="shadow-lg p-4 card-login">
             <Card.Body>
-              <h3 className="text-center mb-4">Welcome to UMANG 2025</h3>
+              <h3 className="text-center mb-4">Welcome to UMANG {year}</h3>
               <Form onSubmit={handleLogin}>
                 <Form.Group controlId="formBasicusername" className="mb-3">
                   <Form.Label>

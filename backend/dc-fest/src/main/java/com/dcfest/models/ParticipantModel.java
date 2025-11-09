@@ -1,11 +1,13 @@
 package com.dcfest.models;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.dcfest.constants.EntryType;
 import com.dcfest.constants.HandPreferenceType;
 import com.dcfest.constants.ParticipantType;
+import com.dcfest.constants.QuotaType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.SQLRestriction;
@@ -46,6 +48,16 @@ public class ParticipantModel {
     private String group;
 
     private String teamNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "quota_type")
+    private QuotaType quotaType = QuotaType.REGISTRATION_QUOTA;
+
+    private String quotaCount;
+
+    private Date quotaStartDate;
+
+    private Date quotaEndDate;
 
     @Column(nullable = false, unique = true)
     private String qrcode;
