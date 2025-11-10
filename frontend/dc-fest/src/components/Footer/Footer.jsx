@@ -11,7 +11,7 @@ const Footer = () => {
                 <Row className="justify-content-center">
                     <Col md={6} className="d-flex align-items-center justify-content-center">
                         <img
-                            src="/bhawanipur-college-logo.jpg"
+                            src={`${import.meta.env.VITE_APP_API_URL}/bhawanipur-college-logo.jpg`}
                             alt="Bhawanipur College Logo"
                             className="footer-logo img-fluid me-2" // reduced space between logo and text
                         />
