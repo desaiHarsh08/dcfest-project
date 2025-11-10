@@ -1,0 +1,123 @@
+=== COMPLETE SLUG vs IMAGE REPORT ===
+
+CATEGORIES:
+OK       | star-events                              | Star Events
+OK       | performing-arts                          | Performing Arts
+OK       | management-events                        | Management Events
+OK       | voices-in-actions                        | Voices-in-action
+OK       | fine-arts                                | Fine Arts
+OK       | literary-arts                            | Literary Arts
+OK       | gaming-console                           | Gaming Console
+OK       | indoor-sports                            | Indoor Sports
+OK       | outdoor-sports                           | Outdoor Sports
+MISSING  | test-category                            | TEST_CATEGORY
+
+EVENTS:
+OK       | beat-boxing                              | BEAT BOXING
+OK       | cosplay                                  | COSPLAY
+OK       | arm-wrestling                            | ARM WRESTLING (MALE)
+OK       | battleground-mobile-india-bgmi           | BATTLEGROUND MOBILE INDIA (BGMI)
+OK       | carrom                                   | CARROM (MALE)
+OK       | chess                                    | ANTI-CHESS (MALE)
+OK       | darts                                    | DARTS (MALE)
+OK       | pool                                     | POOL (MALE)
+OK       | table-tennis                             | TABLE TENNIS (MALE)
+OK       | mock-a-band                              | MOCK A BAND
+OK       | ea-fc-24                                 | EA SPORTS FC 25
+OK       | classical-group-dance                    | CLASSICAL GROUP DANCE
+OK       | indi-pop                                 | INDI-POP
+OK       | medley                                   | MEDLEY
+OK       | solo-classical-dance                     | SOLO CLASSICAL DANCE
+OK       | street-battle                            | STREET BATTLE
+OK       | western-band                             | WESTERN BAND
+OK       | western-group-dance                      | WESTERN GROUP DANCE
+OK       | debate                                   | DEBATE
+OK       | bengali-creative-writing                 | BENGALI CREATIVE WRITING
+OK       | arm-wrestling-female                     | ARM WRESTLING (FEMALE)
+OK       | carrom-female                            | CARROM (FEMALE)
+OK       | chess-female                             | ANTI-CHESS (FEMALE)
+OK       | darts-female                             | DARTS (FEMALE)
+OK       | fitness-mania-male                       | FITNESS MANIA (MALE)
+OK       | fitness-mania-female                     | FITNESS MANIA (FEMALE)
+OK       | tug-of-war-male                          | TUG-OF-WAR (MALE)
+OK       | tug-of-war-female                        | TUG-OF-WAR (FEMALE)
+OK       | non-gas-cooking                          | NON-GAS COOKING
+OK       | pool-female                              | POOL (FEMALE)
+OK       | improv-battle                            | IMPROV BATTLE
+OK       | table-tennis-female                      | TABLE TENNIS (FEMALE)
+OK       | forza-horizon-5                          | FORZA HORIZON 5
+OK       | mr-umang                                 | MR. UMANG
+OK       | valorant                                 | VALORANT
+OK       | miss-umang                               | MISS UMANG
+OK       | open-jam--verteez                        | JAM & VERTEEZ
+OK       | next-big-podcaster                       | NEXT BIG PODCASTER
+OK       | radio-play                               | RADIO PLAY
+OK       | photo-story                              | PHOTOGRAPHY
+OK       | stand-up-comedy                          | STAND-UP COMEDY
+OK       | bollywood-group-dance                    | BOLLYWOOD GROUP DANCE
+OK       | street-play                              | STREET PLAY
+OK       | hindi-creative-writing                   | HINDI CREATIVE WRITING
+OK       | umang-idol                               | UMANG IDOL
+OK       | poetry                                   | POETRY
+OK       | umang-ka-memer                           | UMANG KA MEMER
+OK       | spellzell                                | SPELLZELL
+OK       | war-of-rappers                           | WAR OF RAPPERS
+MISSING  | test                                     | TEST
+MISSING  | test2                                    | test2
+MISSING  | trial3                                   | trial3
+OK       | ancient-arms-modern-minds                | ANCIENT ARMS, MODERN MINDS
+OK       | calligraphy                              | CALLIGRAPHY
+OK       | charcoal-painting                        | CHARCOAL PAINTING
+OK       | remix-roulette                           | REMIX ROULETTE
+OK       | history-quiz                             | HISTORY-QUIZ
+OK       | open-mytho-quiz                          | OPEN MYTHO-QUIZ
+OK       | riddles                                  | RIDDLES
+OK       | script-writing                           | SCRIPT WRITING
+OK       | tweetsutra                               | TWEETSUTRA
+OK       | twist-in-the-tale                        | TWIST IN THE TALE
+OK       | colourful-cutouts                        | COLOURFUL CUTOUTS
+OK       | face-painting                            | FACE PAINTING
+OK       | gothic-chit-painting                     | GOTHIC CHIT PAINTING
+OK       | jewellery-making                         | JEWELLERY MAKING
+OK       | monochrome-painting                      | MONOCHROME PAINTING
+OK       | puzzle-painting                          | PUZZLE PAINTING
+OK       | rangoli                                  | RANGOLI
+OK       | revamp                                   | REVAMP
+OK       | sculpture-making                         | SCULPTURE MAKING
+OK       | stone-painting                           | STONE PAINTING
+OK       | the-lost-scrolls-an-ancient-comic-book-competition | THE LOST SCROLLS: AN ANCIENT COMIC BOOK COMPETITION
+OK       | rifle-shooting-female                    | RIFLE SHOOTING (FEMALE)
+OK       | rifle-shooting-male                      | RIFLE SHOOTING (MALE)
+OK       | adverse                                  | ADVERSE
+OK       | antakshari                               | ANTAKSHARI
+OK       | astra--aura                              | ASTRA & AURA
+OK       | fashion-flick                            | FASHION FLICK
+OK       | litscape                                 | LITSCAPE
+OK       | rhythm--resonance                        | RHYTHM & RESONANCE
+OK       | spin-a-story                             | SPIN A STORY
+OK       | war-of-instruments                       | WAR OF INSTRUMENTS
+OK       | auction-battle-of-warriors               | AUCTION (BATTLE OF WARRIORS)
+OK       | battle-of-brands                         | BATTLE OF BRANDS
+OK       | barter-trading                           | BARTER TRADING
+OK       | echoes-of-governance                     | ECHOES OF GOVERNANCE
+OK       | karma-ka-khel                            | KARMA KA KHEL
+OK       | mystery-box                              | MYSTERY BOX
+OK       | stress-interview                         | STRESS INTERVIEW
+OK       | revive-reform-rise                       | REVIVE REFORM RISE
+OK       | shark-tank                               | SHARK TANK
+OK       | survival-arena                           | SURVIVAL ARENA
+OK       | this-gen-tax-pitch                       | THIS-GEN TAX PITCH
+OK       | chitragupt-ki-adalat                     | CHITRAGUPT KI ADALAT
+OK       | dub-it-out-chitra-vaani                  | DUB IT OUT
+OK       | duo-act                                  | DUO ACT
+OK       | what-if                                  | WHAT IF?
+OK       | the-royal-conspiracy                     | THE ROYAL CONSPIRACY
+OK       | one-act-play                             | ONE-ACT PLAY
+OK       | parody-parliament                        | PARODY PARLIAMENT
+OK       | war-of-generations                       | WAR OF GENERATIONS
+OK       | war-of-rjs                               | WAR OF RJs
+OK       | fashion-show                             | FASHION SHOW
+OK       | group-folk-dance                         | GROUP FOLK DANCE
+OK       | tekken-7                                 | TEKKEN 7
+OK       | pac-man                                  | PAC-MAN
+OK       | moba-legend-mobile-legends-5v5           | MOBA LEGEND (MOBILE LEGENDS: 5v5)
