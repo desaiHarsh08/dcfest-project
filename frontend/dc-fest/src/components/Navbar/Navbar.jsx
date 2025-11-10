@@ -103,7 +103,7 @@ const Navbar = () => {
         <Container>
           <div className="navbar-brand ms-2 fs-5 font-bold d-flex align-items-center">
             <img
-              src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/U25.png`}
+              src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/fest-logo.jpeg`}
               alt="UMANG Logo"
               className="logo-img me-2"
               style={{
