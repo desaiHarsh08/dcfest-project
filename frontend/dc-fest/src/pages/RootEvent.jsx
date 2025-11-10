@@ -80,7 +80,7 @@ const RootEvent = () => {
             {/* Event Content */}
             <Col md={6}>
               <Card className="mb-4">
-                <Card.Body>
+                <Card.Body className="px-3">
                   <Card.Title className="h1">{event?.title}</Card.Title>
                   <Card.Subtitle className="my-3 text-muted" style={{ fontStyle: "italic" }}>
                     {event?.oneLiner}
@@ -142,7 +142,7 @@ const RootEvent = () => {
                             {round.roundType}
                           </Badge>
                           <ListGroup variant="flush" className="mt-3">
-                            <ListGroup.Item className="d-flex justify-content-between">
+                            <ListGroup.Item className={`${window.innerWidth > 767 ? "d-flex justify-content-between" : ""}`}>
                               <div>
                                 <FaMapMarkerAlt className="me-2" />
                                 <strong>{round?.venue}</strong>
