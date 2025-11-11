@@ -107,7 +107,7 @@ const RootEvent = () => {
                         if (rule.eventRuleTemplate?.name?.toLowerCase() != "note") {
                           return (
                             <ListGroup.Item key={index}>
-                              <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
+                              <strong>{rule.eventRuleTemplate.name.replaceAll('_', ' ')}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
                             </ListGroup.Item>
                           );
                         }
