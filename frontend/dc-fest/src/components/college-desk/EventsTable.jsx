@@ -35,6 +35,7 @@ const EventsTable = ({ events, onView, onRemove }) => {
                     key={`event-${index}`}
                     availableEventId={event.availableEventId}
                     collegeId={event?.collegeId}
+                    event={event}
                     onRemove={() => {}}
                   />
                 </>

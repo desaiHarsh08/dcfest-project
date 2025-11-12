@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import com.dcfest.models.ParticipantModel;
 import com.dcfest.repositories.ParticipantRepository;
+import com.dcfest.repositories.AvailableEventRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ public class EventServicesImpl implements EventServices {
 
     @Autowired
     private ParticipantRepository participantRepository;
+
+    @Autowired
+    private AvailableEventRepository availableEventRepository;
 
     @Override
     public EventDto createEvent(EventDto eventDto) {
@@ -61,8 +65,21 @@ public class EventServicesImpl implements EventServices {
         AvailableEventModel availableEventModel = new AvailableEventModel();
         availableEventModel.setId(availableEventId);
 
-        EventModel foundEventModel = this.eventRepository.findByAvailableEvent(availableEventModel).orElseThrow(
-                () -> new ResourceNotFoundException("No `EVENT` exist for available_event_id: " + availableEventId));
+        EventModel foundEventModel = this.eventRepository.findByAvailableEvent(availableEventModel)
+                .orElse(null);
+
+        if (foundEventModel == null) {
+            AvailableEventModel persistedAvailableEventModel = this.availableEventRepository.findById(availableEventId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "No `AVAILABLE_EVENT` exist for id: " + availableEventId));
+
+            EventModel newEventModel = new EventModel();
+            newEventModel.setAvailableEvent(persistedAvailableEventModel);
+            newEventModel.setParticipants(new ArrayList<>());
+            newEventModel.setJudges(new ArrayList<>());
+
+            foundEventModel = this.eventRepository.save(newEventModel);
+        }
 
         return this.eventModelToDto(foundEventModel);
     }

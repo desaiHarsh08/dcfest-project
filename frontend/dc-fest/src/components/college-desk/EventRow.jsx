@@ -9,7 +9,7 @@ import { fetchParticipationByCollegeIdAndAvailableEventId } from "../../services
 import { Badge } from "react-bootstrap";
 import { initWebSocket, subscribeToWaitingListPromotion } from "../../services/websocketService";
 
-const EventRow = ({ index, availableEventId, collegeId }) => {
+const EventRow = ({ index, availableEventId, collegeId,  }) => {
   const [event, setEvent] = useState();
   const [availableEvent, setAvailableEvent] = useState();
   const [participants, setParticipants] = useState([]);
@@ -36,6 +36,7 @@ const EventRow = ({ index, availableEventId, collegeId }) => {
     if (availableEventId) {
       fetchEventByAvailableEventId(availableEventId)
         .then((data) => {
+            console.log("data:", data);
           setEvent(data);
         })
         .catch((err) => {
@@ -122,9 +123,15 @@ const EventRow = ({ index, availableEventId, collegeId }) => {
     );
   }
 
+  
+
   return (
     <tr>
-      <td>{index + 1}</td>
+      <td>{index + 1}
+
+
+        {/* {JSON.stringify(event)} */}
+      </td>
       <td>
         {availableEvent?.eventCategoryId ? (
           <CategoryName categoryId={availableEvent.eventCategoryId} />
@@ -164,7 +171,7 @@ const EventRow = ({ index, availableEventId, collegeId }) => {
         {/* Show View button if college has enrolled (has participation) OR if event exists */}
         {collegeParticipation || event?.id ? (
           <Link 
-            to={event?.id ? `${event.id}` : `${availableEventId}`} 
+            to={`${event?.id}`} 
             className="btn btn-primary text-decoration-none"
           >
             View

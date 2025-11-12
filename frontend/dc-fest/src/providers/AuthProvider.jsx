@@ -77,6 +77,21 @@ export const AuthProvider = ({ children }) => {
 
     const requestInterceptor = API.interceptors.request.use(
       (config) => {
+        // Endpoints that must not receive auth headers
+        const authFreeEndpoints = ["/auth/login", "/auth/register", "/auth/refresh-token", "/auth/forgot-password", "/auth/reset-password"];
+        const requestUrl = config.url || "";
+        const isAuthFree = authFreeEndpoints.some((endpoint) =>
+          requestUrl.startsWith(endpoint) || requestUrl.includes(endpoint)
+        );
+        
+        if (isAuthFree) {
+          delete config.headers["Authorization"];
+          delete config.headers["authorization"];
+          delete config.headers["email"];
+          delete config.headers["Email"];
+          return config;
+        }
+
         // Get the latest token from state or localStorage
         const currentToken = accessToken || localStorage.getItem("accessToken");
         // Get user from state or localStorage

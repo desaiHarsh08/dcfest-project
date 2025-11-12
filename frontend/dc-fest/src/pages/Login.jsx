@@ -94,19 +94,19 @@ const Login = () => {
                     Enter Password :-
                   </Form.Label>
                   <div className="position-relative">
-                    <Form.Control
+                  <Form.Control
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter Password"
-                      value={credentials.password}
-                      onChange={(e) =>
-                        setCredentials((prev) => ({
-                          ...prev,
-                          password: e.target.value,
-                        }))
-                      }
-                      className="border"
+                    placeholder="Enter Password"
+                    value={credentials.password}
+                    onChange={(e) =>
+                      setCredentials((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
+                    className="border"
                       style={{ paddingRight: "40px" }}
-                    />
+                  />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
