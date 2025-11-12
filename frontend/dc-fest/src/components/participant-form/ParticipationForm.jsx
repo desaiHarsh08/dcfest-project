@@ -207,8 +207,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     }
 
     // Check if college is already in waiting list (has waitingListSequence set)
-    const isCollegeInWaitingList = collegeParticipation?.waitingListSequence != null && 
-                                   collegeParticipation.waitingListSequence.startsWith("WL_");
+    const isCollegeInWaitingList = collegeParticipation?.waitingListSequence != null && collegeParticipation.waitingListSequence.startsWith("WL_");
 
     console.log("handleSetDefaultParticipants - collegeParticipation:", collegeParticipation);
     console.log("handleSetDefaultParticipants - isCollegeInWaitingList:", isCollegeInWaitingList);
@@ -220,18 +219,15 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     const maxSlots = registeredSlotsRule ? Number(registeredSlotsRule.value) : null;
     // If waiting list rule is not present, treat it as 0 slots
     const maxWaitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : 0;
-    
+
     // Determine if waiting list should be used
     // Priority: If college is already in waiting list, use WAITING_LIST
     // Otherwise, check if registration is full and waiting list is available
     const isRegistrationFull = slotsOccupied != null && maxSlots != null && slotsOccupied >= maxSlots;
-    const isWaitingListAvailable = isRegistrationFull && 
-                                   maxWaitingListSlots > 0 && 
-                                   waitingListSlotsOccupied != null && 
-                                   waitingListSlotsOccupied < maxWaitingListSlots;
-    
+    const isWaitingListAvailable = isRegistrationFull && maxWaitingListSlots > 0 && waitingListSlotsOccupied != null && waitingListSlotsOccupied < maxWaitingListSlots;
+
     // If college is already in waiting list, use WAITING_LIST; otherwise check slot availability
-    const defaultEntryType = isCollegeInWaitingList ? "WAITING_LIST" : (isWaitingListAvailable ? "WAITING_LIST" : "NORMAL");
+    const defaultEntryType = isCollegeInWaitingList ? "WAITING_LIST" : isWaitingListAvailable ? "WAITING_LIST" : "NORMAL";
 
     console.log("handleSetDefaultParticipants - defaultEntryType:", defaultEntryType);
 
@@ -571,7 +567,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                         )}
                       </div>
                     </div>
-                    <div className="d-flex flex-column  justify-content-center">
+                    <div className="d-flex flex-column justify-content-center mb-3">
                       <Button
                         disabled={!isValid || loading == true}
                         variant="primary"
@@ -585,37 +581,35 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                     </div>
                   </Form>
                 </div>
+                {/* Footer with participant counts - moved inside Card.Body to prevent overlap */}
+                <div className="mt-auto pt-3 border-top" style={{ backgroundColor: "aliceblue", marginTop: "auto" }}>
+                  <ul className="d-flex flex-wrap justify-content-between align-items-center p-0 m-0 py-2 px-3" style={{ listStyle: "none" }}>
+                    <li className="mb-1 mb-md-0">Min. Participants: {selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value || "N/A"}</li>
+                    <li className="mb-1 mb-md-0">
+                      Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} /{" "}
+                      {selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value || "N/A"}
+                    </li>
+                    <li className="mb-1 mb-md-0">
+                      Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} /{" "}
+                      {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value || 0}
+                    </li>
+                    {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS") && (
+                      <li className="mb-1 mb-md-0">
+                        Male: {participants.filter((p) => p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS")?.value}
+                      </li>
+                    )}
+                    {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS") && (
+                      <li className="mb-1 mb-md-0">
+                        Female: {participants.filter((p) => !p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS")?.value}
+                      </li>
+                    )}
+                  </ul>
+                </div>
               </Card.Body>
             </Card>
           </Col>
         </Row>
       </Container>
-
-      <div className="vw-100 position-relative bottom-0 d-flex justify-content-center border">
-        <div className="container position-absolute bottom-0 left-0 border">
-          <ul className="d-flex justify-content-between align-items-center p-0 m-0 py-2 " style={{ listStyle: "none", backgroundColor: "aliceblue" }}>
-            <li>Min. Participants: {selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value || "N/A"}</li>
-            <li>
-              Max. Participants: {participants.filter((p) => p.type == "PERFORMER").length} /{" "}
-              {selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value || "N/A"}
-            </li>
-            <li>
-              Accompanist: {participants.filter((p) => p.type == "ACCOMPANIST").length} /{" "}
-              {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value || 0}
-            </li>
-            {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS") && (
-              <li>
-                Male: {participants.filter((p) => p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MALE_PARTICIPANTS")?.value}
-              </li>
-            )}
-            {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS") && (
-              <li>
-                Female: {participants.filter((p) => !p.male).length} / {selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "FEMALE_PARTICIPANTS")?.value}
-              </li>
-            )}
-          </ul>
-        </div>
-      </div>
     </>
   );
 };

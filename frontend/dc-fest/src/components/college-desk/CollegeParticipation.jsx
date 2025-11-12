@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "../../styles/CollegeParticipation.module.css"; // Import custom styles
 
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
-import { fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
+import { fetchParticipantsByEventIdAndCollegeId, fetchParticipantsByCollegeId } from "../../services/participants-api";
 
 const CollegeParticipation = ({ participations }) => {
   console.log("in cp, participations:", participations);
@@ -11,28 +11,63 @@ const CollegeParticipation = ({ participations }) => {
 
   useEffect(() => {
     if (participations && participations.length > 0) {
-      // Fetch participants for each event in the participations list
       const fetchAllParticipants = async () => {
-        let totalCount = 0;
         const collegeId = participations[0]?.collegeId;
-
-        for (const participation of participations) {
-          try {
-            // Fetch event by availableEventId
-            const event = await fetchEventByAvailableEventId(participation.availableEventId);
-            if (event?.id && collegeId) {
-              // Fetch participants for this specific event and college
-              const participants = await fetchParticipantsByEventIdAndCollegeId(event.id, collegeId);
-              totalCount += participants.length;
-            }
-          } catch (error) {
-            console.error(`Error fetching participants for event ${participation.availableEventId}:`, error);
-            // Continue with other events even if one fails
-          }
+        if (!collegeId) {
+          setTotalParticipants(0);
+          return;
         }
 
-        console.log("in college_participations, total participants count:", totalCount);
-        setTotalParticipants(totalCount);
+        try {
+          // Fetch all participants for the college (single API call)
+          const allCollegeParticipants = await fetchParticipantsByCollegeId(collegeId);
+
+          if (!Array.isArray(allCollegeParticipants) || allCollegeParticipants.length === 0) {
+            setTotalParticipants(0);
+            return;
+          }
+
+          // Fetch all events in parallel (fastest approach)
+          const eventPromises = participations.map((p) => fetchEventByAvailableEventId(p.availableEventId).catch(() => null));
+          const events = await Promise.all(eventPromises);
+
+          // Build set of enrolled event IDs
+          const enrolledEventIds = new Set();
+          events.forEach((event) => {
+            if (event?.id) enrolledEventIds.add(event.id);
+          });
+
+          // Count participants whose eventIds match enrolled events
+          const totalCount = allCollegeParticipants.filter((participant) => {
+            const participantEventIds = participant.eventIds || [];
+            return participantEventIds.some((eventId) => enrolledEventIds.has(eventId));
+          }).length;
+
+          setTotalParticipants(totalCount);
+        } catch (error) {
+          console.error("Error fetching participant count:", error);
+          // Fallback: count per event in parallel
+          try {
+            const counts = await Promise.allSettled(
+              participations.map(async (p) => {
+                try {
+                  const event = await fetchEventByAvailableEventId(p.availableEventId);
+                  if (event?.id) {
+                    const participants = await fetchParticipantsByEventIdAndCollegeId(event.id, collegeId);
+                    return Array.isArray(participants) ? participants.length : 0;
+                  }
+                  return 0;
+                } catch {
+                  return 0;
+                }
+              })
+            );
+            const totalCount = counts.reduce((sum, r) => sum + (r.status === "fulfilled" ? r.value : 0), 0);
+            setTotalParticipants(totalCount);
+          } catch {
+            setTotalParticipants(0);
+          }
+        }
       };
 
       fetchAllParticipants();
