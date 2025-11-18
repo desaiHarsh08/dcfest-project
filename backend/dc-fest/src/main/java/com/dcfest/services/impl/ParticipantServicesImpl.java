@@ -240,7 +240,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
         EventRuleModel waitingListSlotsEventRule = eventRuleModels.stream()
                 .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS")).findAny()
                 .orElse(null);
-        // WAITING_LIST_SLOTS is optional - if it doesn't exist, waiting list is not available
+        // WAITING_LIST_SLOTS is optional - if it doesn't exist, waiting list is not
+        // available
 
         // Check for enrollment
         List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository
@@ -282,13 +283,18 @@ public class ParticipantServicesImpl implements ParticipantServices {
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeId(
                 participantDtos.get(0).getEventIds().get(0), participantDtos.get(0).getCollegeId());
 
-        // Check if trying to add NORMAL entry type when college already has NORMAL
-        // participants
+        // Check if trying to add NORMAL entry type PERFORMER when college already has
+        // NORMAL PERFORMER participants
+        // Note: ACCOMPANIST participants are allowed even if NORMAL PERFORMER
+        // participants exist
         EntryType requestedEntryType = participantDtos.get(0).getEntryType();
-        if (EntryType.NORMAL.equals(requestedEntryType) && !participantModels.isEmpty()) {
-            boolean hasNormalParticipants = participantModels.stream()
-                    .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType()));
-            if (hasNormalParticipants) {
+        ParticipantType requestedParticipantType = participantDtos.get(0).getType();
+        if (EntryType.NORMAL.equals(requestedEntryType) && ParticipantType.PERFORMER.equals(requestedParticipantType)
+                && !participantModels.isEmpty()) {
+            boolean hasNormalPerformers = participantModels.stream()
+                    .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType())
+                            && ParticipantType.PERFORMER.equals(p.getType()));
+            if (hasNormalPerformers) {
                 throw new IllegalArgumentException(
                         "Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
             }
@@ -311,7 +317,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
                         Long waitingListSlotsOccupiedCount = this
                                 .waitingListSlotsOccupiedByAvailableEventId(availableEventModel.getId());
 
-                        if (waitingListSlotsOccupiedCount != null && waitingListSlotsOccupiedCount < maxWaitingListSlots) {
+                        if (waitingListSlotsOccupiedCount != null
+                                && waitingListSlotsOccupiedCount < maxWaitingListSlots) {
                             // Waiting list is available, but EntryType is NORMAL - this should be handled
                             // by frontend
                             // For now, allow it and backend will set it to WAITING_LIST based on QuotaType
@@ -350,7 +357,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
                         throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
                     }
                 }
-                // If EntryType is WAITING_LIST, allow it to proceed (no additional checks needed)
+                // If EntryType is WAITING_LIST, allow it to proceed (no additional checks
+                // needed)
 
             }
         }
@@ -537,15 +545,19 @@ public class ParticipantServicesImpl implements ParticipantServices {
             this.collegeParticipationRepository.save(newParticipation);
         }
 
-        // Check if trying to add NORMAL entry type when college already has NORMAL
-        // participants
+        // Check if trying to add NORMAL entry type PERFORMER when college already has
+        // NORMAL PERFORMER participants
+        // Note: ACCOMPANIST participants are allowed even if NORMAL PERFORMER
+        // participants exist
         EntryType requestedEntryType = participantDto.getEntryType();
-        if (EntryType.NORMAL.equals(requestedEntryType)) {
+        ParticipantType requestedParticipantType = participantDto.getType();
+        if (EntryType.NORMAL.equals(requestedEntryType) && ParticipantType.PERFORMER.equals(requestedParticipantType)) {
             List<ParticipantModel> existingParticipants = this.participantRepository.findByEvent_IdAndCollegeId(
                     participantDto.getEventIds().get(0), participantDto.getCollegeId());
-            boolean hasNormalParticipants = existingParticipants.stream()
-                    .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType()));
-            if (hasNormalParticipants) {
+            boolean hasNormalPerformers = existingParticipants.stream()
+                    .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType())
+                            && ParticipantType.PERFORMER.equals(p.getType()));
+            if (hasNormalPerformers) {
                 throw new IllegalArgumentException(
                         "Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
             }

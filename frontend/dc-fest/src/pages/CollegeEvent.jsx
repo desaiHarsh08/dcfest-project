@@ -111,8 +111,18 @@ const CollegeEvent = () => {
       const fetchParticipants = async () => {
         try {
           const response = await fetchParticipantsByEventIdAndCollegeId(eventId, college.id);
+          console.log("Fetched participants from API:", response);
+          // Verify each participant has an id
+          response.forEach((p, index) => {
+            console.log(`Participant ${index} - id:`, p.id, "full object keys:", Object.keys(p));
+            if (!p.id && p.id !== 0) {
+              console.error(`WARNING: Participant at index ${index} is missing id field:`, p);
+              console.error("Participant object structure:", JSON.stringify(p, null, 2));
+            } else {
+              console.log(`✓ Participant ${index} has id:`, p.id);
+            }
+          });
           setParticipants(response);
-          console.log(response);
         } catch (error) {
           console.error(error);
         }
@@ -124,8 +134,14 @@ const CollegeEvent = () => {
   const getParticipants = async () => {
     try {
       const response = await fetchParticipantsByEventIdAndCollegeId(eventId, college.id);
+      console.log("Refetched participants from API:", response);
+      // Verify each participant has an id
+      response.forEach((p, index) => {
+        if (!p.id) {
+          console.error(`WARNING: Participant at index ${index} is missing id field:`, p);
+        }
+      });
       setParticipants(response);
-      console.log(response);
     } catch (error) {
       console.error(error);
     }
@@ -189,24 +205,46 @@ const CollegeEvent = () => {
       const numericValue = value.replace(/\D/g, "");
       // Limit to 10 digits
       if (numericValue.length <= 10) {
-        setSelectedParticipant((prev) => ({ ...prev, [name]: numericValue }));
+        setSelectedParticipant((prev) => {
+          // Explicitly preserve the id field
+          const updated = { ...prev, [name]: numericValue };
+          if (prev.id !== undefined) {
+            updated.id = prev.id;
+          }
+          return updated;
+        });
       }
       return;
     }
 
     // Validate email - basic email pattern
     if (name === "email") {
-      setSelectedParticipant((prev) => ({ ...prev, [name]: value }));
+      setSelectedParticipant((prev) => {
+        // Explicitly preserve the id field
+        const updated = { ...prev, [name]: value };
+        if (prev.id !== undefined) {
+          updated.id = prev.id;
+        }
+        return updated;
+      });
       return;
     }
 
     setSelectedParticipant((prev) => {
-      if (name == "male") {
-        console.log({ ...prev, male: Boolean(value) });
-        return { ...prev, male: Boolean(value) };
+      // Explicitly preserve the id field
+      const updated = { ...prev };
+      if (prev.id !== undefined) {
+        updated.id = prev.id;
       }
-      console.log({ ...prev, [name]: value });
-      return { ...prev, [name]: value };
+      
+      if (name == "male") {
+        updated.male = Boolean(value);
+        console.log("Updated participant:", updated);
+        return updated;
+      }
+      updated[name] = value;
+      console.log("Updated participant:", updated);
+      return updated;
     });
   };
 
@@ -398,15 +436,30 @@ const CollegeEvent = () => {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
-    console.log("Im in handle Save", isValid);
+    console.log("=== HANDLE SAVE CALLED ===");
+    console.log("isValid:", isValid);
+    console.log("selectedParticipant before validation:", selectedParticipant);
+    console.log("selectedParticipant.id:", selectedParticipant?.id);
+    
     if (!handleRuleChecks(true)) {
       return;
     }
 
-    console.log("here in after if");
+    // Ensure participant has an ID before attempting to update
+    if (!selectedParticipant?.id && selectedParticipant?.id !== 0) {
+      console.error("ERROR: Cannot update participant - missing ID");
+      console.error("selectedParticipant object:", selectedParticipant);
+      console.error("selectedParticipant keys:", Object.keys(selectedParticipant || {}));
+      console.error("Full object:", JSON.stringify(selectedParticipant, null, 2));
+      alert("Unable to save: Participant ID is missing. Please try again or refresh the page.");
+      return;
+    }
+
+    console.log("✓ Participant has ID:", selectedParticipant.id);
     setLoadingSave(true);
     try {
-      console.log("saving, selectedParticipant:", selectedParticipant);
+      console.log("Saving participant with id:", selectedParticipant.id);
+      console.log("Full participant object being sent:", selectedParticipant);
       const response = await updateParticipant(selectedParticipant);
       console.log(response);
       getParticipants();
@@ -723,7 +776,26 @@ const CollegeEvent = () => {
                               className="btn btn-success btn-sm"
                               onClick={() => {
                                 handleShow();
-                                setSelectedParticipant(participant);
+                                console.log("=== EDIT BUTTON CLICKED ===");
+                                console.log("Participant from array:", participant);
+                                console.log("Participant id:", participant?.id);
+                                console.log("Participant keys:", Object.keys(participant || {}));
+                                console.log("All participants in state:", participants);
+                                
+                                // Ensure we preserve all fields including id
+                                const participantWithId = { ...participant };
+                                console.log("Participant after spread:", participantWithId);
+                                console.log("Has id after spread?", participantWithId.id !== undefined, "value:", participantWithId.id);
+                                
+                                if (!participantWithId.id && participantWithId.id !== 0) {
+                                  console.error("ERROR: Participant object missing id field!", participant);
+                                  console.error("Full participant object:", JSON.stringify(participant, null, 2));
+                                  alert("Error: Participant ID is missing. Cannot edit this participant. Please refresh the page.");
+                                  return;
+                                }
+                                
+                                console.log("Setting selectedParticipant with id:", participantWithId.id);
+                                setSelectedParticipant(participantWithId);
                                 setAddFlag(false);
                               }}
                             >

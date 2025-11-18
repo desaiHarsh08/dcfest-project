@@ -436,6 +436,27 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     }
   };
 
+  // Helper function to determine the correct entry type based on college waiting list status
+  const getEntryTypeForNewParticipant = () => {
+    // Check if college is already in waiting list (has waitingListSequence set)
+    const isCollegeInWaitingList = collegeParticipation?.waitingListSequence != null && collegeParticipation.waitingListSequence.startsWith("WL_");
+
+    if (isCollegeInWaitingList) {
+      return "WAITING_LIST";
+    }
+
+    // Check if registration slots are full and waiting list should be used
+    const registeredSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate?.name === "REGISTERED_SLOTS_AVAILABLE");
+    const waitingListSlotsRule = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate?.name === "WAITING_LIST_SLOTS");
+    const maxSlots = registeredSlotsRule ? Number(registeredSlotsRule.value) : null;
+    const maxWaitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : 0;
+
+    const isRegistrationFull = slotsOccupied != null && maxSlots != null && slotsOccupied >= maxSlots;
+    const isWaitingListAvailable = isRegistrationFull && maxWaitingListSlots > 0 && waitingListSlotsOccupied != null && waitingListSlotsOccupied < maxWaitingListSlots;
+
+    return isWaitingListAvailable ? "WAITING_LIST" : "NORMAL";
+  };
+
   const handleAddParticipant = () => {
     if (!selectedAvailableEvent) return;
     // Grab the event_rule for `MAX_PARTICIPANTS`
@@ -446,7 +467,16 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     const maxMarticipants = selectedAvailableEvent?.eventRules?.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
 
     if (participants.filter((p) => p.type == "PERFORMER").length < maxMarticipants) {
-      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj }]);
+      const entryType = getEntryTypeForNewParticipant();
+      setParticipants((prevParticipants) => [
+        ...prevParticipants,
+        {
+          ...participantObj,
+          entryType: entryType,
+          isWaitingListAvailable: entryType === "WAITING_LIST",
+          isWaitingListForced: entryType === "WAITING_LIST",
+        },
+      ]);
     }
   };
 
@@ -459,7 +489,17 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
     // Check if the number of participants are <= event_rule's value
     const accompanist = eventRule?.value;
     if (participants.filter((p) => p.type == "ACCOMPANIST").length < accompanist) {
-      setParticipants((prevParticipants) => [...prevParticipants, { ...participantObj, type: "ACCOMPANIST" }]);
+      const entryType = getEntryTypeForNewParticipant();
+      setParticipants((prevParticipants) => [
+        ...prevParticipants,
+        {
+          ...participantObj,
+          type: "ACCOMPANIST",
+          entryType: entryType,
+          isWaitingListAvailable: entryType === "WAITING_LIST",
+          isWaitingListForced: entryType === "WAITING_LIST",
+        },
+      ]);
     }
   };
 

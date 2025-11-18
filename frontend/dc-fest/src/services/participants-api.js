@@ -91,7 +91,11 @@ export const fetchParticipantsByEventIdAndCollegeId = async (eventId, collegeId)
 
 export const updateParticipant = async (participant) => {
     console.log("in api, participant:", participant);
-    const response = await API.put(`/api/participants/${participant?.id}`, participant, {
+    if (!participant?.id) {
+        console.error("updateParticipant: participant ID is missing", participant);
+        throw new Error("Cannot update participant: ID is missing");
+    }
+    const response = await API.put(`/api/participants/${participant.id}`, participant, {
         withCredentials: true,
     });
 
