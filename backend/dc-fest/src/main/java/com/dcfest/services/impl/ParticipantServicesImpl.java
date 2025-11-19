@@ -289,8 +289,19 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // participants exist
         EntryType requestedEntryType = participantDtos.get(0).getEntryType();
         ParticipantType requestedParticipantType = participantDtos.get(0).getType();
+        String requestedTeamNumber = participantDtos.get(0).getTeamNumber();
+        String requestedGroup = participantDtos.get(0).getGroup();
+        String existingTeamNumber = participantModels.stream().map(ParticipantModel::getTeamNumber)
+                .filter(Objects::nonNull).findFirst().orElse(null);
+        String existingGroup = participantModels.stream().map(ParticipantModel::getGroup)
+                .filter(Objects::nonNull).findFirst().orElse(null);
+        boolean isSameTeamNumber = (existingTeamNumber == null && requestedTeamNumber == null)
+                || (existingTeamNumber != null && existingTeamNumber.equals(requestedTeamNumber));
+        boolean isSameGroup = (existingGroup == null && requestedGroup == null)
+                || (existingGroup != null && existingGroup.equals(requestedGroup));
+        boolean isExistingTeam = isSameTeamNumber || isSameGroup;
         if (EntryType.NORMAL.equals(requestedEntryType) && ParticipantType.PERFORMER.equals(requestedParticipantType)
-                && !participantModels.isEmpty()) {
+                && !participantModels.isEmpty() && !isExistingTeam) {
             boolean hasNormalPerformers = participantModels.stream()
                     .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType())
                             && ParticipantType.PERFORMER.equals(p.getType()));
@@ -551,15 +562,29 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // participants exist
         EntryType requestedEntryType = participantDto.getEntryType();
         ParticipantType requestedParticipantType = participantDto.getType();
+        String requestedTeamNumber = participantDto.getTeamNumber();
+        String requestedGroup = participantDto.getGroup();
         if (EntryType.NORMAL.equals(requestedEntryType) && ParticipantType.PERFORMER.equals(requestedParticipantType)) {
             List<ParticipantModel> existingParticipants = this.participantRepository.findByEvent_IdAndCollegeId(
                     participantDto.getEventIds().get(0), participantDto.getCollegeId());
-            boolean hasNormalPerformers = existingParticipants.stream()
-                    .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType())
-                            && ParticipantType.PERFORMER.equals(p.getType()));
-            if (hasNormalPerformers) {
-                throw new IllegalArgumentException(
-                        "Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
+            String existingTeamNumber = existingParticipants.stream().map(ParticipantModel::getTeamNumber)
+                    .filter(Objects::nonNull).findFirst().orElse(null);
+            String existingGroup = existingParticipants.stream().map(ParticipantModel::getGroup)
+                    .filter(Objects::nonNull)
+                    .findFirst().orElse(null);
+            boolean isSameTeamNumber = (existingTeamNumber == null && requestedTeamNumber == null)
+                    || (existingTeamNumber != null && existingTeamNumber.equals(requestedTeamNumber));
+            boolean isSameGroup = (existingGroup == null && requestedGroup == null)
+                    || (existingGroup != null && existingGroup.equals(requestedGroup));
+            boolean isExistingTeam = isSameTeamNumber || isSameGroup;
+            if (!existingParticipants.isEmpty() && !isExistingTeam) {
+                boolean hasNormalPerformers = existingParticipants.stream()
+                        .anyMatch(p -> EntryType.NORMAL.equals(p.getEntryType())
+                                && ParticipantType.PERFORMER.equals(p.getType()));
+                if (hasNormalPerformers) {
+                    throw new IllegalArgumentException(
+                            "Your college has already added participants with NORMAL entry type. Only one NORMAL entry is allowed per college. You can add OTSE or WAITING_LIST entry types instead.");
+                }
             }
         }
 
