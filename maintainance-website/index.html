@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Site Under Maintenance - Umang Fest 2025</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-radius: 32px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        max-width: 1100px;
+        max-height: 90vh;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out;
+        position: relative;
+        z-index: 1;
+        margin: auto;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .illustration-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 30px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .illustration-section::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.1), transparent);
+      }
+
+      .illustration-container {
+        width: 100%;
+        max-width: 400px;
+        animation: float 4s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) scale(1);
+        }
+        50% {
+          transform: translateY(-15px) scale(1.02);
+        }
+      }
+
+      .illustration-container img {
+        width: 100%;
+        height: auto;
+        display: block;
+        filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.1));
+        object-fit: contain;
+      }
+
+      .content-section {
+        padding: 40px 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .website-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 12px;
+        letter-spacing: -0.3px;
+      }
+
+      .badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        color: #1a1a1a;
+        margin-bottom: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+      }
+
+      .divider {
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        margin: 16px 0;
+        border-radius: 2px;
+      }
+
+      .maintenance-message {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: #4a5568;
+        margin-bottom: 20px;
+        font-weight: 400;
+      }
+
+      .date-time-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 18px 28px;
+        border-radius: 16px;
+        margin: 20px 0;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .date-time-box::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scale(1.1);
+          opacity: 0.8;
+        }
+      }
+
+      .date-time-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        opacity: 0.9;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .date-time-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1.3;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      .apology {
+        font-size: 0.95rem;
+        color: #718096;
+        margin-top: 16px;
+        font-style: italic;
+        font-weight: 400;
+      }
+
+      /* Large Tablets and Small Desktops */
+      @media (max-width: 1200px) {
+        .container {
+          max-width: 1000px;
+        }
+
+        .illustration-section {
+          padding: 25px 35px;
+        }
+
+        .content-section {
+          padding: 35px 45px;
+        }
+      }
+
+      /* Tablets */
+      @media (max-width: 968px) {
+        body {
+          padding: 15px;
+        }
+
+        .container {
+          grid-template-columns: 1fr;
+          max-width: 600px;
+          border-radius: 28px;
+        }
+
+        .illustration-section {
+          padding: 30px 30px;
+          min-height: 250px;
+        }
+
+        .illustration-section::after {
+          display: none;
+        }
+
+        .content-section {
+          padding: 30px 35px;
+          align-items: center;
+          text-align: center;
+        }
+
+        .website-name {
+          font-size: 1.3rem;
+          text-align: center;
+        }
+
+        h1 {
+          font-size: 2.5rem;
+        }
+
+        .divider {
+          margin: 30px auto;
+        }
+
+        .date-time-box {
+          width: 100%;
+          max-width: 100%;
+        }
+      }
+
+      /* Small Tablets and Large Phones */
+      @media (max-width: 768px) {
+        body {
+          padding: 12px;
+        }
+
+        .container {
+          border-radius: 24px;
+        }
+
+        .illustration-section {
+          padding: 25px 25px;
+          min-height: 200px;
+        }
+
+        .content-section {
+          padding: 30px 30px;
+        }
+
+        .website-name {
+          font-size: 1.2rem;
+        }
+
+        h1 {
+          font-size: 2.25rem;
+        }
+
+        .maintenance-message {
+          font-size: 1.05rem;
+        }
+
+        .date-time-box {
+          padding: 22px 28px;
+        }
+
+        .date-time-value {
+          font-size: 1.6rem;
+        }
+      }
+
+      /* Phones */
+      @media (max-width: 640px) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          border-radius: 20px;
+        }
+
+        .illustration-section {
+          padding: 35px 25px;
+          min-height: 220px;
+        }
+
+        .content-section {
+          padding: 40px 30px;
+        }
+
+        .website-name {
+          font-size: 1.1rem;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        .maintenance-message {
+          font-size: 1rem;
+        }
+
+        .date-time-box {
+          padding: 20px 24px;
+          margin: 25px 0;
+        }
+
+        .date-time-value {
+          font-size: 1.5rem;
+        }
+
+        .badge {
+          font-size: 0.75rem;
+          padding: 6px 16px;
+          margin-bottom: 25px;
+        }
+
+        .apology {
+          font-size: 0.95rem;
+          margin-top: 25px;
+        }
+      }
+
+      /* Small Phones */
+      @media (max-width: 480px) {
+        body {
+          padding: 8px;
+        }
+
+        .container {
+          border-radius: 18px;
+        }
+
+        .illustration-section {
+          padding: 30px 20px;
+          min-height: 200px;
+        }
+
+        .content-section {
+          padding: 35px 25px;
+        }
+
+        .website-name {
+          font-size: 1rem;
+          margin-bottom: 15px;
+        }
+
+        h1 {
+          font-size: 1.75rem;
+          margin-bottom: 15px;
+        }
+
+        .maintenance-message {
+          font-size: 0.95rem;
+          margin-bottom: 25px;
+        }
+
+        .date-time-box {
+          padding: 18px 20px;
+          margin: 20px 0;
+        }
+
+        .date-time-label {
+          font-size: 0.8rem;
+          margin-bottom: 6px;
+        }
+
+        .date-time-value {
+          font-size: 1.25rem;
+        }
+
+        .badge {
+          font-size: 0.7rem;
+          padding: 5px 14px;
+          margin-bottom: 20px;
+        }
+
+        .divider {
+          width: 50px;
+          margin: 25px auto;
+        }
+
+        .apology {
+          font-size: 0.9rem;
+          margin-top: 20px;
+        }
+      }
+
+      /* Very Small Phones */
+      @media (max-width: 360px) {
+        body {
+          padding: 5px;
+        }
+
+        .container {
+          border-radius: 16px;
+        }
+
+        .illustration-section {
+          padding: 25px 15px;
+          min-height: 180px;
+        }
+
+        .content-section {
+          padding: 30px 20px;
+        }
+
+        .website-name {
+          font-size: 0.95rem;
+          margin-bottom: 12px;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+          line-height: 1.3;
+        }
+
+        .maintenance-message {
+          font-size: 0.9rem;
+          line-height: 1.6;
+        }
+
+        .date-time-box {
+          padding: 16px 18px;
+        }
+
+        .date-time-label {
+          font-size: 0.75rem;
+        }
+
+        .date-time-value {
+          font-size: 1.1rem;
+        }
+
+        .badge {
+          font-size: 0.65rem;
+          padding: 4px 12px;
+        }
+
+        .apology {
+          font-size: 0.85rem;
+        }
+      }
+
+      /* Landscape Orientation for Phones */
+      @media (max-width: 896px) and (orientation: landscape) and (max-height: 500px) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          max-width: 900px;
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .illustration-section {
+          padding: 30px 25px;
+          min-height: auto;
+        }
+
+        .content-section {
+          padding: 40px 35px;
+          align-items: flex-start;
+          text-align: left;
+        }
+
+        .website-name {
+          font-size: 1.1rem;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        .divider {
+          margin: 25px 0;
+        }
+
+        .date-time-box {
+          padding: 18px 24px;
+        }
+
+        .date-time-value {
+          font-size: 1.4rem;
+        }
+      }
+
+      /* Large Screens */
+      @media (min-width: 1400px) {
+        .container {
+          max-width: 1200px;
+        }
+
+        .illustration-section {
+          padding: 70px 60px;
+        }
+
+        .content-section {
+          padding: 90px 70px;
+        }
+
+        .website-name {
+          font-size: 1.75rem;
+        }
+
+        h1 {
+          font-size: 3.5rem;
+        }
+
+        .maintenance-message {
+          font-size: 1.25rem;
+        }
+
+        .date-time-value {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="illustration-section">
+        <div class="illustration-container">
+          <img
+            src="system-update-illustration-concept-people-update-operation-system-can-use-for-landing-page-template-ui-web-mobile-app-poster-banner-vector.jpg"
+            alt="System Maintenance Illustration"
+          />
+        </div>
+      </div>
+
+      <div class="content-section">
+        <div class="website-name">Umang Fest 2025</div>
+        <span class="badge">Maintenance Mode</span>
+        <h1>We'll Be Back Soon</h1>
+        <div class="divider"></div>
+        <p class="maintenance-message">This site is under maintenance. Please visit us back on</p>
+        <div class="date-time-box">
+          <div class="date-time-label">Expected Return</div>
+          <div class="date-time-value">24th November 2025<br />after 11 AM</div>
+        </div>
+        <p class="apology">Inconvenience caused is regretted.</p>
+      </div>
+    </div>
+  </body>
+</html>
