@@ -323,6 +323,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
             this.participantRepository.save(participantModel);
         }
 
+        this.ensureScoreCardExists(existingCollegeParticipationModel, roundModel, group, teamNumber);
+
         participantModels = participantModels.stream().filter(ParticipantModel::isPresent).collect(Collectors.toList());
 
         // Create the attendance for the participants
@@ -419,6 +421,50 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         InputStreamSource attachmentSource = new ByteArrayResource(pdfBytes);
 
         return attachmentSource;
+    }
+
+    private void ensureScoreCardExists(CollegeParticipationModel collegeParticipationModel, RoundModel roundModel,
+            String group, String teamNumber) {
+        List<ScoreCardModel> existingScoreCards = this.scoreCardRepository
+                .findByCollegeParticipationAndRoundAndTeamNumber(collegeParticipationModel, roundModel, group);
+
+        Integer slot = this.deriveSlotFromTeamNumber(teamNumber);
+
+        if (existingScoreCards.isEmpty()) {
+            ScoreCardDto scoreCardDto = new ScoreCardDto();
+            scoreCardDto.setCollegeParticipationId(collegeParticipationModel.getId());
+            scoreCardDto.setRoundId(roundModel.getId());
+            scoreCardDto.setTeamNumber(group);
+            scoreCardDto.setSlot(slot);
+
+            List<ScoreParameterDto> scoreParameterDtos = new ArrayList<>();
+            for (int i = 0; i < 4; i++) {
+                scoreParameterDtos.add(new ScoreParameterDto(null, "", null, null));
+            }
+            scoreCardDto.setScoreParameters(scoreParameterDtos);
+
+            this.scoreCardServices.createScoreCard(scoreCardDto);
+        } else {
+            for (ScoreCardModel scoreCardModel : existingScoreCards) {
+                scoreCardModel.setTeamNumber(group);
+                scoreCardModel.setSlot(slot);
+                this.scoreCardRepository.save(scoreCardModel);
+            }
+        }
+    }
+
+    private Integer deriveSlotFromTeamNumber(String teamNumber) {
+        if (teamNumber == null || !teamNumber.contains("_")) {
+            return null;
+        }
+
+        String[] parts = teamNumber.split("_");
+        String suffix = parts[parts.length - 1];
+        try {
+            return Integer.parseInt(suffix);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private String generateRandomAlphanumeric() {

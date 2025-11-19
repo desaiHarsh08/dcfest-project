@@ -22,4 +22,6 @@ public interface CollegeParticipationService {
 
     List<CollegeParticipationDto> getInterestedColleges();
 
+    void realignWaitlistForAvailableEvent(Long availableEventId);
+
 }

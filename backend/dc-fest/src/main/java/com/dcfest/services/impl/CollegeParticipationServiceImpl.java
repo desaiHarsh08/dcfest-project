@@ -347,6 +347,22 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void realignWaitlistForAvailableEvent(Long availableEventId) {
+        AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId)
+                .orElse(null);
+        if (availableEventModel == null) {
+            return;
+        }
+
+        EventModel eventModel = this.eventRepository.findByAvailableEvent(availableEventModel).orElse(null);
+        if (eventModel == null) {
+            return;
+        }
+
+        this.promoteWaitingListParticipant(eventModel, availableEventModel);
+    }
+
     /**
      * Updates waiting list sequences after a college in the waiting list is
      * deleted.

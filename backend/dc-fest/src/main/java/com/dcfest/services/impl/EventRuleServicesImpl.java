@@ -1,6 +1,7 @@
 package com.dcfest.services.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import com.dcfest.exceptions.ResourceNotFoundException;
 import com.dcfest.models.AvailableEventModel;
 import com.dcfest.models.EventRuleModel;
 import com.dcfest.repositories.EventRuleRepository;
+import com.dcfest.services.CollegeParticipationService;
 import com.dcfest.services.EventRuleServices;
 
 @Service
@@ -22,6 +24,9 @@ public class EventRuleServicesImpl implements EventRuleServices {
     @Autowired
     private EventRuleRepository eventRuleRepository;
 
+    @Autowired
+    private CollegeParticipationService collegeParticipationService;
+
     @Override
     public EventRuleDto createEventRule(EventRuleDto eventRuleDto) {
         AvailableEventModel availableEventModel = new AvailableEventModel();
@@ -32,6 +37,8 @@ public class EventRuleServicesImpl implements EventRuleServices {
 
         // Save the event_rule
         eventRuleModel = this.eventRuleRepository.save(eventRuleModel);
+
+        this.triggerWaitlistRealignmentIfNeeded(eventRuleModel);
 
         return this.eventRuleModelToDto(eventRuleModel);
     }
@@ -70,8 +77,9 @@ public class EventRuleServicesImpl implements EventRuleServices {
         foundEventRuleModel.setValue(eventRuleDto.getValue());
         // Save the changes
         foundEventRuleModel = this.eventRuleRepository.save(foundEventRuleModel);
-        
-        
+
+        this.triggerWaitlistRealignmentIfNeeded(foundEventRuleModel);
+
         return this.eventRuleModelToDto(foundEventRuleModel);
     }
 
@@ -101,6 +109,24 @@ public class EventRuleServicesImpl implements EventRuleServices {
         eventRuleDto.setAvailableEventId(eventRuleModel.getAvailableEvent().getId());
 
         return eventRuleDto;
+    }
+
+    private void triggerWaitlistRealignmentIfNeeded(EventRuleModel eventRuleModel) {
+        if (eventRuleModel == null || eventRuleModel.getEventRuleTemplate() == null
+                || eventRuleModel.getAvailableEvent() == null) {
+            return;
+        }
+
+        String templateName = eventRuleModel.getEventRuleTemplate().getName();
+        if (templateName == null) {
+            return;
+        }
+
+        Set<String> autoRealignRules = Set.of("REGISTERED_SLOTS_AVAILABLE", "WAITING_LIST_SLOTS");
+        if (autoRealignRules.contains(templateName.toUpperCase())) {
+            this.collegeParticipationService
+                    .realignWaitlistForAvailableEvent(eventRuleModel.getAvailableEvent().getId());
+        }
     }
 
 }
