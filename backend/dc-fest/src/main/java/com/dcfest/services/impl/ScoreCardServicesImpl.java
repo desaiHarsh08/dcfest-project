@@ -58,6 +58,9 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
     @Autowired
     private EventCategoryRepository eventCategoryRepository;
 
+    @Autowired
+    private EventRuleRepository eventRuleRepository;
+
     @Override
     public List<ScoreCardDto> getScoresForCollegeParticipations(Long availableEventId, Long roundId) {
         RoundModel roundModel = this.roundRepository.findById(roundId).orElseThrow(
@@ -391,29 +394,25 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
             throw new IllegalArgumentException("Invalid team");
         }
 
+        // Determine event type based on MIN_PARTICIPANTS and MAX_PARTICIPANTS rules
+        String eventType = determineEventType(availableEventModel);
+
         Integer totalPoints = 0;
-        // If Normal team, add points: 2
+        // If Normal team, add participation points: 2
         if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
             totalPoints += 2;
         }
 
+        // Add rank points based on event type
         if (scoreCardDto.getRank() != null) {
-            switch (scoreCardDto.getRank()) {
-                case 1:
-                    totalPoints += 20;
-                    break;
-                case 2:
-                    totalPoints += 15;
-                    break;
-                case 3:
-                    totalPoints += 10;
-            }
-
+            int rankPoints = getRankPoints(eventType, scoreCardDto.getRank());
+            totalPoints += rankPoints;
             scoreCardModel.setRank(scoreCardDto.getRank());
         } else {
             scoreCardModel.setRank(null);
         }
 
+        // Set final points (0 for OTSE teams)
         if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
             scoreCardModel.setPoints(totalPoints);
         } else {
@@ -433,6 +432,111 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         this.collegeRepository.save(collegeModel);
 
         return this.mapToDto(scoreCardModel);
+    }
+
+    /**
+     * Determines the event type (SOLO, DUET, or GROUP) based on MIN_PARTICIPANTS
+     * and MAX_PARTICIPANTS rules
+     * 
+     * @param availableEventModel The available event model
+     * @return Event type: "SOLO", "DUET", or "GROUP"
+     */
+    private String determineEventType(AvailableEventModel availableEventModel) {
+        List<EventRuleModel> eventRules = this.eventRuleRepository.findByAvailableEvent(availableEventModel);
+
+        Integer minParticipants = null;
+        Integer maxParticipants = null;
+
+        for (EventRuleModel rule : eventRules) {
+            if (rule.getEventRuleTemplate() != null) {
+                String ruleName = rule.getEventRuleTemplate().getName();
+                if ("MIN_PARTICIPANTS".equals(ruleName)) {
+                    try {
+                        minParticipants = Integer.parseInt(rule.getValue());
+                    } catch (NumberFormatException e) {
+                        // Invalid value, skip
+                    }
+                } else if ("MAX_PARTICIPANTS".equals(ruleName)) {
+                    try {
+                        maxParticipants = Integer.parseInt(rule.getValue());
+                    } catch (NumberFormatException e) {
+                        // Invalid value, skip
+                    }
+                }
+            }
+        }
+
+        // Determine event type based on rules
+        if (minParticipants != null && maxParticipants != null) {
+            if (minParticipants == 1 && maxParticipants == 1) {
+                return "SOLO";
+            } else if (minParticipants == 2 && maxParticipants == 2) {
+                return "DUET";
+            } else if (minParticipants > 1 && maxParticipants > 1) {
+                // GROUP: both min and max are greater than 1 (but not both = 1 or both = 2)
+                return "GROUP";
+            }
+        }
+
+        // Default to GROUP if rules are not clear
+        return "GROUP";
+    }
+
+    /**
+     * Gets the rank points based on event type and rank
+     * 
+     * @param eventType Event type: "SOLO", "DUET", or "GROUP"
+     * @param rank      Rank: 1, 2, or 3
+     * @return Points for the rank
+     */
+    private int getRankPoints(String eventType, Integer rank) {
+        switch (eventType) {
+            case "SOLO":
+                switch (rank) {
+                    case 1:
+                        return 15;
+                    case 2:
+                        return 10;
+                    case 3:
+                        return 5;
+                    default:
+                        return 0;
+                }
+            case "DUET":
+                switch (rank) {
+                    case 1:
+                        return 20;
+                    case 2:
+                        return 15;
+                    case 3:
+                        return 10;
+                    default:
+                        return 0;
+                }
+            case "GROUP":
+                switch (rank) {
+                    case 1:
+                        return 25;
+                    case 2:
+                        return 20;
+                    case 3:
+                        return 15;
+                    default:
+                        return 0;
+                }
+            default:
+                // Default to GROUP points if event type is unknown
+                switch (rank) {
+                    case 1:
+                        return 25;
+                    case 2:
+                        return 20;
+                    case 3:
+                        return 15;
+                    default:
+                        return 0;
+                }
+        }
     }
 
     private ScoreCardDto mapToDto(ScoreCardModel scoreCard) {

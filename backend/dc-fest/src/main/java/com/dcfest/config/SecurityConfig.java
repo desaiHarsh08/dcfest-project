@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 "/api/events/**", // Allow GET requests to events (reading event data)
                                 "/api/academic-years/active",
                                 "/api/academic-years/registration-deadline-status",
+                                "/api/qrcode", // Allow public access to QR code images for WhatsApp
                                 "/ws/**") // Allow WebSocket connections
                         .permitAll()
                         .requestMatchers("/api/**").authenticated()

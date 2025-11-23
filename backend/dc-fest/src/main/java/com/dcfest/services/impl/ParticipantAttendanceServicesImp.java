@@ -17,13 +17,13 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,6 +46,12 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
     @Autowired
     private WhatsAppService whatsAppService;
+
+    @Value("${app.base.url:http://localhost:5003}")
+    private String appBaseUrl;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @Autowired
     private EventRuleServices eventRuleServices;
@@ -204,18 +210,19 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         // Render the HTML template
         String htmlContent = pdfService.renderHtmlTemplate("pop_template", templateData);
-        // System.out.println("Rendered HTML: " + htmlContent);
-
-        // System.out.println("Rendered HTML: " + htmlContent);
-        // Or save to a file
-        try (FileWriter writer = new FileWriter("output.html")) {
-            writer.write(htmlContent);
-        } catch (IOException e) {
-            // e.printStackTrace();
-        }
 
         // Generate the PDF
-        byte[] pdfBytes = PdfGenerator.generatePdf(htmlContent);
+        byte[] pdfBytes = null;
+        try {
+            pdfBytes = PdfGenerator.generatePdf(htmlContent);
+            if (pdfBytes == null || pdfBytes.length == 0) {
+                throw new RuntimeException("PDF generation returned null or empty bytes");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to generate PDF: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to generate PDF for POP", e);
+        }
 
         InputStreamSource attachmentSource = new ByteArrayResource(pdfBytes);
 
@@ -357,48 +364,56 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         // Render the HTML template
         String htmlContent = pdfService.renderHtmlTemplate("pop_template", templateData);
-        // System.out.println("Rendered HTML: " + htmlContent);
-
-        // System.out.println("Rendered HTML: " + htmlContent);
-        // Or save to a file
-        try (FileWriter writer = new FileWriter("output.html")) {
-            writer.write(htmlContent);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         // Generate the PDF
-        byte[] pdfBytes = PdfGenerator.generatePdf(htmlContent);
+        byte[] pdfBytes = null;
+        try {
+            pdfBytes = PdfGenerator.generatePdf(htmlContent);
+            if (pdfBytes == null || pdfBytes.length == 0) {
+                throw new RuntimeException("PDF generation returned null or empty bytes");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to generate PDF: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to generate PDF for POP", e);
+        }
 
         // System.out.println(pdfBytes);
 
         // Notify the reps
         for (CollegeRepresentativeModel collegeRepresentativeModel : collegeRepresentativeModels) {
-            this.emailServices.sendEventProofEmail(
-                    collegeRepresentativeModel.getEmail(),
-                    "Confirmed Participation for the event - " + availableEventModel.getTitle(),
-                    pdfBytes,
-                    "POP_" + teamNumber + ".pdf",
-                    availableEventModel,
-                    roundModel);
-            List<String> messageArr = new ArrayList<>();
-            // Create a temporary file to store the QR code image
+            // Send email with PDF attachment
+            try {
+                this.emailServices.sendEventProofEmail(
+                        collegeRepresentativeModel.getEmail(),
+                        "Confirmed Participation for the event - " + availableEventModel.getTitle(),
+                        pdfBytes,
+                        "POP_" + teamNumber + ".pdf",
+                        availableEventModel,
+                        roundModel);
+                System.out.println("Email sent successfully to: " + collegeRepresentativeModel.getEmail());
+            } catch (Exception e) {
+                System.err.println(
+                        "Failed to send email to " + collegeRepresentativeModel.getEmail() + ": " + e.getMessage());
+                e.printStackTrace();
+                // Continue with WhatsApp even if email fails
+            }
 
-            // Define the path to the static folder (replace with your actual static folder
-            // path)
-            String staticFolderPath = "src/main/resources/static/";
+            // Send WhatsApp message with QR code
+            List<String> messageArr = new ArrayList<>();
 
             try (ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeImage)) {
-                // Create the file in the static folder with a unique name (e.g., qrCode.png)
-                File staticFolder = new File(staticFolderPath);
-                if (!staticFolder.exists()) {
-                    staticFolder.mkdirs(); // Ensure the folder exists
+                // Create qrcodes subdirectory in upload directory (writable location)
+                File qrCodesDir = new File(uploadDir, "qrcodes");
+                if (!qrCodesDir.exists()) {
+                    qrCodesDir.mkdirs(); // Ensure the folder exists
                 }
 
-                String fileName = "qrCode" + LocalDateTime.now() + ".png";
-                File qrCodeFile = new File(staticFolder, fileName);
+                // Generate unique filename
+                String fileName = "qrCode_" + LocalDateTime.now().toString().replaceAll("[^a-zA-Z0-9]", "_") + ".png";
+                File qrCodeFile = new File(qrCodesDir, fileName);
 
-                // Write the byte array to the file in the static folder
+                // Write the byte array to the file
                 java.nio.file.Files.copy(bis, qrCodeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
                 // Prepare the message content
@@ -407,13 +422,21 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
                 messageArr.add(availableEventModel.getTitle());
                 messageArr.add(roundName);
 
+                // Build the full URL using controller endpoint
+                String qrCodeUrl = appBaseUrl.endsWith("/")
+                        ? appBaseUrl + "api/qrcode?fileName=" + fileName
+                        : appBaseUrl + "/api/qrcode?fileName=" + fileName;
+
                 // Send the WhatsApp message with the QR code file
                 this.whatsAppService.sendWhatsAppMessage(collegeRepresentativeModel.getPhone(), messageArr, "popqr",
-                        "http://localhost:5003" + fileName);
+                        qrCodeUrl);
                 System.out.println("WhatsApp message sent to: " + collegeRepresentativeModel.getPhone());
 
             } catch (Exception e) {
+                System.err.println("Failed to send WhatsApp message to " + collegeRepresentativeModel.getPhone() + ": "
+                        + e.getMessage());
                 e.printStackTrace();
+                // Continue even if WhatsApp fails
             }
 
         }

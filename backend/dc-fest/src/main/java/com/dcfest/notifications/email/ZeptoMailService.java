@@ -1,5 +1,6 @@
 package com.dcfest.notifications.email;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -138,6 +139,7 @@ public class ZeptoMailService {
     public static class Attachment {
         private String content;
         private String name;
+        @JsonProperty("mime_type")
         private String type;
 
         public Attachment() {
