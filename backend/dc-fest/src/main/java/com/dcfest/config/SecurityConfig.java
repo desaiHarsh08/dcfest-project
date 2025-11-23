@@ -76,6 +76,8 @@ public class SecurityConfig {
                     "https://umang2025.thebesc.in",
                     "https://besc.academic360.app",
                     "https://besc.academic360.app/fest",
+                    "https://umang2024.thebesc.in/fest",
+                    "https://umang2024.thebesc.in",
                     "https://*.academic360.app")); // Allow all subdomains of academic360.app
             corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
             corsConfiguration.setAllowCredentials(true);
