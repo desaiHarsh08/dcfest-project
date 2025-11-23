@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.dcfest.dtos.EventRuleDto;
@@ -25,6 +26,7 @@ public class EventRuleServicesImpl implements EventRuleServices {
     private EventRuleRepository eventRuleRepository;
 
     @Autowired
+    @Lazy
     private CollegeParticipationService collegeParticipationService;
 
     @Override
