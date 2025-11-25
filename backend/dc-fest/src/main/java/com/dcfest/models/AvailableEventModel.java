@@ -25,8 +25,10 @@ public class AvailableEventModel {
     @Column(nullable = false)
     private String title;
 
+    @Column(length = 1000)
     private String oneLiner;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -46,7 +48,7 @@ public class AvailableEventModel {
 
     private String eventMasterPhone;
 
-    private boolean isActive =  false;
+    private boolean isActive = false;
 
     public AvailableEventModel(Long id) {
         this.id = id;

@@ -16,7 +16,7 @@ const RULE_SEQ_NAME = [
   "MAX_PARTICIPANTS",
   "MALE_PARTICIPANTS",
   "FEMALE_PARTICIPANTS",
-  "COLLEGE_ACOMPANIST",
+  "COLLEGE_ACCOMPANIST",
   "OTSE_SLOTS",
   "TIME_LIMIT",
   "THEME",
@@ -85,14 +85,21 @@ const AddEventPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchEventTemplateRules().then((data) => {
-      console.log("rule templates:", data);
-      setRuleTemplates(data);
+    fetchEventTemplateRules()
+      .then((data) => {
+        console.log("rule templates:", data);
+        setRuleTemplates(data);
 
-      setEvent((prev) => ({ ...prev, eventRules: handleDefaultEventRules(data), rounds }));
-    });
+        const defaultRules = handleDefaultEventRules(data);
+        console.log("default rules created:", defaultRules);
+        setEvent((prev) => ({ ...prev, eventRules: defaultRules, rounds }));
+      })
+      .catch((error) => {
+        console.error("Error fetching rule templates:", error);
+        // Still set empty rules array to prevent undefined errors
+        setEvent((prev) => ({ ...prev, eventRules: [], rounds }));
+      });
   }, []);
-
 
   const handleDefaultEventRules = (ruleTemplates) => {
     const eventRules = [];
@@ -134,6 +141,11 @@ const AddEventPage = () => {
   };
 
   const handleAddRule = () => {
+    if (!ruleTemplates || ruleTemplates.length === 0) {
+      alert("Please wait for rule templates to load, or refresh the page.");
+      return;
+    }
+
     const newEvent = { ...event };
     newEvent.eventRules = [
       ...newEvent.eventRules,
@@ -158,7 +170,7 @@ const AddEventPage = () => {
     const newEvent = { ...event };
     newEvent.eventRules = newEvent.eventRules.map((ele, index) => {
       if (index === ruleIndex) {
-        if (isRTE && ele.eventRuleTemplate.name == "NOTE") {
+        if (isRTE && ele.eventRuleTemplate?.name == "NOTE") {
           return { ...ele, value: e };
         }
 
@@ -167,6 +179,10 @@ const AddEventPage = () => {
           const eventRuleTemplate = ruleTemplates.find((r) => r.id == value);
           console.log(eventRuleTemplate);
           return { ...ele, [name]: eventRuleTemplate };
+        }
+
+        if (!ele.eventRuleTemplate) {
+          return ele; // Skip if eventRuleTemplate is undefined
         }
 
         console.log(`ele.eventRuleTemplate.name: ${ele.eventRuleTemplate.name}`);

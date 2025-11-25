@@ -17,7 +17,7 @@ const RULE_SEQ_NAME = [
   "MALE_PARTICIPANTS",
   "FEMALE_PARTICIPANTS",
   "NO_OF_PARTICIPANTS",
-  "COLLEGE_ACOMPANIST",
+  "COLLEGE_ACCOMPANIST",
   "OTSE_SLOTS",
   "TIME_LIMIT",
   "THEME",
@@ -64,31 +64,40 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
   }, []);
 
   useEffect(() => {
-    fetchEventTemplateRules().then((data) => {
-      console.log("rule templates:", data);
-      setRuleTemplates(data);
+    fetchEventTemplateRules()
+      .then((data) => {
+        console.log("rule templates:", data);
+        setRuleTemplates(data);
 
-      if (formType.toLowerCase() == "add") {
-        const eventRules = [];
-        for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
-          const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
-          if (ruleTemp) {
-            eventRules.push({
-              value: "",
-              eventRuleTemplate: ruleTemp,
-            });
+        if (formType.toLowerCase() == "add") {
+          const eventRules = [];
+          for (let i = 0; i < RULE_SEQ_NAME.length; i++) {
+            const ruleTemp = data.find((ele) => ele.name == RULE_SEQ_NAME[i]);
+            if (ruleTemp) {
+              eventRules.push({
+                value: "",
+                eventRuleTemplate: ruleTemp,
+              });
+            }
           }
-        }
-        const ruleTemplate = data.find((ele) => ele.name == "NOTE");
-        if (ruleTemplate) {
-          for (let i = 0; i < 5; i++) {
-            eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+          const ruleTemplate = data.find((ele) => ele.name == "NOTE");
+          if (ruleTemplate) {
+            for (let i = 0; i < 5; i++) {
+              eventRules.push({ value: "", eventRuleTemplate: ruleTemplate });
+            }
           }
-        }
 
-        setEvent((prev) => ({ ...prev, eventRules, rounds }));
-      }
-    });
+          console.log("default rules created:", eventRules);
+          setEvent((prev) => ({ ...prev, eventRules, rounds }));
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching rule templates:", error);
+        // Still set empty rules array to prevent undefined errors
+        if (formType.toLowerCase() == "add") {
+          setEvent((prev) => ({ ...prev, eventRules: [], rounds }));
+        }
+      });
   }, []);
 
   const handleAddJudge = () => {
@@ -156,6 +165,11 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
   };
 
   const handleAddRule = () => {
+    if (!ruleTemplates || ruleTemplates.length === 0) {
+      alert("Please wait for rule templates to load, or refresh the page.");
+      return;
+    }
+
     const newEvent = { ...event };
     newEvent.eventRules = [
       ...newEvent.eventRules,
@@ -180,7 +194,7 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
     const newEvent = { ...event };
     newEvent.eventRules = newEvent.eventRules.map((ele, index) => {
       if (index === ruleIndex) {
-        if (isRTE && ele.eventRuleTemplate.name == "NOTE") {
+        if (isRTE && ele.eventRuleTemplate?.name == "NOTE") {
           return { ...ele, value: e };
         }
         const { name, value, checked } = e.target;
@@ -188,6 +202,10 @@ export default function EventForm({ event, setEvent, formType = "Add", onConfirm
           const eventRuleTemplate = ruleTemplates.find((r) => r.id == value);
           console.log(eventRuleTemplate);
           return { ...ele, [name]: eventRuleTemplate };
+        }
+
+        if (!ele.eventRuleTemplate) {
+          return ele; // Skip if eventRuleTemplate is undefined
         }
 
         console.log(`ele.eventRuleTemplate.name: ${ele.eventRuleTemplate.name}`);

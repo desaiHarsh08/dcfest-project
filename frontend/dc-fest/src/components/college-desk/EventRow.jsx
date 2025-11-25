@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState, useCallback } from "react";
 import { fetchAvailableEventsById } from "../../services/available-events-apis";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import CategoryName from "./CategoryName";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 import { fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
@@ -10,6 +10,7 @@ import { Badge } from "react-bootstrap";
 import { initWebSocket, subscribeToWaitingListPromotion } from "../../services/websocketService";
 
 const EventRow = ({ index, availableEventId, collegeId,  }) => {
+    const { iccode } = useParams();
   const [event, setEvent] = useState();
   const [availableEvent, setAvailableEvent] = useState();
   const [participants, setParticipants] = useState([]);
@@ -170,12 +171,12 @@ const EventRow = ({ index, availableEventId, collegeId,  }) => {
       <td style={{ textAlign: "center", verticalAlign: "middle" }}>
         {/* Show View button if college has enrolled (has participation) OR if event exists */}
         {collegeParticipation || event?.id ? (
-          <Link 
-            to={`${event?.id}`} 
+          <a 
+            href={`${iccode}/${event?.id}`} 
             className="btn btn-primary text-decoration-none"
           >
             View
-          </Link>
+          </a>
         ) : (
           <span className="text-muted" title="Event will be created when you add participants">
             No Participants Yet

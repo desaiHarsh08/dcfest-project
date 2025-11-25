@@ -107,9 +107,10 @@ export const AuthProvider = ({ children }) => {
         }
         
         // Log for debugging (remove in production)
-        if (config.url?.includes("/api/users") || config.url?.includes("/api/academic-years")) {
-          console.log("API Request:", {
+        if (config.url?.includes("/api/users") || config.url?.includes("/api/academic-years") || config.url?.includes("/api/events")) {
+          console.log("API Request Interceptor:", {
             url: config.url,
+            method: config.method,
             hasToken: !!currentToken,
             hasEmail: !!emailOrIcCode,
             email: emailOrIcCode
@@ -149,7 +150,7 @@ export const AuthProvider = ({ children }) => {
       API.interceptors.request.eject(requestInterceptor);
       API.interceptors.response.eject(responseInterceptor);
     };
-  }, [accessToken, generateNewToken, logout, user, location]);
+  }, [accessToken, generateNewToken, logout, user]); // Removed location to prevent interceptor recreation on navigation
 
   const contextValue = {
     user,

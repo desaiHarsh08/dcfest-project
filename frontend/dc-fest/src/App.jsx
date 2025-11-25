@@ -17,7 +17,7 @@ import EventAttendancePage from "./pages/EventAttendancePage";
 import EventParticipationPage from "./pages/EventParticipationPage";
 import ScoringDepartment from "./pages/ScoringDepartment";
 import CollegeDesk from "./pages/CollegeDesk";
-import CollegeEvent from "./pages/CollegeEvent";
+import CollegeEventWrapper from "./components/CollegeEventWrapper";
 import Settings from "./pages/Settings";
 import CollegeDeskLayout from "./components/layout/CollegeDeskLayout";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -33,159 +33,162 @@ import ScoreSheetPage from "./pages/ScoreSheetPage";
 import ScoreEntryPage from "./pages/ScoreEntryPage";
 import GenerateCertificates from "./pages/GenerateCertificates";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Outlet />,
-    children: [
-      { path: "", element: <Root /> },
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <Outlet />,
+      children: [
+        { path: "", element: <Root /> },
 
-      { path: "event/:eventSlug", element: <RootEvent /> },
-    ],
-  },
+        { path: "event/:eventSlug", element: <RootEvent /> },
+      ],
+    },
+    {
+      path: "/reset-password",
+      element: (
+        <AuthProvider>
+          <ResetPasswordPage />
+        </AuthProvider>
+      ),
+    },
+    {
+      path: "/college-greeting",
+      element: <CollegeGreetings />,
+    },
+    {
+      path: ":iccode",
+      element: (
+        <AuthProvider>
+          <CollegeDeskLayout />
+        </AuthProvider>
+      ),
+      children: [
+        { path: "", element: <CollegeDesk /> },
+        { path: "settings", element: <CollegeSettings /> },
+        {
+          path: ":eventId",
+          element: <Outlet />,
+          children: [
+            { path: "", element: <CollegeEventWrapper /> },
+            { path: "add", element: <AddParticipantByCollege /> },
+          ],
+        },
+        {
+          path: "categories",
+          element: <Outlet />,
+          children: [
+            {
+              path: "",
+              element: <CategoriesPage />,
+            },
+            {
+              path: ":categorySlug",
+              element: <Outlet />,
+              children: [
+                {
+                  path: "",
+                  element: <EventsPage />,
+                },
+                {
+                  path: ":eventSlug",
+                  element: <EventPage />,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "/login",
+      element: (
+        <AuthProvider>
+          <Login />
+        </AuthProvider>
+      ),
+    },
+    {
+      path: "/home",
+      element: <Home />,
+      children: [
+        { path: "", element: <HomeDesk /> },
+        { path: "settings", element: <Settings /> },
+        { path: "generate-certificates", element: <GenerateCertificates /> },
+        { path: "add-event", element: <AddEventPage /> },
+        {
+          path: "categories",
+          element: <Outlet />,
+          children: [
+            {
+              path: "",
+              element: <CategoriesPage />,
+            },
+            {
+              path: ":categorySlug",
+              element: <Outlet />,
+              children: [
+                {
+                  path: "",
+                  element: <EventsPage />,
+                },
+                {
+                  path: ":eventSlug",
+                  element: <EventPage />,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          path: "college-representative",
+          element: <CollegeRepresentativePage />,
+        },
+        {
+          path: "event-desk",
+          element: <Outlet />,
+          children: [
+            {
+              path: "",
+              element: <EventDeskPage />,
+            },
+            {
+              path: "registration",
+              element: <EventRegistrationPage />,
+            },
+            {
+              path: "attendance",
+              element: <EventAttendancePage />,
+            },
+            {
+              path: "participation",
+              element: <EventParticipationPage />,
+            },
+          ],
+        },
+        {
+          path: "college-teams-participated",
+          element: <TeamsParticipatedPage />,
+        },
+        { path: "college-rankings", element: <CollegeRankingPage /> },
+        { path: "teams-ranking", element: <TeamsRankingPage /> },
+        { path: "get-reports", element: <GetReports /> },
+        {
+          path: "scoring-department",
+          element: <Outlet />,
+          children: [
+            { path: "", element: <ScoringDepartment /> },
+            { path: "score-sheet", element: <ScoreSheetPage /> },
+            { path: "score-entry", element: <ScoreEntryPage /> },
+          ],
+        },
+      ],
+    },
+  ],
   {
-    path: "/reset-password",
-    element: (
-      <AuthProvider>
-        <ResetPasswordPage />
-      </AuthProvider>
-    ),
-  },
-  {
-    path: "/college-greeting",
-    element: <CollegeGreetings />,
-  },
-  {
-    path: ":iccode",
-    element: (
-      <AuthProvider>
-        <CollegeDeskLayout />
-      </AuthProvider>
-    ),
-    children: [
-      { path: "", element: <CollegeDesk /> },
-      { path: "settings", element: <CollegeSettings /> },
-      {
-        path: ":eventId",
-        element: <Outlet />,
-        children: [
-          { path: "", element: <CollegeEvent /> },
-          { path: "add", element: <AddParticipantByCollege /> },
-        ],
-      },
-      {
-        path: "categories",
-        element: <Outlet />,
-        children: [
-          {
-            path: "",
-            element: <CategoriesPage />,
-          },
-          {
-            path: ":categorySlug",
-            element: <Outlet />,
-            children: [
-              {
-                path: "",
-                element: <EventsPage />,
-              },
-              {
-                path: ":eventSlug",
-                element: <EventPage />,
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  { 
-    path: "/login", 
-    element: (
-      <AuthProvider>
-        <Login />
-      </AuthProvider>
-    ) 
-  },
-  {
-    path: "/home",
-    element: <Home />,
-    children: [
-      { path: "", element: <HomeDesk /> },
-      { path: "settings", element: <Settings /> },
-      { path: "generate-certificates", element: <GenerateCertificates /> },
-      { path: "add-event", element: <AddEventPage /> },
-      {
-        path: "categories",
-        element: <Outlet />,
-        children: [
-          {
-            path: "",
-            element: <CategoriesPage />,
-          },
-          {
-            path: ":categorySlug",
-            element: <Outlet />,
-            children: [
-              {
-                path: "",
-                element: <EventsPage />,
-              },
-              {
-                path: ":eventSlug",
-                element: <EventPage />,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        path: "college-representative",
-        element: <CollegeRepresentativePage />,
-      },
-      {
-        path: "event-desk",
-        element: <Outlet />,
-        children: [
-          {
-            path: "",
-            element: <EventDeskPage />,
-          },
-          {
-            path: "registration",
-            element: <EventRegistrationPage />,
-          },
-          {
-            path: "attendance",
-            element: <EventAttendancePage />,
-          },
-          {
-            path: "participation",
-            element: <EventParticipationPage />,
-          },
-        ],
-      },
-      {
-        path: "college-teams-participated",
-        element: <TeamsParticipatedPage />,
-      },
-      { path: "college-rankings", element: <CollegeRankingPage /> },
-      { path: "teams-ranking", element: <TeamsRankingPage /> },
-      { path: "get-reports", element: <GetReports /> },
-      {
-        path: "scoring-department",
-        element: <Outlet />,
-        children: [
-          { path: "", element: <ScoringDepartment /> },
-          { path: "score-sheet", element: <ScoreSheetPage /> },
-          { path: "score-entry", element: <ScoreEntryPage /> },
-        ],
-      },
-    ],
-  },
-], {
     basename: import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : "/fest",
-});
+  }
+);
 
 const App = () => <RouterProvider router={router} />;
 

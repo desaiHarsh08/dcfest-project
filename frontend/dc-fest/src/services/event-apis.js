@@ -16,10 +16,14 @@ export const fetchEventBySlug = async (eventSlug, includeInactive = false) => {
     return response.data;
 };
 
-export const fetchEventById = async (id) => {
-    const response = await API.get(`/api/events/${id}`, {
+export const fetchEventById = async (id, signal = null) => {
+    const config = {
         withCredentials: true
-    });
+    };
+    if (signal) {
+        config.signal = signal;
+    }
+    const response = await API.get(`/api/events/${id}`, config);
 
     return response.data;
 };

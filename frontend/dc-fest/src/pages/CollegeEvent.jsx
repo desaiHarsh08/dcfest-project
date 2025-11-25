@@ -23,6 +23,7 @@ const participantObj = {
 
 const CollegeEvent = () => {
   const { iccode, eventId } = useParams();
+  console.log("eventId in CollegeEvent:", eventId, "iccode:", iccode);
   const [participants, setParticipants] = useState([]);
   const [availableEvent, setAvailableEvent] = useState();
   const [loading, setLoading] = useState(false);
@@ -45,54 +46,108 @@ const CollegeEvent = () => {
 
   const [selectedParticipant, setSelectedParticipant] = useState(participantObj);
 
+  // Fetch event data when component mounts or eventId changes
+  // Since we're using a key in the wrapper, component remounts on navigation
+  // So this effect will run fresh on every navigation
   useEffect(() => {
+    if (!eventId) return;
+
+    console.log("Component mounted/eventId changed, fetching data for:", eventId);
+
+    let isMounted = true;
+
     const fetchEventData = async () => {
       try {
         // Try to fetch the event by ID first
+        console.log("Calling fetchEventById for:", eventId);
         const eventData = await fetchEventById(eventId);
+        console.log("Received eventData:", eventData);
+
+        if (!isMounted) return;
+
         if (eventData?.availableEventId) {
+          console.log("Calling fetchAvailableEventsById for:", eventData.availableEventId);
           const availableEventData = await fetchAvailableEventsById(eventData.availableEventId);
+          console.log("Received availableEventData:", availableEventData);
+
+          if (!isMounted) return;
+
+          console.log("Setting availableEvent state");
           setAvailableEvent(availableEventData);
+
           // Fetch slots occupied after setting available event
           try {
             const response = await fetchSlotsOccupiedForEvent(eventId);
-            setSlotsOccupied(response);
-          } catch (error) {
-            console.log("Error fetching slots occupied:", error);
+            if (isMounted) {
+              setSlotsOccupied(response);
+            }
+          } catch {
+            // Silently handle error
           }
+          return; // Successfully fetched, exit early
         }
       } catch (err) {
-        console.error("Error fetching event:", err);
-        // If event doesn't exist yet (404), try to get availableEventId from college's participation
-        // Also handle the case where eventId might actually be an availableEventId
-        if (college?.id) {
-          try {
-            // First, try to treat eventId as availableEventId directly
-            try {
-              const availableEventData = await fetchAvailableEventsById(eventId);
-              setAvailableEvent(availableEventData);
-            } catch (availableEventErr) {
-              // If that fails, try to find from participations
-              const participations = await fetchParticipationEventsByCollegeId(college.id);
-              // Find the participation that matches this eventId (if event exists) or matches availableEventId
-              const participation = participations.find(
-                (p) => p.eventId === Number(eventId) || p.availableEventId === Number(eventId)
-              );
-              if (participation?.availableEventId) {
-                const availableEventData = await fetchAvailableEventsById(participation.availableEventId);
-                setAvailableEvent(availableEventData);
-              }
-            }
-          } catch (participationErr) {
-            console.error("Error fetching participation:", participationErr);
-          }
-        }
+        console.error("Error fetching event by ID:", err);
+        // Error fetching by eventId, try direct fetch below
+      }
+
+      // If event fetch failed, try to treat eventId as availableEventId directly
+      try {
+        if (!isMounted) return;
+
+        console.log("Trying direct fetchAvailableEventsById for:", eventId);
+        const availableEventData = await fetchAvailableEventsById(eventId);
+        console.log("Received availableEventData (direct):", availableEventData);
+
+        if (!isMounted) return;
+
+        console.log("Setting availableEvent state (direct)");
+        setAvailableEvent(availableEventData);
+      } catch (err) {
+        console.error("Error in direct fetch:", err);
+        // Will try with college data when available
       }
     };
-    if (eventId) {
-      fetchEventData();
-    }
-  }, [eventId, college?.id]);
+
+    fetchEventData();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [eventId]); // Only depend on eventId since component remounts on navigation
+
+  // Retry fetching event data when college loads (if we don't have availableEvent yet)
+  // This is a fallback that only runs if the main fetch didn't work
+  useEffect(() => {
+    if (!eventId || !college?.id || availableEvent) return;
+
+    let isMounted = true;
+    const fetchEventId = eventId;
+
+    const fetchEventDataWithCollege = async () => {
+      try {
+        const participations = await fetchParticipationEventsByCollegeId(college.id);
+        // Find the participation that matches this eventId (if event exists) or matches availableEventId
+        const participation = participations.find((p) => p.eventId === Number(fetchEventId) || p.availableEventId === Number(fetchEventId));
+        if (participation?.availableEventId && isMounted) {
+          const availableEventData = await fetchAvailableEventsById(participation.availableEventId);
+          if (isMounted) {
+            setAvailableEvent(availableEventData);
+            console.log("Fallback: availableEvent set from college participation");
+          }
+        }
+      } catch (participationErr) {
+        console.error("Error fetching participation:", participationErr);
+      }
+    };
+
+    fetchEventDataWithCollege();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [college?.id, eventId, availableEvent]);
 
   useEffect(() => {
     (async () => {
@@ -105,6 +160,20 @@ const CollegeEvent = () => {
       }
     })();
   }, [iccode]);
+
+  // Debug: Log when availableEvent changes
+  useEffect(() => {
+    console.log("availableEvent state changed:", availableEvent);
+    if (availableEvent) {
+      console.log("availableEvent has data:", {
+        id: availableEvent.id,
+        title: availableEvent.title,
+        slug: availableEvent.slug,
+        hasEventRules: !!availableEvent.eventRules,
+        eventRulesCount: availableEvent.eventRules?.length,
+      });
+    }
+  }, [availableEvent]);
 
   useEffect(() => {
     if (college && eventId) {
@@ -236,7 +305,7 @@ const CollegeEvent = () => {
       if (prev.id !== undefined) {
         updated.id = prev.id;
       }
-      
+
       if (name == "male") {
         updated.male = Boolean(value);
         console.log("Updated participant:", updated);
@@ -440,7 +509,7 @@ const CollegeEvent = () => {
     console.log("isValid:", isValid);
     console.log("selectedParticipant before validation:", selectedParticipant);
     console.log("selectedParticipant.id:", selectedParticipant?.id);
-    
+
     if (!handleRuleChecks(true)) {
       return;
     }
@@ -781,19 +850,19 @@ const CollegeEvent = () => {
                                 console.log("Participant id:", participant?.id);
                                 console.log("Participant keys:", Object.keys(participant || {}));
                                 console.log("All participants in state:", participants);
-                                
+
                                 // Ensure we preserve all fields including id
                                 const participantWithId = { ...participant };
                                 console.log("Participant after spread:", participantWithId);
                                 console.log("Has id after spread?", participantWithId.id !== undefined, "value:", participantWithId.id);
-                                
+
                                 if (!participantWithId.id && participantWithId.id !== 0) {
                                   console.error("ERROR: Participant object missing id field!", participant);
                                   console.error("Full participant object:", JSON.stringify(participant, null, 2));
                                   alert("Error: Participant ID is missing. Cannot edit this participant. Please refresh the page.");
                                   return;
                                 }
-                                
+
                                 console.log("Setting selectedParticipant with id:", participantWithId.id);
                                 setSelectedParticipant(participantWithId);
                                 setAddFlag(false);
