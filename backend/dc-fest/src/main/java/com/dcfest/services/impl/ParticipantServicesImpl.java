@@ -201,6 +201,56 @@ public class ParticipantServicesImpl implements ParticipantServices {
         return String.format("WL_%03d", maxSequence + 1);
     }
 
+    /**
+     * Gets the next OTSE sequence number for an event (incremental across all
+     * colleges)
+     * Returns the next sequence number (e.g., 1, 2, 3...) to be used in group name
+     * format: {icCode}_OTSE_{sequenceNumber}
+     */
+    private int getNextOTSESequenceNumber(Long eventId) {
+        // Find all OTSE participants for this event
+        List<ParticipantModel> allParticipants = participantRepository.findByEvents_Id(eventId);
+        List<ParticipantModel> otseParticipants = allParticipants.stream()
+                .filter(p -> p.getEntryType() == EntryType.OTSE)
+                .toList();
+
+        if (otseParticipants.isEmpty()) {
+            return 1; // First OTSE group
+        }
+
+        // Extract unique groups and find the maximum sequence number
+        Set<String> uniqueGroups = otseParticipants.stream()
+                .map(ParticipantModel::getGroup)
+                .filter(Objects::nonNull)
+                .filter(grp -> grp.contains("_OTSE_"))
+                .collect(Collectors.toSet());
+
+        if (uniqueGroups.isEmpty()) {
+            return 1;
+        }
+
+        // Extract sequence numbers from groups (pattern: *_{icCode}_OTSE_{##})
+        int maxSequence = uniqueGroups.stream()
+                .mapToInt(grp -> {
+                    try {
+                        // Find the position of "_OTSE_"
+                        int otseIndex = grp.indexOf("_OTSE_");
+                        if (otseIndex == -1) {
+                            return 0;
+                        }
+                        // Extract the number after "_OTSE_"
+                        String sequencePart = grp.substring(otseIndex + 6); // "_OTSE_" is 6 chars
+                        return Integer.parseInt(sequencePart);
+                    } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                        return 0;
+                    }
+                })
+                .max()
+                .orElse(0);
+
+        return maxSequence + 1;
+    }
+
     @Override
     public List<ParticipantDto> createParticipants(List<ParticipantDto> participantDtos) {
         CollegeModel collegeModel = this.collegeRepository.findById(participantDtos.get(0).getCollegeId()).orElseThrow(
@@ -406,7 +456,6 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         String group;
 
-        long count = 0;
         if (participantDtos.get(0).getEntryType().equals(EntryType.NORMAL)) {
             System.out.println("in normal");
             group = collegeModel.getIcCode() + "_" + String.format("%02d", 1);
@@ -415,9 +464,9 @@ public class ParticipantServicesImpl implements ParticipantServices {
             // For waiting list, use a similar group naming pattern
             group = collegeModel.getIcCode() + "_WL_" + String.format("%02d", 1);
         } else {
-            System.out.println("in otse, groups: " + groups);
-            count = groups.stream().filter(grp -> grp.contains("_OTSE")).toList().size();
-            group = collegeModel.getIcCode() + "_OTSE_" + String.format("%02d", count + 1);
+            // OTSE: Use incremental sequence number across all colleges for this event
+            int nextOTSESequence = getNextOTSESequenceNumber(eventModel.getId());
+            group = collegeModel.getIcCode() + "_OTSE_" + String.format("%02d", nextOTSESequence);
         }
 
         // Check if college has a waiting list sequence (assigned during enrollment)
