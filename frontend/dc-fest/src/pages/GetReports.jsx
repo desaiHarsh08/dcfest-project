@@ -248,6 +248,7 @@ const GetReports = () => {
               event: availableEvent?.title || "",
               type: participant.type,
               entry: participant.entryType,
+              group: participant.group || "",
               present: participant.present ? "Present" : "",
               participants: participants.length,
               //   team: teamNumber,
@@ -330,6 +331,7 @@ const GetReports = () => {
               event: availableEvent?.title || "",
               type: "",
               entry: "",
+              group: "",
               present: "",
               participants: participants.length,
             };
