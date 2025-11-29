@@ -462,7 +462,12 @@ public class ParticipantServicesImpl implements ParticipantServices {
         } else if (participantDtos.get(0).getEntryType().equals(EntryType.WAITING_LIST)) {
             System.out.println("in waiting list");
             // For waiting list, use a similar group naming pattern
-            group = collegeModel.getIcCode() + "_WL_" + String.format("%02d", 1);
+            CollegeParticipationModel cp = collegeParticipationModels.stream()
+                    .filter(p -> p.getCollege().getId().equals(collegeModel.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            group = collegeModel.getIcCode() + "_WL_" + String.format("%03d", cp.getWaitingListSequence().substring(3));
         } else {
             // OTSE: Use incremental sequence number across all colleges for this event
             int nextOTSESequence = getNextOTSESequenceNumber(eventModel.getId());
@@ -505,9 +510,12 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 // Use college's waiting list sequence (assigned during enrollment)
                 if (collegeWaitingListSequence != null) {
                     participantModel.setQuotaCount(collegeWaitingListSequence);
+                    participantModel.setGroup(group);
                 } else {
                     // Fallback: generate sequence if college doesn't have one (shouldn't happen)
                     String quotaCount = generateWLQSequenceNumber(eventModel.getId());
+                    group = collegeModel.getIcCode() + "_" + quotaCount;
+                    participantModel.setGroup(group);
                     participantModel.setQuotaCount(quotaCount);
                 }
                 // Automatically set EntryType to WAITING_LIST when QuotaType is

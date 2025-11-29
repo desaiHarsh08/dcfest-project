@@ -11,6 +11,7 @@ import com.dcfest.services.AcademicYearService;
 import com.dcfest.services.CollegeParticipationService;
 
 import com.dcfest.services.ParticipantServices;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
     private AcademicYearRepository academicYearRepository;
 
     @Override
+    @Transactional
     public CollegeParticipationDto createParticipation(CollegeParticipationDto participationDto) {
         // Check if registration is open (startDate <= currentDateTime <= endDate)
         if (!academicYearService.isRegistrationOpen()) {
@@ -100,48 +102,87 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         int maxSlotsAvailable = Integer.parseInt(eventRuleModel.getValue());
 
-        List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository
-                .findByAvailableEvent(availableEventModel);
+//        List<CollegeParticipationModel> collegeParticipationModels = this.participationRepository
+//                .findByAvailableEvent(availableEventModel);
 
-        int slotsOccupied = collegeParticipationModels.size();
+        // int slotsOccupied = collegeParticipationModels.size();
+        long registeredCount = participationRepository.findByAvailableEvent(availableEventModel).stream()
+                .filter(cp -> cp.getWaitingListSequence() == null)
+                .count();
+
+        long waitingListCount = participationRepository.findByAvailableEvent(availableEventModel).stream()
+                .filter(cp -> cp.getWaitingListSequence() != null && cp.getWaitingListSequence().startsWith("WL_"))
+                .count();
 
         // Check if registration slots are full
-        boolean isRegistrationFull = slotsOccupied >= maxSlotsAvailable;
-        String waitingListSequence = null;
-
-        if (isRegistrationFull) {
-            // Check if waiting list slots are available
-            EventRuleModel waitingListSlotsEventRule = eventRuleModels.stream()
-                    .filter(e -> e.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS"))
-                    .findFirst().orElse(null);
-
-            if (waitingListSlotsEventRule != null) {
-                int maxWaitingListSlots = Integer.parseInt(waitingListSlotsEventRule.getValue());
-
-                // Count colleges already in waiting list (those with waitingListSequence set)
-                List<CollegeParticipationModel> existingParticipations = this.participationRepository
-                        .findByAvailableEvent(availableEventModel);
-                long waitingListCollegesCount = existingParticipations.stream()
-                        .filter(cp -> cp.getWaitingListSequence() != null
-                                && cp.getWaitingListSequence().startsWith("WL_"))
-                        .count();
-
-                if (waitingListCollegesCount < maxWaitingListSlots) {
-                    // Waiting list slots are available, assign sequence number
-                    waitingListSequence = generateNextWaitingListSequence(availableEventModel);
-                } else {
-                    // Both registration and waiting list are full
-                    throw new RegisteredSlotsAvailableException(
-                            "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
-                }
-            } else {
-                // No waiting list quota available, registration is full
-                throw new RegisteredSlotsAvailableException(
-                        "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
-            }
-        }
+//        boolean isRegistrationFull = registeredCount >= maxSlotsAvailable;
+//        String waitingListSequence = null;
+//
+//
+//        if (isRegistrationFull) {
+//            // Check if waiting list slots are available
+//            EventRuleModel waitingListSlotsEventRule = eventRuleModels.stream()
+//                    .filter(e -> e.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS"))
+//                    .findFirst().orElse(null);
+//
+//            if (waitingListSlotsEventRule != null) {
+//                int maxWaitingListSlots = Integer.parseInt(waitingListSlotsEventRule.getValue());
+//
+//                // Count colleges already in waiting list (those with waitingListSequence set)
+//                List<CollegeParticipationModel> existingParticipations = this.participationRepository
+//                        .findByAvailableEvent(availableEventModel);
+//                long waitingListCollegesCount = existingParticipations.stream()
+//                        .filter(cp -> cp.getWaitingListSequence() != null
+//                                && cp.getWaitingListSequence().startsWith("WL_"))
+//                        .count();
+//
+//                if (waitingListCount >= maxWaitingListSlots) {
+//                    // Both registration and waiting list are full
+//                    throw new RegisteredSlotsAvailableException(
+//                            "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+//                } else {
+//
+//                    // Waiting list slots are available, assign sequence number
+//                    waitingListSequence = generateNextWaitingListSequence(availableEventModel);
+//                }
+//            } else {
+//                // No waiting list quota available, registration is full
+//                throw new RegisteredSlotsAvailableException(
+//                        "Maximum available slots for this event has been filled. Please contact us at dean.office@thebges.edu.in for assistance.");
+//            }
+//        }
 
         // Create the college's participation
+
+        // === FINAL 100% SAFE QUOTA LOGIC (MAX 30 TOTAL) ===
+        EventRuleModel waitingListRule = eventRuleModels.stream()
+                .filter(e -> e.getEventRuleTemplate().getName().equalsIgnoreCase("WAITING_LIST_SLOTS"))
+                .findFirst()
+                .orElse(null);
+
+        int maxWaitingListSlots = waitingListRule != null
+                ? Integer.parseInt(waitingListRule.getValue())
+                : 0;
+
+        int totalAllowed = maxSlotsAvailable + maxWaitingListSlots;
+
+        // HARD LIMIT: Total registered + waiting list must not exceed total allowed
+        if (registeredCount + waitingListCount >= totalAllowed) {
+            throw new RegisteredSlotsAvailableException(
+                    "Event is completely full! All " + maxSlotsAvailable +
+                            " registration slots + " + maxWaitingListSlots +
+                            " waiting list slots are taken. Total capacity: " + totalAllowed + ". " +
+                            "Contact dean.office@thebges.edu.in for assistance."
+            );
+        }
+
+        String waitingListSequence = null;
+
+        if (registeredCount >= maxSlotsAvailable) {
+            // Registration is full → go to waiting list (already checked total limit above)
+            waitingListSequence = generateNextWaitingListSequence(availableEventModel);
+        }
+
         CollegeParticipationModel collegeParticipationModel = new CollegeParticipationModel();
         collegeParticipationModel.setAvailableEvent(availableEventModel);
         collegeParticipationModel.setCollege(collegeModel);
@@ -400,8 +441,13 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                                     .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
                                     .collect(Collectors.toList());
 
+                            CollegeModel collegeModel = this.collegeRepository.findById(participants.get(0).getCollege().getId()).orElse(null);
+
+                            if (collegeModel == null) continue;;
+
                             for (ParticipantModel participant : participants) {
                                 participant.setQuotaCount(String.format("WL_%03d", newSequence));
+                                participant.setGroup(collegeModel.getIcCode() + "_" + participation.getWaitingListSequence());
                                 this.participantRepository.save(participant);
                             }
                         }
@@ -518,9 +564,15 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                 .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
                 .collect(Collectors.toList());
 
+        CollegeModel collegeModel = this.collegeRepository.findById(collegeParticipants.get(0).getCollege().getId()).orElseThrow(
+                () -> new ResourceNotFoundException("College not found")
+        );
+
         for (ParticipantModel participant : collegeParticipants) {
+            String group = collegeModel.getIcCode() + "_01";
             participant.setQuotaType(QuotaType.REGISTRATION_QUOTA);
             participant.setQuotaCount(null); // Clear WL sequence
+            participant.setGroup(group);
             participant.setEntryType(com.dcfest.constants.EntryType.NORMAL); // Reset to NORMAL
             this.participantRepository.save(participant);
         }
@@ -542,8 +594,14 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                         .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
                         .collect(Collectors.toList());
 
+                CollegeModel waitingCollegeModel = this.collegeRepository.findById(collegeParticipants.get(0).getCollege().getId()).orElseThrow(
+                        () -> new ResourceNotFoundException("College not found")
+                );
+
                 for (ParticipantModel participant : participants) {
-                    participant.setQuotaCount(String.format("WL_%03d", newSequence));
+                    String group = waitingCollegeModel.getIcCode() + "_" + participation.getWaitingListSequence();
+                    participant.setQuotaCount(participation.getWaitingListSequence());
+                    participant.setGroup(group);
                     this.participantRepository.save(participant);
                 }
             } catch (NumberFormatException e) {
