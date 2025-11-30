@@ -16,6 +16,7 @@ const ParticipantFields = ({ participant, participantIndex, onChange, selectedAv
 
   return (
     <div className="card p-3 rounded-0">
+        {JSON.stringify(participant)}
       <h5>Participant-{participantIndex + 1}</h5>
       <Form.Group className="mb-3">
         <Form.Control type="text" placeholder="Name" name="name" value={participant?.name} onChange={(e) => onChange(e, participantIndex)} required />

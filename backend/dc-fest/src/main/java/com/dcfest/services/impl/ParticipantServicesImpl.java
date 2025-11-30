@@ -467,7 +467,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
                     .findFirst()
                     .orElse(null);
 
-            group = collegeModel.getIcCode() + "_WL_" + String.format("%03d", cp.getWaitingListSequence().substring(3));
+            String numberPart = cp.getWaitingListSequence().substring(3); // "005"
+            group = collegeModel.getIcCode() + "_WL_" + numberPart;  // already padded!
         } else {
             // OTSE: Use incremental sequence number across all colleges for this event
             int nextOTSESequence = getNextOTSESequenceNumber(eventModel.getId());
