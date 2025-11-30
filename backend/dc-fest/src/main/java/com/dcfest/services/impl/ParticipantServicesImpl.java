@@ -650,6 +650,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
         List<ParticipantModel> participantModels = this.participantRepository.findByEvent_IdAndCollegeIdAndGroup(
                 participantDto.getEventIds().get(0), participantDto.getCollegeId(), participantDto.getGroup());
 
+        System.out.println("participantModels:" + participantModels);
+
         // Check for max_slots
         if (participantDto.getType().equals(ParticipantType.PERFORMER)) {
             EventRuleModel performerRule = eventRuleModels.stream()
@@ -739,7 +741,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         participantModel.setEntryType(participantModel.getEntryType());
         participantModel.getEvents().add(eventModel);
         participantModel.setHandPreference(participantDto.getHandPreference());
-        participantModel.setGroup(participantDto.getGroup());
+        participantModel.setGroup(participantModels.get(0).getGroup());
 
         // Set quota type and count
         participantModel.setQuotaType(quotaType);

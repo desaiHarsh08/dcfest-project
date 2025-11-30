@@ -577,6 +577,7 @@ const CollegeEvent = () => {
     const newParticipant = {
       ...selectedParticipant,
       collegeId: participants[0].collegeId,
+      group: participants[0].group
     };
     console.log(newParticipant);
     setLoadingSave(true);
