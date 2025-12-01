@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Card, Alert } from "react-bootstrap";
 import "../styles/Login.css"; // Custom styles for any additional styling
 import { useNavigate } from "react-router-dom";
 import { doLogin } from "../services/auth-apis";
@@ -65,6 +65,12 @@ const Login = () => {
     <Container fluid className="login-page">
       <Row className="justify-content-center align-items-center min-vh-100">
         <Col md={5}>
+        <Alert variant="warning" className="text-center fw-semibold mb-4 shadow-sm">
+          ⚠️ <strong>Scheduled Maintenance Notice</strong><br />
+          UMANG Fest App will be under short maintenance on
+          <strong> Dec 1, 2025, 4:00 PM to 8:00 PM.</strong><br />
+          It is recommended <strong>NOT</strong> to add or update any participant-related data during this period.
+        </Alert>
           <Card className="shadow-lg p-4 card-login">
             <Card.Body>
               <h3 className="text-center mb-4">Welcome to UMANG {year}</h3>
