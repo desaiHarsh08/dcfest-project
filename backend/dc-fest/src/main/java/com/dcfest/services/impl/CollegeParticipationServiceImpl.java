@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 public class CollegeParticipationServiceImpl implements CollegeParticipationService {
 
@@ -215,7 +217,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         return collegeParticipationModels.stream()
                 .map(this::collegeParticipationModelToDto)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -233,7 +235,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         return collegeParticipationModels.stream()
                 .map(this::collegeParticipationModelToDto)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -252,7 +254,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         return collegeParticipationModels.stream()
                 .map(this::collegeParticipationModelToDto)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -311,7 +313,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
             List<ParticipantModel> participantModels = this.participantRepository
                     .findByAvailableEventId(availableEventModel.getId()).stream()
                     .filter(p -> p.getCollege().getId().equals(existCollegeParticipationModel.getCollege().getId()))
-                    .collect(Collectors.toList());
+                    .collect(toList());
             for (ParticipantModel participantModel : participantModels) {
                 if (!this.participantServices.deleteParticipant(participantModel.getId())) {
                     throw new IllegalArgumentException("Unable to delete the participants");
@@ -385,7 +387,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
         }
 
         return collegeParticipationModels.stream().map(this::collegeParticipationModelToDto)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
@@ -439,7 +441,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                                     .findByAvailableEventId(availableEventModel.getId()).stream()
                                     .filter(p -> p.getCollege().getId().equals(participation.getCollege().getId()))
                                     .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
-                                    .collect(Collectors.toList());
+                                    .collect(toList());
 
                             CollegeModel collegeModel = this.collegeRepository.findById(participants.get(0).getCollege().getId()).orElse(null);
 
@@ -523,7 +525,10 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
 
         // Check if there are vacant registration slots
         int maxSlotsAvailable = Integer.parseInt(registeredSlotsRule.getValue());
-        Long slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId());
+//        Long slotsOccupied = this.participantRepository.countDistinctCollegesForEvent(eventModel.getId());
+        long slotsOccupied = this.participationRepository.findByAvailableEvent(availableEventModel).stream()
+                .filter(cp -> cp.getWaitingListSequence() == null)
+                .count();
 
         if (slotsOccupied >= maxSlotsAvailable) {
             // No vacant slots available
@@ -545,7 +550,7 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                         return 0;
                     }
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
 
         if (waitingListParticipations.isEmpty()) {
             // No waiting list colleges to promote
@@ -557,19 +562,27 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
         firstInQueue.setWaitingListSequence(null); // Clear waiting list sequence
         this.participationRepository.save(firstInQueue);
 
-        // Update all participants of this college to REGISTRATION_QUOTA
-        List<ParticipantModel> collegeParticipants = this.participantRepository
-                .findByAvailableEventId(availableEventModel.getId()).stream()
-                .filter(p -> p.getCollege().getId().equals(firstInQueue.getCollege().getId()))
-                .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
-                .collect(Collectors.toList());
+        CollegeModel promotedCollege = firstInQueue.getCollege();
 
-        CollegeModel collegeModel = this.collegeRepository.findById(collegeParticipants.get(0).getCollege().getId()).orElseThrow(
-                () -> new ResourceNotFoundException("College not found")
-        );
+        // Update all participants of this college to REGISTRATION_QUOTA
+//        List<ParticipantModel> collegeParticipants = this.participantRepository
+//                .findByAvailableEventId(availableEventModel.getId()).stream()
+//                .filter(p -> p.getCollege().getId().equals(firstInQueue.getCollege().getId()))
+//                .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
+//                .collect(Collectors.toList());
+
+        List<ParticipantModel> collegeParticipants = participantRepository
+                .findByAvailableEventId(availableEventModel.getId())
+                .stream()
+                .filter(p -> p.getCollege().getId().equals(promotedCollege.getId()))
+                .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA).toList();
+
+//        CollegeModel collegeModel = this.collegeRepository.findById(collegeParticipants.get(0).getCollege().getId()).orElseThrow(
+//                () -> new ResourceNotFoundException("College not found")
+//        );
 
         for (ParticipantModel participant : collegeParticipants) {
-            String group = collegeModel.getIcCode() + "_01";
+            String group = promotedCollege.getIcCode() + "_01";
             participant.setQuotaType(QuotaType.REGISTRATION_QUOTA);
             participant.setQuotaCount(null); // Clear WL sequence
             participant.setGroup(group);
@@ -592,11 +605,13 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                         .findByAvailableEventId(availableEventModel.getId()).stream()
                         .filter(p -> p.getCollege().getId().equals(participation.getCollege().getId()))
                         .filter(p -> p.getQuotaType() == QuotaType.WAITING_LIST_QUOTA)
-                        .collect(Collectors.toList());
+                        .collect(toList());
 
-                CollegeModel waitingCollegeModel = this.collegeRepository.findById(collegeParticipants.get(0).getCollege().getId()).orElseThrow(
-                        () -> new ResourceNotFoundException("College not found")
-                );
+//                CollegeModel waitingCollegeModel = this.collegeRepository.findById(collegeParticipants.get(0).getCollege().getId()).orElseThrow(
+//                        () -> new ResourceNotFoundException("College not found")
+//                );
+
+                CollegeModel waitingCollegeModel = participation.getCollege(); // Correct college!
 
                 for (ParticipantModel participant : participants) {
                     String group = waitingCollegeModel.getIcCode() + "_" + participation.getWaitingListSequence();
@@ -613,11 +628,23 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
         // Emit WebSocket event for waiting list promotion
         try {
             Long availableEventId = availableEventModel.getId();
-            Long slotsOccupiedAfterPromotion = this.participantRepository
-                    .countDistinctCollegesForEvent(eventModel.getId());
-            Long waitingListSlotsOccupied = this.participantServices
-                    .waitingListSlotsOccupiedByAvailableEventId(availableEventId);
-            webSocketService.emitQuotaUpdate(availableEventId, slotsOccupiedAfterPromotion, waitingListSlotsOccupied);
+//            Long slotsOccupiedAfterPromotion = this.participantRepository
+//                    .countDistinctCollegesForEvent(eventModel.getId());
+//            Long waitingListSlotsOccupied = this.participantServices
+//                    .waitingListSlotsOccupiedByAvailableEventId(availableEventId);
+//            webSocketService.emitQuotaUpdate(availableEventId, slotsOccupiedAfterPromotion, waitingListSlotsOccupied);
+//            webSocketService.emitWaitingListPromotion(availableEventId);
+            // Emit correct quota numbers after promotion
+            long finalRegistered = participationRepository.findByAvailableEvent(availableEventModel).stream()
+                    .filter(cp -> cp.getWaitingListSequence() == null)
+                    .count();
+
+            long finalWaiting = participationRepository.findByAvailableEvent(availableEventModel).stream()
+                    .filter(cp -> cp.getWaitingListSequence() != null &&
+                            cp.getWaitingListSequence().startsWith("WL_"))
+                    .count();
+
+            webSocketService.emitQuotaUpdate(availableEventId, finalRegistered, finalWaiting);
             webSocketService.emitWaitingListPromotion(availableEventId);
         } catch (Exception e) {
             System.err.println("Error emitting WebSocket event: " + e.getMessage());

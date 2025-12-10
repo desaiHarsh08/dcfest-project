@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState, useCallback } from "react";
 import { fetchAvailableEventsById } from "../../services/available-events-apis";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import CategoryName from "./CategoryName";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 import { fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
@@ -167,7 +167,7 @@ const EventRow = ({ index, availableEventId, collegeId,  }) => {
           <span className="text-muted">No Event Name</span>
         )}
       </td>
-      <td>{participants.length}</td>
+      <td>{participants.filter(p => p.entryType !== "OTSE").length}</td>
       <td style={{ textAlign: "center", verticalAlign: "middle" }}>
         {/* Show View button if college has enrolled (has participation) OR if event exists */}
         {collegeParticipation || event?.id ? (

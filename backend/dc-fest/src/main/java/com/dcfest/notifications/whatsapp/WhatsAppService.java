@@ -29,6 +29,9 @@ public class WhatsAppService {
     @Value("${interakt.base.url}")
     private String interaktBaseUrl;
 
+    @Value("${dev.whatsapp:#{null}}")
+    private String devWhatsAppOverride;
+
     public WhatsAppService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -36,6 +39,14 @@ public class WhatsAppService {
     public Map<String, Object> sendWhatsAppMessage(String to, List<String> messageArr, String templateName,
             String filePath) {
         try {
+            // DEV MODE: Redirect all whatsapp to developer
+            if (devWhatsAppOverride != null && !devWhatsAppOverride.trim().isEmpty()) {
+                System.out.println("DEVELOPMENT MODE ACTIVE");
+                System.out.println("   Original recipient: " + to);
+                System.out.println("   Redirected to developer: " + devWhatsAppOverride);
+                to = devWhatsAppOverride.trim();
+            }
+
             // Build request body in exact order as frontend
             Map<String, Object> requestBody = new LinkedHashMap<>();
             requestBody.put("countryCode", "+91");

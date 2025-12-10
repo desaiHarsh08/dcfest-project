@@ -20,6 +20,9 @@ public class ZeptoMailService {
     @Value("${zepto.token}")
     private String zeptoToken;
 
+    @Value("${dev.email:#{null}}")
+    private String devEmailOverride;
+
     private final RestTemplate restTemplate;
 
     public ZeptoMailService() {
@@ -32,6 +35,15 @@ public class ZeptoMailService {
 
     public void sendEmail(String to, String subject, String htmlContent, List<Attachment> attachments) {
         try {
+            // DEV MODE: Redirect all emails to developer
+            if (devEmailOverride != null && !devEmailOverride.trim().isEmpty()) {
+                System.out.println("DEVELOPMENT MODE ACTIVE");
+                System.out.println("   Original recipient: " + to);
+                System.out.println("   Redirected to developer: " + devEmailOverride);
+                System.out.println("   Subject: " + subject);
+                to = devEmailOverride.trim();
+            }
+
             // Ensure URL is properly formatted with protocol
             String baseUrl = zeptoUrl;
             if (baseUrl == null || baseUrl.isEmpty()) {

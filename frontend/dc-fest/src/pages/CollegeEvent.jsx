@@ -191,7 +191,7 @@ const CollegeEvent = () => {
               console.log(`✓ Participant ${index} has id:`, p.id);
             }
           });
-          setParticipants(response);
+          setParticipants(response.filter(p => p.entryType !== "OTSE"));
         } catch (error) {
           console.error(error);
         }
@@ -210,7 +210,7 @@ const CollegeEvent = () => {
           console.error(`WARNING: Participant at index ${index} is missing id field:`, p);
         }
       });
-      setParticipants(response);
+      setParticipants(response.filter(p => p.entryType !== "OTSE"));
     } catch (error) {
       console.error(error);
     }
