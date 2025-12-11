@@ -297,7 +297,7 @@ const GetReports = () => {
     setIsDownloading(true);
     setCurrentCollege(0);
     try {
-      //   console.log("here");
+      //   console.log("here"); 
       const response = await fetchAllParticipations();
       //   console.log(response);
       const doneColleges = [];
@@ -310,6 +310,9 @@ const GetReports = () => {
         const tmpCollegeParticipations = response.filter((ele) => ele.collegeId == response[i].collegeId);
         for (let j = 0; j < tmpCollegeParticipations.length; j++) {
           const participants = await getParticipants(tmpCollegeParticipations[j]);
+          console.log("participants:", participants);
+          console.log("participants[0]:", participants[0]);
+          console.log("participants[0].quotaCount:", participants[0]?.quotaCount);
           if (!participants) continue;
           const college = colleges.find((c) => c.id == tmpCollegeParticipations[j].collegeId);
           const availableEvent = availableEvents.find((a) => a.id == tmpCollegeParticipations[j].availableEventId);
@@ -334,6 +337,7 @@ const GetReports = () => {
               group: "",
               present: "",
               participants: participants.length,
+            //   waiting_list: participants[0]?.quotaCount,
             };
             formattedArr.push(obj);
             // console.log(obj);
