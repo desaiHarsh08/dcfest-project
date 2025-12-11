@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -31,4 +32,9 @@ public class ParticipantDto {
     private HandPreferenceType handPreference = HandPreferenceType.RIGHT_HANDED;
     private List<PromotedRoundDto> promotedRoundDtos = new ArrayList<>();
     private Boolean disableParticipation;
+    private String quotaCount;
+    private String quotaType;
+    private Date quotaStartDate;
+    private Date quotaEndDate;
+
 }

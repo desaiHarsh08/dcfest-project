@@ -390,6 +390,45 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
                 .collect(toList());
     }
 
+    public boolean vacantSlotsExist(AvailableEventModel availableEventModel) {
+
+        // 1) Fetch event rule defining max registered slots
+        EventRuleModel eventRuleModel = this.eventRuleRepository
+                .findByAvailableEvent(availableEventModel)
+                .stream()
+                .filter(e -> e.getEventRuleTemplate().getName()
+                        .equalsIgnoreCase("REGISTERED_SLOTS_AVAILABLE"))
+                .findFirst()
+                .orElse(null);
+
+        if (eventRuleModel == null || eventRuleModel.getValue() == null) {
+            return false; // rule missing → treat as no slots available
+        }
+
+        int maxSlots = Integer.parseInt(eventRuleModel.getValue());
+
+        // 2) Fetch all participations
+        List<CollegeParticipationModel> participationList =
+                participationRepository.findByAvailableEvent(availableEventModel);
+
+        // 3) Count registered (seats actually occupied)
+        long registeredCount = participationList.stream()
+                .filter(cp -> cp.getWaitingListSequence() == null)
+                .count();
+
+        // 4) If seats occupied < max slots → vacant exists
+        return registeredCount < maxSlots;
+    }
+
+    private boolean waitingListExists(AvailableEventModel availableEventModel) {
+        return participationRepository.findByAvailableEvent(availableEventModel)
+                .stream()
+                .anyMatch(cp -> cp.getWaitingListSequence() != null
+                        && cp.getWaitingListSequence().startsWith("WL_"));
+    }
+
+
+
     @Override
     public void realignWaitlistForAvailableEvent(Long availableEventId) {
         AvailableEventModel availableEventModel = this.availableEventRepository.findById(availableEventId)
@@ -403,7 +442,9 @@ public class CollegeParticipationServiceImpl implements CollegeParticipationServ
             return;
         }
 
-        this.promoteWaitingListParticipant(eventModel, availableEventModel);
+        while (vacantSlotsExist(availableEventModel) && waitingListExists(availableEventModel)) {
+            this.promoteWaitingListParticipant(eventModel, availableEventModel);
+        }
     }
 
     /**

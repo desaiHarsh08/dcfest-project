@@ -738,7 +738,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // Create the participant
         ParticipantModel participantModel = this.modelMapper.map(participantDto, ParticipantModel.class);
         participantModel.setCollege(collegeModel);
-        participantModel.setEntryType(participantModel.getEntryType());
+        participantModel.setEntryType(participantDto.getEntryType());
         participantModel.getEvents().add(eventModel);
         participantModel.setHandPreference(participantDto.getHandPreference());
         participantModel.setGroup(participantModels.get(0).getGroup());
@@ -756,10 +756,11 @@ public class ParticipantServicesImpl implements ParticipantServices {
             }
             // Automatically set EntryType to WAITING_LIST when QuotaType is
             // WAITING_LIST_QUOTA
-            participantModel.setEntryType(EntryType.WAITING_LIST);
+//            participantModel.setEntryType(EntryType.WAITING_LIST);
         }
 
         // Save the participant
+        System.out.println("saving participantModel: " + participantModel);
         participantModel = this.participantRepository.save(participantModel);
         // Save the events
         eventModel.getParticipants().add(participantModel);
@@ -957,6 +958,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
         foundParticipantModel.setWhatsappNumber(participantDto.getWhatsappNumber());
         foundParticipantModel.setMale(participantDto.isMale());
         foundParticipantModel.setHandPreference(participantDto.getHandPreference());
+        foundParticipantModel.setEntryType(participantDto.getEntryType());
 
         // Save the changes
         foundParticipantModel = this.participantRepository.save(foundParticipantModel);
@@ -1190,6 +1192,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         ParticipantDto participantDto = this.modelMapper.map(participantModel, ParticipantDto.class);
         participantDto.setCollegeId(participantModel.getCollege().getId());
+participantDto.setQuotaCount(participantModel.getQuotaCount());
         // participantDto.setEvents(new ArrayList<>());
         participantDto.setEntryType(participantModel.getEntryType());
         List<PromotedRoundModel> promotedRoundModels = this.promotedRoundRepository.findByParticipant(participantModel);
@@ -1205,6 +1208,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
         // Convert the list of EventModel to a list of event IDs
         List<Long> eventIds = participantModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());
         participantDto.setEventIds(eventIds);
+
+        participantDto.setQuotaCount(participantModel.getQuotaCount());
 
         return participantDto;
     }
