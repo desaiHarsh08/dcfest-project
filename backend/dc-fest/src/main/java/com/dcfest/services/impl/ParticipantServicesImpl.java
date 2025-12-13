@@ -79,8 +79,17 @@ public class ParticipantServicesImpl implements ParticipantServices {
      * Determines the quota type based on academic year, available quotas, and
      * registration slot availability
      */
-    private QuotaType determineQuotaType(AvailableEventModel availableEventModel,
+    private QuotaType determineQuotaType(EntryType entryType, AvailableEventModel availableEventModel,
             List<EventRuleModel> eventRuleModels, EventModel eventModel) {
+        // 🔒 HARD RULES FIRST
+        if (entryType == EntryType.OTSE) {
+            return QuotaType.OTSE_QUOTA;
+        }
+
+        if (entryType == EntryType.WAITING_LIST) {
+            return QuotaType.WAITING_LIST_QUOTA;
+        }
+
         // First, check if registration slots are full
         EventRuleModel registeredSlotsRule = eventRuleModels.stream()
                 .filter(ele -> ele.getEventRuleTemplate().getName().equalsIgnoreCase("REGISTERED_SLOTS_AVAILABLE"))
@@ -253,6 +262,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Override
     public List<ParticipantDto> createParticipants(List<ParticipantDto> participantDtos) {
+        System.out.println(participantDtos);
         CollegeModel collegeModel = this.collegeRepository.findById(participantDtos.get(0).getCollegeId()).orElseThrow(
                 () -> new IllegalArgumentException("Please provide the valid college id"));
 
@@ -487,10 +497,10 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         // Determine quota type based on academic year, slot availability, and event
         // rules
-        QuotaType quotaType = determineQuotaType(availableEventModel, eventRuleModels, eventModel);
+        QuotaType quotaType = determineQuotaType(participantDtos.get(0).getEntryType(), availableEventModel, eventRuleModels, eventModel);
 
         // If college has waiting list sequence, use WAITING_LIST_QUOTA
-        if (collegeWaitingListSequence != null) {
+        if (collegeWaitingListSequence != null && participantDtos.get(0).getEntryType() == EntryType.NORMAL) {
             quotaType = QuotaType.WAITING_LIST_QUOTA;
         }
 
@@ -506,23 +516,40 @@ public class ParticipantServicesImpl implements ParticipantServices {
             participantModel.setGroup(group);
 
             // Set quota type and count
+//            participantModel.setQuotaType(quotaType);
+//            if (quotaType == QuotaType.WAITING_LIST_QUOTA || participantModel.getEntryType() == EntryType.WAITING_LIST) {
+//                // Use college's waiting list sequence (assigned during enrollment)
+//                if (collegeWaitingListSequence != null) {
+//                    participantModel.setQuotaCount(collegeWaitingListSequence);
+//                    participantModel.setGroup(group);
+//                } else {
+//                    // Fallback: generate sequence if college doesn't have one (shouldn't happen)
+//                    String quotaCount = generateWLQSequenceNumber(eventModel.getId());
+//                    group = collegeModel.getIcCode() + "_" + quotaCount;
+//                    participantModel.setGroup(group);
+//                    participantModel.setQuotaCount(quotaCount);
+//                }
+//                // Automatically set EntryType to WAITING_LIST when QuotaType is
+//                // WAITING_LIST_QUOTA
+//                participantModel.setEntryType(EntryType.WAITING_LIST);
+//            }
+
             participantModel.setQuotaType(quotaType);
-            if (quotaType == QuotaType.WAITING_LIST_QUOTA) {
-                // Use college's waiting list sequence (assigned during enrollment)
+
+// ✅ Apply WL logic ONLY for WL entries
+            if (participantModel.getEntryType() == EntryType.WAITING_LIST) {
+
                 if (collegeWaitingListSequence != null) {
                     participantModel.setQuotaCount(collegeWaitingListSequence);
                     participantModel.setGroup(group);
                 } else {
-                    // Fallback: generate sequence if college doesn't have one (shouldn't happen)
                     String quotaCount = generateWLQSequenceNumber(eventModel.getId());
                     group = collegeModel.getIcCode() + "_" + quotaCount;
                     participantModel.setGroup(group);
                     participantModel.setQuotaCount(quotaCount);
                 }
-                // Automatically set EntryType to WAITING_LIST when QuotaType is
-                // WAITING_LIST_QUOTA
-                participantModel.setEntryType(EntryType.WAITING_LIST);
             }
+
 
             // Save the participant
             participantModel = this.participantRepository.save(participantModel);
@@ -728,7 +755,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
         // Determine quota type based on academic year, slot availability, and event
         // rules
-        QuotaType quotaType = determineQuotaType(availableEventModel, eventRuleModels, eventModel);
+        QuotaType quotaType = determineQuotaType(participantDto.getEntryType(), availableEventModel, eventRuleModels, eventModel);
 
         // If college has waiting list sequence, use WAITING_LIST_QUOTA
         if (collegeWaitingListSequence != null) {

@@ -83,6 +83,7 @@ const EventCard = ({ event, college }) => {
   const fetchDeadlineStatus = async () => {
     try {
       const response = await fetchRegistrationDeadlineStatus();
+      console.log("fetchDeadlineStatus(): ", response)
       // Registration is closed if it's not open (checks both startDate and endDate)
       setIsDeadlineClosed(!response.isRegistrationOpen || false);
     } catch (error) {
@@ -146,9 +147,10 @@ const EventCard = ({ event, college }) => {
       }
     }
     // Fetch deadline status for college users
-    if (user?.type === "COLLEGE_REPRESENTATIVE") {
-      fetchDeadlineStatus();
-    }
+    // if (user?.type === "COLLEGE_REPRESENTATIVE") {
+      
+    // }
+    fetchDeadlineStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event, flag, participation, user]);
 
@@ -273,10 +275,11 @@ const EventCard = ({ event, college }) => {
   }, [event?.id]);
 
   const handleDeleteParticipation = async (participationId) => {
-    // if (new Date() > new Date("2025-12-11T14:00:00")) {
-    //     alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
-    //   return;
-    // }
+    console.log("isDeadlineClosed:", isDeadlineClosed);
+    if (isDeadlineClosed) {
+        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
+      return;
+    }
 
     let isConfirmed = confirm(`Are you sure that you want to remove your college's participation for "${event?.title}"?`);
     if (!isConfirmed) {

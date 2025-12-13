@@ -1,14 +1,37 @@
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Table, Button, Badge, Card, ListGroup, Modal, Form } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Table,
+  Button,
+  Badge,
+  Card,
+  ListGroup,
+  Modal,
+  Form,
+} from "react-bootstrap";
 import Navbar from "../components/Navbar/Navbar";
 import { Link, useParams } from "react-router-dom";
-import { addParticipant, deleteParticipant, fetchParticipantsByEventIdAndCollegeId, fetchSlotsOccupiedForEvent, updateParticipant } from "../services/participants-api";
+import {
+  addParticipant,
+  deleteParticipant,
+  fetchParticipantsByEventIdAndCollegeId,
+  fetchSlotsOccupiedForEvent,
+  updateParticipant,
+} from "../services/participants-api";
 import { fetchAvailableEventsById } from "../services/available-events-apis";
 import { fetchEventById } from "../services/event-apis";
 import { fetchParticipationEventsByCollegeId } from "../services/college-participation-apis";
 import styles from "../styles/CollegeEvent.module.css";
-import { FaMapMarkerAlt, FaRegClock, FaTicketAlt, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaRegClock,
+  FaTicketAlt,
+  FaCalendarAlt,
+} from "react-icons/fa";
 import { fetchCollegeByIcCode } from "../services/college-apis";
+import { fetchRegistrationDeadlineStatus } from "../services/academic-year-apis";
 
 const participantObj = {
   name: "",
@@ -36,6 +59,21 @@ const CollegeEvent = () => {
   const [slotsOccupied, setSlotsOccupied] = useState();
   const [college, setCollege] = useState();
 
+  const [isDeadlineClosed, setIsDeadlineClosed] = useState(false);
+
+  const fetchDeadlineStatus = async () => {
+    try {
+      const response = await fetchRegistrationDeadlineStatus();
+      console.log("fetchDeadlineStatus(): ", response);
+      // Registration is closed if it's not open (checks both startDate and endDate)
+      setIsDeadlineClosed(!response.isRegistrationOpen || false);
+    } catch (error) {
+      console.log("Error fetching registration deadline status:", error);
+      // If API fails, assume deadline is closed for safety
+      setIsDeadlineClosed(true);
+    }
+  };
+
   const handleClose = () => setShow(false);
   const handleShow = () => {
     // if (new Date() > new Date("2025-12-11T14:00:00")) {
@@ -44,7 +82,8 @@ const CollegeEvent = () => {
     setShow(true);
   };
 
-  const [selectedParticipant, setSelectedParticipant] = useState(participantObj);
+  const [selectedParticipant, setSelectedParticipant] =
+    useState(participantObj);
 
   // Fetch event data when component mounts or eventId changes
   // Since we're using a key in the wrapper, component remounts on navigation
@@ -52,7 +91,10 @@ const CollegeEvent = () => {
   useEffect(() => {
     if (!eventId) return;
 
-    console.log("Component mounted/eventId changed, fetching data for:", eventId);
+    console.log(
+      "Component mounted/eventId changed, fetching data for:",
+      eventId
+    );
 
     let isMounted = true;
 
@@ -66,8 +108,13 @@ const CollegeEvent = () => {
         if (!isMounted) return;
 
         if (eventData?.availableEventId) {
-          console.log("Calling fetchAvailableEventsById for:", eventData.availableEventId);
-          const availableEventData = await fetchAvailableEventsById(eventData.availableEventId);
+          console.log(
+            "Calling fetchAvailableEventsById for:",
+            eventData.availableEventId
+          );
+          const availableEventData = await fetchAvailableEventsById(
+            eventData.availableEventId
+          );
           console.log("Received availableEventData:", availableEventData);
 
           if (!isMounted) return;
@@ -97,7 +144,10 @@ const CollegeEvent = () => {
 
         console.log("Trying direct fetchAvailableEventsById for:", eventId);
         const availableEventData = await fetchAvailableEventsById(eventId);
-        console.log("Received availableEventData (direct):", availableEventData);
+        console.log(
+          "Received availableEventData (direct):",
+          availableEventData
+        );
 
         if (!isMounted) return;
 
@@ -110,7 +160,7 @@ const CollegeEvent = () => {
     };
 
     fetchEventData();
-
+    fetchDeadlineStatus();
     // Cleanup function
     return () => {
       isMounted = false;
@@ -127,14 +177,24 @@ const CollegeEvent = () => {
 
     const fetchEventDataWithCollege = async () => {
       try {
-        const participations = await fetchParticipationEventsByCollegeId(college.id);
+        const participations = await fetchParticipationEventsByCollegeId(
+          college.id
+        );
         // Find the participation that matches this eventId (if event exists) or matches availableEventId
-        const participation = participations.find((p) => p.eventId === Number(fetchEventId) || p.availableEventId === Number(fetchEventId));
+        const participation = participations.find(
+          (p) =>
+            p.eventId === Number(fetchEventId) ||
+            p.availableEventId === Number(fetchEventId)
+        );
         if (participation?.availableEventId && isMounted) {
-          const availableEventData = await fetchAvailableEventsById(participation.availableEventId);
+          const availableEventData = await fetchAvailableEventsById(
+            participation.availableEventId
+          );
           if (isMounted) {
             setAvailableEvent(availableEventData);
-            console.log("Fallback: availableEvent set from college participation");
+            console.log(
+              "Fallback: availableEvent set from college participation"
+            );
           }
         }
       } catch (participationErr) {
@@ -179,19 +239,33 @@ const CollegeEvent = () => {
     if (college && eventId) {
       const fetchParticipants = async () => {
         try {
-          const response = await fetchParticipantsByEventIdAndCollegeId(eventId, college.id);
+          const response = await fetchParticipantsByEventIdAndCollegeId(
+            eventId,
+            college.id
+          );
           console.log("Fetched participants from API:", response);
           // Verify each participant has an id
           response.forEach((p, index) => {
-            console.log(`Participant ${index} - id:`, p.id, "full object keys:", Object.keys(p));
+            console.log(
+              `Participant ${index} - id:`,
+              p.id,
+              "full object keys:",
+              Object.keys(p)
+            );
             if (!p.id && p.id !== 0) {
-              console.error(`WARNING: Participant at index ${index} is missing id field:`, p);
-              console.error("Participant object structure:", JSON.stringify(p, null, 2));
+              console.error(
+                `WARNING: Participant at index ${index} is missing id field:`,
+                p
+              );
+              console.error(
+                "Participant object structure:",
+                JSON.stringify(p, null, 2)
+              );
             } else {
               console.log(`✓ Participant ${index} has id:`, p.id);
             }
           });
-          setParticipants(response.filter(p => p.entryType !== "OTSE"));
+          setParticipants(response.filter((p) => p.entryType !== "OTSE"));
         } catch (error) {
           console.error(error);
         }
@@ -202,15 +276,21 @@ const CollegeEvent = () => {
 
   const getParticipants = async () => {
     try {
-      const response = await fetchParticipantsByEventIdAndCollegeId(eventId, college.id);
+      const response = await fetchParticipantsByEventIdAndCollegeId(
+        eventId,
+        college.id
+      );
       console.log("Refetched participants from API:", response);
       // Verify each participant has an id
       response.forEach((p, index) => {
         if (!p.id) {
-          console.error(`WARNING: Participant at index ${index} is missing id field:`, p);
+          console.error(
+            `WARNING: Participant at index ${index} is missing id field:`,
+            p
+          );
         }
       });
-      setParticipants(response.filter(p => p.entryType !== "OTSE"));
+      setParticipants(response.filter((p) => p.entryType !== "OTSE"));
     } catch (error) {
       console.error(error);
     }
@@ -220,8 +300,16 @@ const CollegeEvent = () => {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
+    if (isDeadlineClosed) {
+      alert(
+        "Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information."
+      );
+      return;
+    }
     const tmpParticipant = participants.find((p) => p.id == id);
-    const isConfirm = confirm(`Are you sure that you want to delete "${tmpParticipant?.name}"?`);
+    const isConfirm = confirm(
+      `Are you sure that you want to delete "${tmpParticipant?.name}"?`
+    );
     if (!isConfirm) {
       return;
     }
@@ -235,7 +323,9 @@ const CollegeEvent = () => {
     try {
       await deleteParticipant(id);
       alert("Participant Deleted Successfully!");
-      setParticipants(participants.filter((participant) => participant.id !== id));
+      setParticipants(
+        participants.filter((participant) => participant.id !== id)
+      );
       getParticipants();
     } catch (error) {
       alert("Unable to delete the participant. Please try again later.");
@@ -267,6 +357,13 @@ const CollegeEvent = () => {
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
     console.log(`in change, ${name}: ${value}`);
+
+    if (isDeadlineClosed) {
+      alert(
+        "Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information."
+      );
+      return;
+    }
 
     // Validate phone number - only allow digits and limit to 10 digits
     if (name === "whatsappNumber") {
@@ -340,13 +437,21 @@ const CollegeEvent = () => {
       newParticipants = participants.filter((p) => p.id != deleteParticipantId);
     }
 
-    console.log("in handleRuleChecks(), after, newParticipants:", newParticipants);
+    console.log(
+      "in handleRuleChecks(), after, newParticipants:",
+      newParticipants
+    );
 
     // Check for whatsapp_no. - must be exactly 10 digits
-    if (!deleteParticipantId && selectedParticipant?.whatsappNumber.length !== 10) {
+    if (
+      !deleteParticipantId &&
+      selectedParticipant?.whatsappNumber.length !== 10
+    ) {
       setIsValid(false);
       if (isSubmitting) {
-        alert(`Please provide a valid 10-digit phone number, currently ${selectedParticipant.whatsappNumber.length} digits!`);
+        alert(
+          `Please provide a valid 10-digit phone number, currently ${selectedParticipant.whatsappNumber.length} digits!`
+        );
       }
       return false;
     }
@@ -366,7 +471,11 @@ const CollegeEvent = () => {
     // Check for blank field
     if (!deleteParticipantId) {
       for (const participant of newParticipants) {
-        if (!participant.name.trim() || !participant.email.trim() || !participant?.whatsappNumber.trim()) {
+        if (
+          !participant.name.trim() ||
+          !participant.email.trim() ||
+          !participant?.whatsappNumber.trim()
+        ) {
           console.log("in loop, empty field");
           setIsValid(false);
           return false;
@@ -379,11 +488,21 @@ const CollegeEvent = () => {
       const ruleValue = Number(rule.value);
       switch (rule.eventRuleTemplate.name) {
         case "MIN_PARTICIPANTS":
-          console.log("in case, MIN_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:", newParticipants.filter((p) => p.type == "PERFORMER").length, "ruleValue:", ruleValue);
+          console.log(
+            "in case, MIN_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:",
+            newParticipants.filter((p) => p.type == "PERFORMER").length,
+            "ruleValue:",
+            ruleValue
+          );
           if (deleteParticipantId) {
-            if (newParticipants.filter((p) => p.type == "PERFORMER").length < ruleValue) {
+            if (
+              newParticipants.filter((p) => p.type == "PERFORMER").length <
+              ruleValue
+            ) {
               if (isSubmitting) {
-                alert(`Oops... There should be minimum ${ruleValue} participants!`);
+                alert(
+                  `Oops... There should be minimum ${ruleValue} participants!`
+                );
               }
               setIsValid(false);
               return false;
@@ -392,10 +511,20 @@ const CollegeEvent = () => {
           break;
 
         case "MAX_PARTICIPANTS":
-          console.log("in case, MAX_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:", newParticipants.filter((p) => p.type == "PERFORMER").length, "ruleValue:", ruleValue);
-          if (newParticipants.filter((p) => p.type == "PERFORMER").length > ruleValue) {
+          console.log(
+            "in case, MAX_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:",
+            newParticipants.filter((p) => p.type == "PERFORMER").length,
+            "ruleValue:",
+            ruleValue
+          );
+          if (
+            newParticipants.filter((p) => p.type == "PERFORMER").length >
+            ruleValue
+          ) {
             if (isSubmitting) {
-              alert(`Oops... There should be maximum ${ruleValue} participants!`);
+              alert(
+                `Oops... There should be maximum ${ruleValue} participants!`
+              );
             }
             setIsValid(false);
             return false;
@@ -404,18 +533,30 @@ const CollegeEvent = () => {
 
         case "MALE_PARTICIPANTS": {
           console.log("in case: MALE_PARTICIPANTS: -", "ruleValue:", ruleValue);
-          const minParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value;
-          const maxParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+          const minParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS"
+          )?.value;
+          const maxParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS"
+          )?.value;
 
           // Include the new participant in the validation
-          const malePerformers = newParticipants.filter((p) => p.male && p.type == "PERFORMER").length;
-          const femalePerformers = newParticipants.filter((p) => !p.male && p.type == "PERFORMER").length;
-          console.log(`malePerformers: ${malePerformers}, femalePerformers: ${femalePerformers}`);
+          const malePerformers = newParticipants.filter(
+            (p) => p.male && p.type == "PERFORMER"
+          ).length;
+          const femalePerformers = newParticipants.filter(
+            (p) => !p.male && p.type == "PERFORMER"
+          ).length;
+          console.log(
+            `malePerformers: ${malePerformers}, femalePerformers: ${femalePerformers}`
+          );
 
           if (ruleValue == maxParticipants) {
             if (femalePerformers > 0) {
               if (isSubmitting) {
-                alert(`Oops... There should be only MALE participants, and a minimum of ${minParticipants} is required!`);
+                alert(
+                  `Oops... There should be only MALE participants, and a minimum of ${minParticipants} is required!`
+                );
               }
               setIsValid(false);
               return false;
@@ -430,7 +571,9 @@ const CollegeEvent = () => {
             // Validate exact male count when ruleValue is not maxParticipants
             if (malePerformers > ruleValue) {
               if (isSubmitting) {
-                alert(`Oops... There should be exactly ${ruleValue} MALE participants!`);
+                alert(
+                  `Oops... There should be exactly ${ruleValue} MALE participants!`
+                );
               }
               setIsValid(false);
               return false;
@@ -443,17 +586,27 @@ const CollegeEvent = () => {
         }
 
         case "FEMALE_PARTICIPANTS": {
-          const minParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value;
-          const maxParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+          const minParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS"
+          )?.value;
+          const maxParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS"
+          )?.value;
 
           // Include the new participant in the validation
-          const malePerformers = newParticipants.filter((p) => p.male && p.type == "PERFORMER").length;
-          const femalePerformers = newParticipants.filter((p) => !p.male && p.type == "PERFORMER").length;
+          const malePerformers = newParticipants.filter(
+            (p) => p.male && p.type == "PERFORMER"
+          ).length;
+          const femalePerformers = newParticipants.filter(
+            (p) => !p.male && p.type == "PERFORMER"
+          ).length;
 
           if (ruleValue == maxParticipants) {
             if (malePerformers > 0) {
               if (isSubmitting) {
-                alert(`Oops... There should be only FEMALE participants, and a minimum of ${minParticipants} is required!`);
+                alert(
+                  `Oops... There should be only FEMALE participants, and a minimum of ${minParticipants} is required!`
+                );
               }
               setIsValid(false);
               return false;
@@ -468,7 +621,9 @@ const CollegeEvent = () => {
             // Validate exact male count when ruleValue is not maxParticipants
             if (femalePerformers > ruleValue) {
               if (isSubmitting) {
-                alert(`Oops... There should be exactly ${ruleValue} FEMALE participants!`);
+                alert(
+                  `Oops... There should be exactly ${ruleValue} FEMALE participants!`
+                );
               }
               setIsValid(false);
               return false;
@@ -481,7 +636,10 @@ const CollegeEvent = () => {
         }
 
         case "COLLEGE_ACOMPANIST":
-          if (newParticipants.filter((p) => !p.type == "ACCOMPANIST").length !== ruleValue) {
+          if (
+            newParticipants.filter((p) => !p.type == "ACCOMPANIST").length !==
+            ruleValue
+          ) {
             if (isSubmitting) {
               alert(`Oops... There should be ${ruleValue} accompanist!`);
             }
@@ -505,6 +663,13 @@ const CollegeEvent = () => {
     //   alert("Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.");
     //   return;
     // }
+
+    if (isDeadlineClosed) {
+      alert(
+        "Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information."
+      );
+      return;
+    }
     console.log("=== HANDLE SAVE CALLED ===");
     console.log("isValid:", isValid);
     console.log("selectedParticipant before validation:", selectedParticipant);
@@ -518,9 +683,17 @@ const CollegeEvent = () => {
     if (!selectedParticipant?.id && selectedParticipant?.id !== 0) {
       console.error("ERROR: Cannot update participant - missing ID");
       console.error("selectedParticipant object:", selectedParticipant);
-      console.error("selectedParticipant keys:", Object.keys(selectedParticipant || {}));
-      console.error("Full object:", JSON.stringify(selectedParticipant, null, 2));
-      alert("Unable to save: Participant ID is missing. Please try again or refresh the page.");
+      console.error(
+        "selectedParticipant keys:",
+        Object.keys(selectedParticipant || {})
+      );
+      console.error(
+        "Full object:",
+        JSON.stringify(selectedParticipant, null, 2)
+      );
+      alert(
+        "Unable to save: Participant ID is missing. Please try again or refresh the page."
+      );
       return;
     }
 
@@ -557,16 +730,35 @@ const CollegeEvent = () => {
     //   return;
     // }
 
-    if (!handleRuleChecks(true)) {
-      alert("Please provide the correct participant entries... check the rules");
+    if (isDeadlineClosed) {
+        alert('Registration for the event is closed. Please contact us at dean.office@thebges.edu.in for any further information.')
       return;
     }
 
-    const accompanist = Number(availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value);
-    const maxParticipants = Number(availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value);
+    if (!handleRuleChecks(true)) {
+      alert(
+        "Please provide the correct participant entries... check the rules"
+      );
+      return;
+    }
+
+    const accompanist = Number(
+      availableEvent.eventRules.find(
+        (r) => r.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST"
+      )?.value
+    );
+    const maxParticipants = Number(
+      availableEvent.eventRules.find(
+        (r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS"
+      )?.value
+    );
     if (
-      (accompanist && [...participants, selectedParticipant].length > accompanist + maxParticipants) ||
-      [...participants, selectedParticipant].filter((p) => p.type == "PERFORMER").length > maxParticipants
+      (accompanist &&
+        [...participants, selectedParticipant].length >
+          accompanist + maxParticipants) ||
+      [...participants, selectedParticipant].filter(
+        (p) => p.type == "PERFORMER"
+      ).length > maxParticipants
     ) {
       alert("You can't add the details now... please refresh the page!");
       return;
@@ -577,7 +769,7 @@ const CollegeEvent = () => {
     const newParticipant = {
       ...selectedParticipant,
       collegeId: participants[0].collegeId,
-      group: participants[0].group
+      group: participants[0].group,
     };
     console.log(newParticipant);
     setLoadingSave(true);
@@ -608,7 +800,11 @@ const CollegeEvent = () => {
         {/* Back to Home Button */}
         <Row className="mb-4">
           <Col>
-            <Link to={`/${iccode}`} className="btn btn-outline-primary" style={{ textDecoration: "none" }}>
+            <Link
+              to={`/${iccode}`}
+              className="btn btn-outline-primary"
+              style={{ textDecoration: "none" }}
+            >
               &larr; Back to Home
             </Link>
           </Col>
@@ -617,10 +813,17 @@ const CollegeEvent = () => {
         {/* Event Details Section */}
         <Row>
           <Col md={3}>
-            <Card className="border-0 shadow-sm py-3" style={{ background: "linear-gradient(135deg,#007bff,#004080)" }}>
+            <Card
+              className="border-0 shadow-sm py-3"
+              style={{ background: "linear-gradient(135deg,#007bff,#004080)" }}
+            >
               <Card.Img
                 variant="top"
-                src={`${import.meta.env.VITE_APP_NODE_ENV === "production" ? import.meta.env.VITE_APP_PREFIX : ""}/${availableEvent?.slug}.jpg`}
+                src={`${
+                  import.meta.env.VITE_APP_NODE_ENV === "production"
+                    ? import.meta.env.VITE_APP_PREFIX
+                    : ""
+                }/${availableEvent?.slug}.jpg`}
                 alt={availableEvent?.title}
                 className="img-fluid rounded-lg" // Added rounded corners and made image responsive
                 style={{ height: "200px", objectFit: "contain" }} // Ensures the image looks good within a fixed height
@@ -629,7 +832,10 @@ const CollegeEvent = () => {
             <Card className="mb-4">
               <Card.Body>
                 <Card.Title className="h1">{availableEvent?.title}</Card.Title>
-                <Card.Subtitle className="my-3 text-muted" style={{ fontStyle: "italic" }}>
+                <Card.Subtitle
+                  className="my-3 text-muted"
+                  style={{ fontStyle: "italic" }}
+                >
                   {availableEvent?.oneLiner}
                 </Card.Subtitle>
                 <Card.Text>{availableEvent?.description}</Card.Text>
@@ -648,13 +854,28 @@ const CollegeEvent = () => {
                   <h5>Event Rules</h5>
                   <ListGroup>
                     {availableEvent?.eventRules.map((rule, index) => {
-                      if (rule.eventRuleTemplate?.name?.toLowerCase().includes("otse")) {
+                      if (
+                        rule.eventRuleTemplate?.name
+                          ?.toLowerCase()
+                          .includes("otse")
+                      ) {
                         return null;
                       }
-                      if (rule.eventRuleTemplate?.name?.toLowerCase() != "note") {
+                      if (
+                        rule.eventRuleTemplate?.name?.toLowerCase() != "note"
+                      ) {
                         return (
                           <ListGroup.Item key={index}>
-                            <strong>{rule.eventRuleTemplate.name}:</strong> {rule.type !== "OTSE" ? <span>{rule.value}</span> : <span>{rule.type === "OTSE" ? "Allowed" : "Not Allowed"}</span>}
+                            <strong>{rule.eventRuleTemplate.name}:</strong>{" "}
+                            {rule.type !== "OTSE" ? (
+                              <span>{rule.value}</span>
+                            ) : (
+                              <span>
+                                {rule.type === "OTSE"
+                                  ? "Allowed"
+                                  : "Not Allowed"}
+                              </span>
+                            )}
                           </ListGroup.Item>
                         );
                       }
@@ -665,10 +886,14 @@ const CollegeEvent = () => {
                   <h5 className="my-4">NOTE:</h5>
                   <ListGroup>
                     {availableEvent?.eventRules.map((rule, index) => {
-                      if (rule.eventRuleTemplate.name.toLowerCase() === "note") {
+                      if (
+                        rule.eventRuleTemplate.name.toLowerCase() === "note"
+                      ) {
                         return (
                           <ListGroup.Item key={index}>
-                            <span dangerouslySetInnerHTML={{ __html: rule.value }} />
+                            <span
+                              dangerouslySetInnerHTML={{ __html: rule.value }}
+                            />
                           </ListGroup.Item>
                         );
                       }
@@ -683,7 +908,10 @@ const CollegeEvent = () => {
                     <Card key={index} className="mb-3 shadow-sm">
                       <Card.Body>
                         <h6>
-                          Round {index + 1}: {round.roundType == "SEMI_FINAL" ? "PRELIMS" : round.roundType}
+                          Round {index + 1}:{" "}
+                          {round.roundType == "SEMI_FINAL"
+                            ? "PRELIMS"
+                            : round.roundType}
                         </h6>
                         <Badge pill bg="info" className="me-2">
                           {round.roundType}
@@ -697,15 +925,18 @@ const CollegeEvent = () => {
                             <div>
                               <p>
                                 <FaCalendarAlt className="me-2" />
-                                <strong>Date:</strong> {formatDate(round?.startTime)}
+                                <strong>Date:</strong>{" "}
+                                {formatDate(round?.startTime)}
                               </p>
                               <p>
                                 <FaRegClock className="me-2" />
-                                <strong>Start:</strong> {formatTime(round?.startTime)}
+                                <strong>Start:</strong>{" "}
+                                {formatTime(round?.startTime)}
                               </p>
                               <p>
                                 <FaRegClock className="me-2" />
-                                <strong>End:</strong> {formatTime(round?.endTime)}
+                                <strong>End:</strong>{" "}
+                                {formatTime(round?.endTime)}
                               </p>
                             </div>
                           </ListGroup.Item>
@@ -720,14 +951,21 @@ const CollegeEvent = () => {
 
           {/* Participants Section */}
           <Col md={9}>
-            <div className={`${styles["participants-section"]} shadow p-4 rounded`}>
+            <div
+              className={`${styles["participants-section"]} shadow p-4 rounded`}
+            >
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="d-flex align-items-center gap-2">
                   <h4 className="text-secondary">Participants</h4>
                   {participants.length > 0 &&
                     // new Date() < new Date("2025-12-11T14:00:00") &&
                     availableEvent &&
-                    availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value > participants.filter((p) => p.type == "PERFORMER").length && (
+                    availableEvent?.eventRules.find(
+                      (rule) =>
+                        rule.eventRuleTemplate.name == "MAX_PARTICIPANTS"
+                    )?.value >
+                      participants.filter((p) => p.type == "PERFORMER")
+                        .length && (
                       <button
                         type="button"
                         className="btn border btn-primary"
@@ -753,7 +991,12 @@ const CollegeEvent = () => {
                   {participants.length > 0 &&
                     // new Date() < new Date("2025-12-11T14:00:00") &&
                     availableEvent &&
-                    availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value > participants.filter((p) => p.type == "ACCOMPANIST").length && (
+                    availableEvent?.eventRules.find(
+                      (rule) =>
+                        rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST"
+                    )?.value >
+                      participants.filter((p) => p.type == "ACCOMPANIST")
+                        .length && (
                       <button
                         type="button"
                         className="btn border btn-primary"
@@ -782,19 +1025,39 @@ const CollegeEvent = () => {
                   participants.length == 0 &&
                   availableEvent &&
                   (() => {
-                    const registeredSlotsRule = availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "REGISTERED_SLOTS_AVAILABLE");
-                    const maxSlots = registeredSlotsRule ? Number(registeredSlotsRule.value) : null;
-                    const waitingListSlotsRule = availableEvent?.eventRules.find((rule) => rule.eventRuleTemplate?.name == "WAITING_LIST_SLOTS");
+                    const registeredSlotsRule = availableEvent?.eventRules.find(
+                      (rule) =>
+                        rule.eventRuleTemplate?.name ==
+                        "REGISTERED_SLOTS_AVAILABLE"
+                    );
+                    const maxSlots = registeredSlotsRule
+                      ? Number(registeredSlotsRule.value)
+                      : null;
+                    const waitingListSlotsRule =
+                      availableEvent?.eventRules.find(
+                        (rule) =>
+                          rule.eventRuleTemplate?.name == "WAITING_LIST_SLOTS"
+                      );
                     // If waiting list rule is not present, treat it as 0 slots
-                    const waitingListSlots = waitingListSlotsRule ? Number(waitingListSlotsRule.value) : 0;
-                    const waitingListSlotsOccupied = availableEvent?.waitingListSlotsOccupied;
+                    const waitingListSlots = waitingListSlotsRule
+                      ? Number(waitingListSlotsRule.value)
+                      : 0;
+                    const waitingListSlotsOccupied =
+                      availableEvent?.waitingListSlotsOccupied;
                     const canAdd =
                       slotsOccupied == null ||
                       maxSlots == null ||
-                      (maxSlots > 0 && (slotsOccupied == null || slotsOccupied < maxSlots)) ||
-                      (waitingListSlots > 0 && (waitingListSlotsOccupied == null || waitingListSlotsOccupied < waitingListSlots));
+                      (maxSlots > 0 &&
+                        (slotsOccupied == null || slotsOccupied < maxSlots)) ||
+                      (waitingListSlots > 0 &&
+                        (waitingListSlotsOccupied == null ||
+                          waitingListSlotsOccupied < waitingListSlots));
                     return canAdd ? (
-                      <Link to={"add"} className="btn btn-success shadow-sm" style={{ textDecoration: "none" }}>
+                      <Link
+                        to={"add"}
+                        className="btn btn-success shadow-sm"
+                        style={{ textDecoration: "none" }}
+                      >
                         Register Participant
                       </Link>
                     ) : null;
@@ -821,24 +1084,55 @@ const CollegeEvent = () => {
                         <td>{index + 1}.</td>
                         <td>{participant.name}</td>
                         <td>{participant.email}</td>
-                        <td style={{ minWidth: "147px" }}>{participant.whatsappNumber}</td>
-                        <td>
-                          <Badge bg={participant.type != "PERFORMER" ? "warning" : "info"}>{participant.type}</Badge>
+                        <td style={{ minWidth: "147px" }}>
+                          {participant.whatsappNumber}
                         </td>
                         <td>
-                          <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant.entryType}</Badge>
+                          <Badge
+                            bg={
+                              participant.type != "PERFORMER"
+                                ? "warning"
+                                : "info"
+                            }
+                          >
+                            {participant.type}
+                          </Badge>
+                        </td>
+                        <td>
+                          <Badge
+                            bg={
+                              participant.entryType == "NORMAL"
+                                ? "light text-dark border border-secondary"
+                                : "secondary"
+                            }
+                          >
+                            {participant.entryType}
+                          </Badge>
                         </td>
                         {!availableEvent?.closeRegistration && (
                           <td>
-                            {(availableEvent?.eventRules?.find((r) => r.eventRuleTemplate.name === "MIN_PARTICIPANTS")?.value < participants.filter((p) => p.type === "PERFORMER").length ||
+                            {(availableEvent?.eventRules?.find(
+                              (r) =>
+                                r.eventRuleTemplate.name === "MIN_PARTICIPANTS"
+                            )?.value <
+                              participants.filter((p) => p.type === "PERFORMER")
+                                .length ||
                               participant.type === "ACCOMPANIST") && (
                               <Button
-                                variant={deletingId === participant.id ? "secondary" : "danger"}
+                                variant={
+                                  deletingId === participant.id
+                                    ? "secondary"
+                                    : "danger"
+                                }
                                 onClick={() => handleDelete(participant.id)}
                                 size="sm"
-                                disabled={loading && deletingId === participant.id}
+                                disabled={
+                                  loading && deletingId === participant.id
+                                }
                               >
-                                {loading && deletingId === participant.id ? "Deleting..." : "Delete"}
+                                {loading && deletingId === participant.id
+                                  ? "Deleting..."
+                                  : "Delete"}
                               </Button>
                             )}
 
@@ -847,24 +1141,55 @@ const CollegeEvent = () => {
                               onClick={() => {
                                 handleShow();
                                 console.log("=== EDIT BUTTON CLICKED ===");
-                                console.log("Participant from array:", participant);
+                                console.log(
+                                  "Participant from array:",
+                                  participant
+                                );
                                 console.log("Participant id:", participant?.id);
-                                console.log("Participant keys:", Object.keys(participant || {}));
-                                console.log("All participants in state:", participants);
+                                console.log(
+                                  "Participant keys:",
+                                  Object.keys(participant || {})
+                                );
+                                console.log(
+                                  "All participants in state:",
+                                  participants
+                                );
 
                                 // Ensure we preserve all fields including id
                                 const participantWithId = { ...participant };
-                                console.log("Participant after spread:", participantWithId);
-                                console.log("Has id after spread?", participantWithId.id !== undefined, "value:", participantWithId.id);
+                                console.log(
+                                  "Participant after spread:",
+                                  participantWithId
+                                );
+                                console.log(
+                                  "Has id after spread?",
+                                  participantWithId.id !== undefined,
+                                  "value:",
+                                  participantWithId.id
+                                );
 
-                                if (!participantWithId.id && participantWithId.id !== 0) {
-                                  console.error("ERROR: Participant object missing id field!", participant);
-                                  console.error("Full participant object:", JSON.stringify(participant, null, 2));
-                                  alert("Error: Participant ID is missing. Cannot edit this participant. Please refresh the page.");
+                                if (
+                                  !participantWithId.id &&
+                                  participantWithId.id !== 0
+                                ) {
+                                  console.error(
+                                    "ERROR: Participant object missing id field!",
+                                    participant
+                                  );
+                                  console.error(
+                                    "Full participant object:",
+                                    JSON.stringify(participant, null, 2)
+                                  );
+                                  alert(
+                                    "Error: Participant ID is missing. Cannot edit this participant. Please refresh the page."
+                                  );
                                   return;
                                 }
 
-                                console.log("Setting selectedParticipant with id:", participantWithId.id);
+                                console.log(
+                                  "Setting selectedParticipant with id:",
+                                  participantWithId.id
+                                );
                                 setSelectedParticipant(participantWithId);
                                 setAddFlag(false);
                               }}
@@ -898,15 +1223,34 @@ const CollegeEvent = () => {
             <Form className="w-100">
               <Form.Group className="mb-3">
                 <Form.Label>Name</Form.Label>
-                <Form.Control type="text" name="name" value={selectedParticipant?.name} onChange={handleEditFormChange} required className="w-100" />
+                <Form.Control
+                  type="text"
+                  name="name"
+                  value={selectedParticipant?.name}
+                  onChange={handleEditFormChange}
+                  required
+                  className="w-100"
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Email</Form.Label>
-                <Form.Control type="email" name="email" value={selectedParticipant?.email} onChange={handleEditFormChange} required />
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={selectedParticipant?.email}
+                  onChange={handleEditFormChange}
+                  required
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Phone</Form.Label>
-                <Form.Control type="text" name="whatsappNumber" value={selectedParticipant?.whatsappNumber} onChange={handleEditFormChange} required />
+                <Form.Control
+                  type="text"
+                  name="whatsappNumber"
+                  value={selectedParticipant?.whatsappNumber}
+                  onChange={handleEditFormChange}
+                  required
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Check
@@ -942,7 +1286,9 @@ const CollegeEvent = () => {
               <Form.Group className="mb-5">
                 {console.log(
                   "college_accompanist: ",
-                  availableEvent?.eventRules.find((rule) => rule.name == "COLLEGE_ACCOMPANIST")
+                  availableEvent?.eventRules.find(
+                    (rule) => rule.name == "COLLEGE_ACCOMPANIST"
+                  )
                 )}
                 <Form.Select
                   aria-label="Default select example"
@@ -972,7 +1318,11 @@ const CollegeEvent = () => {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose} disabled={loadingSave}>
+            <Button
+              variant="secondary"
+              onClick={handleClose}
+              disabled={loadingSave}
+            >
               Close
             </Button>
             <Button
