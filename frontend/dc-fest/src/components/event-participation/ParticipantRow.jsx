@@ -87,7 +87,7 @@ const ParticipantRow = ({ refetchPop, collegeParticipation, handleAttendance, pa
   };
 
   return (
-    !participant?.disableParticipation && (
+     (
       <>
         <tr key={participant?.id}>
           <td>
@@ -116,7 +116,7 @@ const ParticipantRow = ({ refetchPop, collegeParticipation, handleAttendance, pa
             <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
               <FaEdit /> Edit
             </Button>
-            {index == 0 && !participant?.disableParticipation && (
+            {index == 0 && (
               <Button
                 variant={pop ? "ghost border border-2" : "warning"}
                 onClick={() => {
