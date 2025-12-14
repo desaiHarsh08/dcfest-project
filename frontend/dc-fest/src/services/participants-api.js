@@ -12,6 +12,7 @@ export const createParticipants = async (participants) => {
 };
 
 export const addParticipant = async (participant) => {
+    console.log("in addParticipan() api fn, participant:", participant);
     const response = await API.post(`/api/participants/add-participant`, participant, {
         withCredentials: true,
         headers: {

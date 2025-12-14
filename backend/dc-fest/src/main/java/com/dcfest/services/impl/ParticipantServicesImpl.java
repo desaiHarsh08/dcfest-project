@@ -577,6 +577,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
 
     @Override
     public ParticipantDto addParticipant(ParticipantDto participantDto) {
+        System.out.println("from ui, participantDto:" + participantDto);
         CollegeModel collegeModel = this.collegeRepository.findById(participantDto.getCollegeId()).orElseThrow(
                 () -> new IllegalArgumentException("Please provide the valid college id"));
 
@@ -678,6 +679,7 @@ public class ParticipantServicesImpl implements ParticipantServices {
                 participantDto.getEventIds().get(0), participantDto.getCollegeId(), participantDto.getGroup());
 
         System.out.println("participantModels:" + participantModels);
+        System.out.println("participantDto:" + participantDto);
 
         // Check for max_slots
         if (participantDto.getType().equals(ParticipantType.PERFORMER)) {

@@ -357,7 +357,7 @@ export default function AddParticipantModal({
       entryType: existingParticipant?.entryType || newParticipant.entryType || "NORMAL",
       teamNumber: existingParticipant?.teamNumber || newParticipant.teamNumber,
       eventIds: existingParticipant?.eventIds || newParticipant.eventIds || (event?.id ? [event.id] : []),
-      type: existingParticipant?.type
+      type: newParticipant?.type
     };
 
     // Log for debugging
