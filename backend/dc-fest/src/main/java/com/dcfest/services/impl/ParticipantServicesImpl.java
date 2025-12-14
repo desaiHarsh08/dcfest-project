@@ -325,8 +325,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
                     throw new RegistrationDeadlineClosedException(
                             "Registration has not started yet. Please wait until the registration period begins.");
                 } else {
-                    throw new RegistrationDeadlineClosedException(
-                            "Registration deadline has passed. New event registrations and waiting list applications are no longer accepted.");
+//                    throw new RegistrationDeadlineClosedException(
+//                            "Registration deadline has passed. New event registrations and waiting list applications are no longer accepted.");
                 }
             }
             // Use already fetched and validated collegeModel
