@@ -801,6 +801,7 @@ const EventParticipationPage = () => {
           availableEvent={selectedAvailableEvent}
           handleInputChange={handleNewParticipantChange}
           handleModalClose={() => setShowAddModal(false)}
+          getParticipants={getParticipants}
           newParticipant={newParticipant}
           setNewParticipant={setNewParticipant}
           setParticipants={setParticipants}

@@ -39,7 +39,7 @@ AND (
         JOIN ParticipantModel p ON p.college = c
         JOIN p.events e
         WHERE e.availableEvent.id = :availableEventId
-          AND (p.disableParticipation = false OR p.disableParticipation IS NULL)
+          AND (p.disableParticipation = false OR p.disableParticipation IS NULL)    
     """)
     List<CollegeModel> findDistinctCollegesByAvailableEventAndEnabledParticipants(
             @Param("availableEventId") Long availableEventId

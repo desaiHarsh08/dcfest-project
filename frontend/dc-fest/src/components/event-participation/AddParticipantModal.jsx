@@ -20,6 +20,7 @@ export default function AddParticipantModal({
   handleInputChange,
   selectedCollege,
   availableEvent,
+  getParticipants,
   groups,
 }) {
   const [loadingSave, setLoadingSave] = useState(false);
@@ -388,7 +389,8 @@ export default function AddParticipantModal({
       const response = await addParticipant(tmpParticipant);
       console.log(response);
 
-      setParticipants([...participants, response]);
+    //   setParticipants([...participants, response]);
+    await getParticipants();
       setFilteredParticipants([...filteredParticipants, response]);
     } catch (error) {
       console.log(error);
