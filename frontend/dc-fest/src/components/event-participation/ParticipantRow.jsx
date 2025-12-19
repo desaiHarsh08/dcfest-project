@@ -141,7 +141,7 @@ const ParticipantRow = ({ tmpParticipants, refetchPop, collegeParticipation, han
                 }}
                 
               >
-                {participant?.disableParticipation == false ? "Active" : "Inactive"}
+                {(participant?.disableParticipation === false || participant?.disableParticipation === null)  ? "Active" : "Inactive"}
               </Button>
                 
                 </>
