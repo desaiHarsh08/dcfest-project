@@ -617,7 +617,7 @@ const EventParticipationPage = () => {
               const participantCount = participants.filter((p) => p.collegeId == college.id).length;
               return (
                 <option key={`college-${collegeIndex}`} value={college.id}>
-                  {college.icCode} - {college?.name} | {participantCount > 0 ? `(${participantCount})` : "(0)"}
+                  {college.icCode} - {college?.name}
                 </option>
               );
             })}
