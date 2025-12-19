@@ -71,14 +71,22 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         List<CollegeParticipationModel> collegeParticipationModels = this.collegeParticipationRepository
                 .findByAvailableEvent(availableEventModel);
         if (collegeParticipationModels.isEmpty()) {
+            System.out.println("early return as collegeParticipationModels:" + collegeParticipationModels);
             return new ArrayList<>();
         }
         List<ScoreCardDto> scoreCardDtos = new ArrayList<>();
 
         List<CollegeParticipationModel> filteredCollegeParticipations = new ArrayList<>();
         for (CollegeParticipationModel collegeParticipationModel : collegeParticipationModels) {
+            System.out.println(collegeParticipationModel);
+            System.out.println(roundModel);
+
+            System.out.println("fetching, scorecards for, collegeParticipationId: " + collegeParticipationModel.getId() + ", roundModelId: "  + roundModel.getId() + ", roundId: " + roundId);
             List<ScoreCardModel> scoreCardModels = this.scoreCardRepository
-                    .findByCollegeParticipationAndRound(collegeParticipationModel, roundModel);
+                    .findRelevantScoreCards(collegeParticipationModel, roundModel);
+
+            System.out.println("fetched scorecards:" + scoreCardModels);
+
             if (scoreCardModels == null) {
                 continue;
             }
@@ -86,7 +94,7 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
                 scoreCardDtos.add(this.mapToDto(scoreCardModel));
             }
         }
-        System.out.println("finished, filteredCollegeParticipations: " + filteredCollegeParticipations.size());
+
 
         return scoreCardDtos;
     }

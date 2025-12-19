@@ -2,23 +2,45 @@
 /* eslint-disable react/prop-types */
 
 import { Button, Table } from "react-bootstrap";
-import { getCollegeParticipationForScoreCard, handlePromoteTeam } from "../../services/scorecard-apis";
+import {
+  getCollegeParticipationForScoreCard,
+  handlePromoteTeam,
+} from "../../services/scorecard-apis";
 
-const ScoreEntryTable = ({ selectedAvailableEvent, selectedRound, selectedCategory, teams, setTeams }) => {
+const ScoreEntryTable = ({
+  selectedAvailableEvent,
+  selectedRound,
+  selectedCategory,
+  teams,
+  setTeams,
+}) => {
   console.log("selectedRound:", selectedRound);
 
   const getPromotedRoundId = (roundType) => {
-    switch (roundType) {
-      case "Preliminary": {
+    console.log(
+      "in getPromotedRoundId(), roundType.toUpperCase():",
+      roundType.toUpperCase()
+    );
+    switch (roundType.toUpperCase()) {
+      case "PRELIMINARY": {
+        console.log("in case PRELIMINARY");
         // Find the SEMI_FINAL round from selectedAvailableEvent.rounds and return its id
-        const promotedRoundPreliminary = selectedAvailableEvent.rounds.find((r) => r.roundType === "SEMI_FINAL");
+        let promotedRoundPreliminary = selectedAvailableEvent.rounds.find(
+          (r) => r.roundType === "SEMI_FINAL"
+        );
         console.log(promotedRoundPreliminary);
+        promotedRoundPreliminary = selectedAvailableEvent.rounds.find(
+            (r) => r.roundType === "FINAL"
+          );
         return promotedRoundPreliminary ? promotedRoundPreliminary.id : null;
       }
 
       case "SEMI_FINAL": {
+        console.log("in case SEMI_FINAL");
         // Add logic for SEMI_FINAL promotion if needed
-        const promotedRoundSemiFinal = selectedAvailableEvent.rounds.find((r) => r.roundType === "FINAL");
+        const promotedRoundSemiFinal = selectedAvailableEvent.rounds.find(
+          (r) => r.roundType === "FINAL"
+        );
         console.log(promotedRoundSemiFinal);
         return promotedRoundSemiFinal ? promotedRoundSemiFinal.id : null;
       }
@@ -69,9 +91,11 @@ const ScoreEntryTable = ({ selectedAvailableEvent, selectedRound, selectedCatego
       }
     }
 
-    let isConfirmed = confirm('Are you sure that you want to save the rankings?');
+    let isConfirmed = confirm(
+      "Are you sure that you want to save the rankings?"
+    );
     if (!isConfirmed) {
-        return;
+      return;
     }
 
     for (let i = 0; i < teams.length; i++) {
@@ -84,13 +108,16 @@ const ScoreEntryTable = ({ selectedAvailableEvent, selectedRound, selectedCatego
       }
     }
 
-    getCollegeParticipationForScoreCard(selectedAvailableEvent?.id, selectedRound.id)
-        .then((data) => {
-          console.log("fetching data for first round:", data);
-          data.sort((a, b) => a.slot - b.slot);
-          setTeams(data);
-        })
-        .catch((err) => console.log(err));
+    getCollegeParticipationForScoreCard(
+      selectedAvailableEvent?.id,
+      selectedRound.id
+    )
+      .then((data) => {
+        console.log("fetching data for first round:", data);
+        data.sort((a, b) => a.slot - b.slot);
+        setTeams(data);
+      })
+      .catch((err) => console.log(err));
 
     alert("Data saved successfully!");
   };
@@ -113,18 +140,43 @@ const ScoreEntryTable = ({ selectedAvailableEvent, selectedRound, selectedCatego
               <td>{teamIndex + 1}</td>
               <td>{team?.teamNumber}</td>
               <td>
-                <input type="number" value={team?.rank} onChange={(e) => handleTeamRankChange(e, teamIndex)} />
+                <input
+                  type="number"
+                  value={team?.rank}
+                  onChange={(e) => handleTeamRankChange(e, teamIndex)}
+                />
               </td>
-              {teams?.some((ele) => ele.points != null) && <td>{team?.points}</td>}
-              <td className="d-flex align-items-center h-100 pt-3">
-                <input type="checkbox" checked={!!team?.promotedRoundId} onChange={(e) => handleTeamPromoted(e, teamIndex)} />
-                <p className="m-0">{selectedAvailableEvent?.rounds?.find((r) => r.id == team?.promotedRoundId)?.roundType}</p>
+              {teams?.some((ele) => ele.points != null) && (
+                <td>{team?.points}</td>
+              )}
+              <td className="d-flex gap-2 align-items-center h-100 pt-3">
+                <input
+                  type="checkbox"
+                  checked={!!team?.promotedRoundId}
+                  onChange={(e) => handleTeamPromoted(e, teamIndex)}
+                />
+                <p className="m-0">
+                  {
+                    selectedAvailableEvent?.rounds?.find(
+                      (r) => r.id == team?.promotedRoundId
+                    )?.roundType
+                  }
+                  {/* {getPromotedRoundId(selectedRound?.roundType) &&
+                    selectedAvailableEvent?.rounds?.find(
+                      (r) =>
+                        r.id == getPromotedRoundId(selectedRound?.roundType)
+                    )?.roundType} */}
+                </p>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
-      <Button type="button" disabled={teams?.some((team) => team?.teamNumber == null)} onClick={handleSave}>
+      <Button
+        type="button"
+        disabled={teams?.some((team) => team?.teamNumber == null)}
+        onClick={handleSave}
+      >
         Save
       </Button>
     </div>
