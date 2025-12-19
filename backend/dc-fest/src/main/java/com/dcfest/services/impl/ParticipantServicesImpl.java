@@ -1252,7 +1252,8 @@ participantDto.setQuotaCount(participantModel.getQuotaCount());
             System.out.println(participantModel.getEvents());
             participantModel.setDisableParticipation(status);
             System.out.println("saving participant: " + participantModel.getDisableParticipation());
-            this.participantRepository.save(participantModel);
+            ParticipantModel savedParticipant = this.participantRepository.save(participantModel);
+            System.out.println("saved:" + savedParticipant.getDisableParticipation());
         }
 
         return true;

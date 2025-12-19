@@ -86,6 +86,19 @@ public class CollegeServicesImpl implements CollegeServices {
     }
 
     @Override
+    public List<CollegeDto> getCollegesByAvailableEventIdAndRoundId(long availableEventId, long roundId) {
+        List<CollegeModel> collegeModels = this.collegeRepository.findDistinctCollegesByAvailableEventAndRound(availableEventId, roundId);
+
+        return collegeModels.stream().map(this::collegeModelToDto).collect(Collectors.toList());
+    }
+
+    public List<CollegeDto> getDistinctCollegesByAvailableEventAndEnabledParticipants(long availableEventId) {
+        List<CollegeModel> collegeModels = this.collegeRepository.findDistinctCollegesByAvailableEventAndEnabledParticipants(availableEventId);
+
+        return collegeModels.stream().map(this::collegeModelToDto).collect(Collectors.toList());
+    }
+
+    @Override
     public CollegeDto getCollegeById(Long id) {
         CollegeModel foundCollege = this.collegeRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No `COLLEGE` exist for id: " + id));

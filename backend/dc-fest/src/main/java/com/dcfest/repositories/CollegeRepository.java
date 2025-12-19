@@ -18,6 +18,34 @@ public interface CollegeRepository extends JpaRepository<CollegeModel, Long> {
     @Query("SELECT c FROM CollegeModel c WHERE c.icCode = :icCode AND c.isArchived = false")
     Optional<CollegeModel> findByIcCodeAndNotArchived(@Param("icCode") String icCode);
 
+    @Query("""
+SELECT DISTINCT cp.college
+FROM ScoreCardModel sc
+JOIN sc.collegeParticipation cp
+WHERE cp.availableEvent.id = :availableEventId
+AND (
+    sc.round.id = :roundId
+    OR sc.promotedRound.id = :roundId
+)
+""")
+    List<CollegeModel> findDistinctCollegesByAvailableEventAndRound(
+            @Param("availableEventId") Long availableEventId,
+            @Param("roundId") Long roundId
+    );
+
+    @Query("""
+        SELECT DISTINCT c
+        FROM CollegeModel c
+        JOIN ParticipantModel p ON p.college = c
+        JOIN p.events e
+        WHERE e.availableEvent.id = :availableEventId
+          AND (p.disableParticipation = false OR p.disableParticipation IS NULL)
+    """)
+    List<CollegeModel> findDistinctCollegesByAvailableEventAndEnabledParticipants(
+            @Param("availableEventId") Long availableEventId
+    );
+
+
     @Query("SELECT c FROM CollegeModel c WHERE c.icCode = :icCode AND c.year = :year AND c.isArchived = false")
     Optional<CollegeModel> findByIcCodeAndYearAndNotArchived(@Param("icCode") String icCode,
             @Param("year") Integer year);

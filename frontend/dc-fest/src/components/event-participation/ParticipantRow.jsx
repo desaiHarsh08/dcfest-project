@@ -9,7 +9,7 @@ import { FaCheck, FaDownload, FaEdit, FaRemoveFormat, FaTrash } from "react-icon
 import { fetchParticipationByCollegeIdAndAvailableEventId } from "../../services/college-participation-apis";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ refetchPop, collegeParticipation, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
+const ParticipantRow = ({ tmpParticipants, refetchPop, collegeParticipation, handleDisableParticipation, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
   const [college, setCollege] = useState();
   const [pop, setPop] = useState();
 
@@ -116,7 +116,9 @@ const ParticipantRow = ({ refetchPop, collegeParticipation, handleAttendance, pa
             <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
               <FaEdit /> Edit
             </Button>
+            {/* {JSON.stringify(participant)} */}
             {index == 0 && (
+                <>
               <Button
                 variant={pop ? "ghost border border-2" : "warning"}
                 onClick={() => {
@@ -126,10 +128,23 @@ const ParticipantRow = ({ refetchPop, collegeParticipation, handleAttendance, pa
                     handleConfirmParticipants(participant?.group);
                   }
                 }}
-                disabled={confirmParticipation}
+                disabled={confirmParticipation || !!participant?.disableParticipation}
               >
                 {pop ? <FaDownload /> : <FaCheck />} {pop ? "Download" : "Confirm"}
               </Button>
+              <Button
+                variant={"outline"}
+                className="border"
+                onClick={async () => {
+                    console.log("Sending disableParticipation status:", !!participant?.disableParticipation == false ? true : false, participant)
+                  await handleDisableParticipation(participant?.group, (!!participant?.disableParticipation == false ? true : false), tmpParticipants)
+                }}
+                
+              >
+                {participant?.disableParticipation == false ? "Active" : "Inactive"}
+              </Button>
+                
+                </>
             )}
           </td>
         </tr>

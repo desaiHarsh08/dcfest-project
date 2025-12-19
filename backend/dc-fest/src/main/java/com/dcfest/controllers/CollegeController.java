@@ -29,6 +29,18 @@ public class CollegeController {
         return new ResponseEntity<>(colleges, HttpStatus.OK);
     }
 
+    @GetMapping("/available-event-round")
+    public ResponseEntity<List<CollegeDto>> getCollegesByAvailableEventIdAndRoundId(@RequestParam long availableEventId, @RequestParam long roundId) {
+        List<CollegeDto> colleges = collegeServices.getCollegesByAvailableEventIdAndRoundId(availableEventId, roundId);
+        return new ResponseEntity<>(colleges, HttpStatus.OK);
+    }
+
+    @GetMapping("/available-event-enabled-participants")
+    public ResponseEntity<List<CollegeDto>> getCollegesByAvailableEventIdAndRoundId(@RequestParam long availableEventId) {
+        List<CollegeDto> colleges = collegeServices.getDistinctCollegesByAvailableEventAndEnabledParticipants(availableEventId);
+        return new ResponseEntity<>(colleges, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CollegeDto> getCollegeById(@PathVariable Long id) {
         CollegeDto college = collegeServices.getCollegeById(id);

@@ -8,6 +8,24 @@ export const fetchColleges = async () => {
     return response.data;
 };
 
+export const fetchCollegesByAvailableEventIdAndRoundId = async (availableEventId, roundId) => {
+    const response = await API.get(`/api/colleges/available-event-round?availableEventId=${availableEventId}&roundId=${roundId}`, {
+        withCredentials: true
+    });
+    
+    return response.data;
+};
+
+export const fetchCollegesByAvailableEventIdEnabledParticipants = async (availableEventId) => {
+    const response = await API.get(`/api/colleges/available-event-enabled-participants?availableEventId=${availableEventId}`, {
+        withCredentials: true
+    });
+    
+    return response.data;
+};
+
+
+
 export const fetchCollegeById = async (id) => {
     const response = await API.get(`/api/colleges/${id}`, {
         withCredentials: true

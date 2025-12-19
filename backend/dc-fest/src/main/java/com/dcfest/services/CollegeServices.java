@@ -10,6 +10,10 @@ public interface CollegeServices {
 
     List<CollegeDto> getAllColleges();
 
+    List<CollegeDto> getCollegesByAvailableEventIdAndRoundId(long availableEventId, long roundId);
+
+    List<CollegeDto> getDistinctCollegesByAvailableEventAndEnabledParticipants(long availableEventId);
+
     CollegeDto getCollegeById(Long id);
 
     CollegeDto getCollegeByIcCode(String icCode);

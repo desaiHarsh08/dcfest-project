@@ -9,7 +9,7 @@ import { fetchCategories } from "../services/categories-api";
 import { deleteParticipant, disableParticipation, fetchParticipantsByEventId, fetchParticipantsByEventIdAndCollegeId, updateParticipant } from "../services/participants-api";
 import { fetchEventByAvailableEventId } from "../services/event-apis";
 import ParticipantRow from "../components/event-participation/ParticipantRow";
-import { fetchColleges } from "../services/college-apis";
+import { fetchColleges, fetchCollegesByAvailableEventIdAndRoundId, fetchCollegesByAvailableEventIdEnabledParticipants } from "../services/college-apis";
 import * as XLSX from "xlsx";
 import { generateQrcode, getPop } from "../services/attendance-apis";
 import AddParticipantModal from "../components/event-participation/AddParticipantModal";
@@ -213,6 +213,29 @@ const EventParticipationPage = () => {
 
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    if (selectedAvailableEvent && 
+        selectedAvailableEvent.rounds.length > 1 &&
+        selectedAvailableEvent.rounds.find(r => r.id == selectedRound.id)?.roundType !== "PRELIMINARY"
+         && selectedRound) {
+        fetchCollegesByAvailableEventIdAndRoundId(selectedAvailableEvent.id, selectedRound.id)
+            .then((data) => {
+                console.log("fetchCollegesByAvailableEventIdAndRoundId(), selectedAvailableEvent:", selectedAvailableEvent)
+                console.log("fetchCollegesByAvailableEventIdAndRoundId(), ", data, selectedAvailableEvent, selectedRound)
+                setColleges(data)
+                setSelectedCollege(data[0]);
+            })
+    }
+    else if (selectedAvailableEvent) {
+        fetchCollegesByAvailableEventIdEnabledParticipants(selectedAvailableEvent.id).then((data) => {
+          setColleges(data);
+          setSelectedCollege(data[0] || null);
+        });
+      }
+  }, [selectedAvailableEvent, selectedRound]);
+
+//   useEffect(() => {})
 
   const getParticipants = async () => {
     console.log("=== getParticipants called ===");
@@ -466,13 +489,34 @@ const EventParticipationPage = () => {
     }
   };
 
-  const handleDisableParticipation = async (collegeParticipationId, status) => {
+  const handleDisableParticipation = async (collegeParticipationId, status, tmpParticipants) => {
     try {
-      const response = await disableParticipation(collegeParticipationId, status);
+      const eventResponse = await fetchEventByAvailableEventId(
+        selectedAvailableEvent.id
+      );
+  
+      const response = await disableParticipation(
+        collegeParticipationId,
+        eventResponse?.id,
+        status
+      );
+  
+      if (response) {
+        const participantIds = new Set(tmpParticipants.map(p => p.id));
+  
+        setFilteredParticipants(prev =>
+          prev.map(p =>
+            participantIds.has(p.id)
+              ? { ...p, disableParticipation: status }
+              : p
+          )
+        );
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Disable participation failed:", error);
     }
   };
+  
 
   return (
     <Container fluid className="mt-4">
@@ -671,6 +715,8 @@ const EventParticipationPage = () => {
                       availableEvent={selectedAvailableEvent}
                       participant={participant}
                       handleEdit={handleEdit}
+                      tmpParticipants={tmpParticipants}
+                      handleDisableParticipation={handleDisableParticipation}
                       handleRemove={handleRemove}
                       filteredParticipants={filteredParticipants}
                       refetchPop={refetchPop}
