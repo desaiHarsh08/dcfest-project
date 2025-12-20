@@ -57,6 +57,25 @@
 
       /* .table th {} */
 
+      thead {
+    display: table-header-group;
+}
+
+tfoot {
+    display: table-footer-group;
+}
+
+tr {
+    page-break-inside: avoid;
+}
+
+.page-break {
+    page-break-before: always;
+}
+
+
+
+
       .w-75 {
         width: 75%;
       }
@@ -142,6 +161,7 @@
         @page {
           size: A4;
           margin: 20mm;
+
         }
 
         .qrcode-container img {
@@ -175,7 +195,7 @@
             height="114"
             src="http://13.235.168.107:5006/U25.png"
             alt="Umang Logo"
-            style="display: inline-block; vertical-align: middle; position: absolute; right: 10px; top: 50%; transform: translateY(-50%)"
+            style="display: inline-block; vertical-align: middle; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background-color: white; mix-blend-mode: multiply;"
           />
         </nav>
       </header>
@@ -235,7 +255,7 @@
             </div>
           </div>
         </section>
-        <section class="my-4" style="width: 100%">
+        <section class="my-4 table-wrapper" style="width: 100%">
           <table style="width: 100%; border-collapse: collapse; table-layout: fixed">
             <thead>
               <tr>
@@ -276,7 +296,7 @@
           </table>
         </section>
       </main>
-      <footer class="footer" style="padding: 0 24px">
+      <footer class="footer" style="padding: 0 24px; ">
         <section style="text-align: left">
           <h2>Note:</h2>
           <ol style="padding: 0 16px">

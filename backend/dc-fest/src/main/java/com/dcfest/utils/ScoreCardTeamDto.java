@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ScoreCardTeamDto {
 
+    private Integer slot;
+
     private String teamNumber;
 
     private String param1;

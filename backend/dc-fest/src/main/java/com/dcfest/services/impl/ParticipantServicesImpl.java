@@ -458,6 +458,8 @@ public class ParticipantServicesImpl implements ParticipantServices {
             System.out.println(groups);
 
             int otseSlotsOccupied = groups.size();
+            System.out.println("otseSlotsOccupied: " + otseSlotsOccupied);
+            System.out.println("otseSlotsAvailable: " + otseSlotsAvailable);
             if (otseSlotsOccupied + 1 > otseSlotsAvailable) {
                 throw new OTSESlotsException("Maximum OTSE slots for this event has been filled.");
             }

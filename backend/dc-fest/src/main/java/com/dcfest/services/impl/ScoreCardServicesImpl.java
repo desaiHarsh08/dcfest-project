@@ -183,6 +183,8 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
             List<ScoreCardDto> scoreCardDtos = this
                     .getScoreCardByCollegeParticipationIdAndRoundId(collegeParticipationModel.getId(), roundId);
             scoreCardDtos = this.sortScoreCardsBySlot(scoreCardDtos);
+
+
             System.out.println(scoreCardDtos.size());
             for (ScoreCardDto scoreCardDto : scoreCardDtos) {
                 ScoreCardTeamDto scoreCardTeamDto = new ScoreCardTeamDto();
@@ -214,13 +216,22 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
 
                 scoreCardTeamDto.setTotalPoints(String.valueOf(total == 0 ? "" : total));
                 scoreCardTeamDto.setRank("");
-
+                scoreCardTeamDto.setSlot(scoreCardDto.getSlot());
                 scoreCardTeamDto.setTeamNumber(scoreCardDto.getTeamNumber());
 
+                System.out.println("slot: " + scoreCardDto.getSlot() + "team: " + scoreCardDto.getTeamNumber());
                 scoreCardTeamDtos.add(scoreCardTeamDto);
             }
 
         }
+
+
+        scoreCardTeamDtos.sort(
+                Comparator.comparing(
+                        ScoreCardTeamDto::getSlot,
+                        Comparator.nullsLast(Integer::compareTo)
+                )
+        );
 
         EventCategoryModel eventCategoryModel = this.eventCategoryRepository
                 .findById(availableEventModel.getEventCategory().getId()).orElseThrow(
@@ -278,7 +289,13 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         if (scoreCardModels.isEmpty()) {
             return new ArrayList<>();
         }
-        return scoreCardModels.stream().map(this::mapToDto).collect(Collectors.toList());
+        return scoreCardModels.stream().map(this::mapToDto)
+                .sorted(
+                        Comparator.comparing(
+                                ScoreCardDto::getSlot,
+                                Comparator.nullsLast(Integer::compareTo)
+                        )
+                ).collect(Collectors.toList());
     }
 
     @Override
