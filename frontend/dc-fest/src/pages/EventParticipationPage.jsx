@@ -15,7 +15,7 @@ import { generateQrcode, getPop } from "../services/attendance-apis";
 import AddParticipantModal from "../components/event-participation/AddParticipantModal";
 import { useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaClock, FaDownload, FaPlus } from "react-icons/fa";
-import { closeAvailableEvent, updateAvailableEvent } from "../services/available-events-apis";
+import { closeAvailableEvent, toggleAvailableEventRegistration, updateAvailableEvent } from "../services/available-events-apis";
 
 import DisableTeamModal from "../components/event-participation/DisableTeamModal";
 import { AuthContext } from "../providers/AuthProvider";
@@ -478,9 +478,14 @@ const EventParticipationPage = () => {
   };
 
   const handleCloseRegistration = async (selectedAvailableEvent) => {
-    const newAvailableEvent = { ...selectedAvailableEvent, closeRegistration: true };
+    const newAvailableEvent = { ...selectedAvailableEvent, closeRegistration: !selectedAvailableEvent.closeRegistration };
+    
     try {
-      const response = await closeAvailableEvent(newAvailableEvent.id);
+        const eventResponse = await fetchEventByAvailableEventId(
+            selectedAvailableEvent.id
+          );
+
+      const response = await toggleAvailableEventRegistration(eventResponse.id);
       console.log("closed reg, response:", response);
       setAvailableEvent(newAvailableEvent);
       alert("Registration closed successfully.");

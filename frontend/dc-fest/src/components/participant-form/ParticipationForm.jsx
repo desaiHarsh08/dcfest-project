@@ -144,7 +144,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   // Revalidate details whenever participants change
   useEffect(() => {
     isValidDetails();
-  }, [participants]);
+  }, [participants, selectedAvailableEvent]);
 
   // Check if college already has NORMAL entry type participants
   useEffect(() => {
@@ -253,18 +253,22 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
   const isValidDetails = (isSubmitting) => {
     if (!selectedAvailableEvent || !selectedAvailableEvent.eventRules) {
       setIsValid(false);
+      console.log("selectedAvailableEvent || selectedAvailableEvent.eventRules doesn't exist: -", selectedAvailableEvent);
       return false;
     }
 
     for (const participant of participants) {
+        console.log("in validDetails(), loop, participant:", participant);
       if (!participant.name.trim() || !participant.email.trim() || !participant.whatsappNumber.trim()) {
         setIsValid(false);
+        console.log("participant is empty:", participant, participants);
         return false;
       }
     }
 
     if (participants.some((p) => p.whatsappNumber.length > 11 || p.whatsappNumber.length < 10)) {
       setIsValid(false);
+      console.log("glitch in wa:", participants);
       return false;
     }
 
@@ -273,6 +277,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
       switch (rule.eventRuleTemplate.name) {
         case "MIN_PARTICIPANTS":
           if (participants.filter((p) => p.type == "PERFORMER").length < ruleValue) {
+              console.log(`Oops... There should be minimum ${ruleValue} participants!`)
             if (isSubmitting) {
               alert(`Oops... There should be minimum ${ruleValue} participants!`);
             }
@@ -283,10 +288,12 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
 
         case "MAX_PARTICIPANTS":
           if (participants.filter((p) => p.type == "PERFORMER").length > ruleValue) {
+            console.log(`Oops... There should be maximum ${ruleValue} participants!`);
             if (isSubmitting) {
               alert(`Oops... There should be maximum ${ruleValue} participants!`);
             }
             setIsValid(false);
+
             return false;
           }
           break;
@@ -297,6 +304,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
               alert(`Oops... There should be maximum ${ruleValue} accompanist!`);
             }
             setIsValid(false);
+            console.log('COLLEGE_ACCOMPANIST case:', `Oops... There should be maximum ${ruleValue} accompanist!`)
             return false;
           }
           break;
@@ -305,10 +313,15 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
           const maxParticipants = selectedAvailableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
           const minParticipants = selectedAvailableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value;
 
+          console.log("minParticipants:", minParticipants)
+          console.log("maxParticipants:", maxParticipants)
+          console.log("ruleValue:", ruleValue);
+          console.log("participants:", participants);
           if (ruleValue == maxParticipants) {
             if (participants.filter((p) => p.male && p.type == "PERFORMER").length < minParticipants || participants.filter((p) => !p.male && p.type == "PERFORMER").length != 0) {
+                console.log(`Oops... There should be maximum ${ruleValue} participants!`);
               if (isSubmitting) {
-                alert(`Oops... There should be ${minParticipants} MALE participants!`);
+                alert(`Oops... There should be min. ${minParticipants} MALE participants!`);
               }
               setIsValid(false);
               return false;
@@ -318,6 +331,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
               if (isSubmitting) {
                 alert(`Oops... There should be ${ruleValue} MALE participants!`);
               }
+              console.log(`Oops... There should be max. ${ruleValue} MALE participants!`)
               setIsValid(false);
               return false;
             }
@@ -335,6 +349,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                 alert(`Oops... There should be ${minParticipants} FEMALE participants!`);
               }
               setIsValid(false);
+              console.log(`Oops... There should be ${minParticipants} FEMALE participants!`)
               return false;
             }
           } else {
@@ -343,6 +358,7 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                 alert(`Oops... There should be ${ruleValue} FEMALE participants!`);
               }
               setIsValid(false);
+              console.log(`Oops... There should be ${ruleValue} FEMALE participants!`)
               return false;
             }
           }
@@ -615,6 +631,8 @@ const ParticipationForm = ({ formType = "REGISTRATION", iccode, availableEvent, 
                         size="lg"
                         //   className="w-100"
                       >
+                        {/* {JSON.stringify(isValid)}
+                        {JSON.stringify(loading)} */}
                         {loading ? "Please wait..." : "Register"}
                       </Button>
                       {loading && <p>This may take few seconds...</p>}
