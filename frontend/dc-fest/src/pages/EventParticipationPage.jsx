@@ -481,12 +481,16 @@ const EventParticipationPage = () => {
     const newAvailableEvent = { ...selectedAvailableEvent, closeRegistration: !selectedAvailableEvent.closeRegistration };
     
     try {
-        const eventResponse = await fetchEventByAvailableEventId(
-            selectedAvailableEvent.id
-          );
+        // const eventResponse = await fetchEventByAvailableEventId(
+        //     selectedAvailableEvent.id
+        //   );
 
-      const response = await toggleAvailableEventRegistration(eventResponse.id);
+
+      const response = await toggleAvailableEventRegistration(selectedAvailableEvent.id);
       console.log("closed reg, response:", response);
+      const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
+        setSelectedCategory(categoriesData.find(c => c.id = selectedCategory.id));
       setAvailableEvent(newAvailableEvent);
       alert("Registration closed successfully.");
     } catch (error) {
@@ -657,6 +661,7 @@ const EventParticipationPage = () => {
                 <Button variant="info" onClick={() => setShowDisableTeamModal(true)} className="ms-2">
                   Remove Team
                 </Button>
+                {JSON.stringify(selectedAvailableEvent)}
                 <Button variant="secondary" onClick={() => handleCloseRegistration(selectedAvailableEvent)} disabled={selectedAvailableEvent?.closeRegistration} className="ms-2">
                   {selectedAvailableEvent?.closeRegistration ? "Closed" : "Close Registration?"}
                 </Button>
