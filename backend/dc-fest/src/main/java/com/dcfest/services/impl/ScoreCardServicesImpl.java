@@ -438,8 +438,15 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         }
 
         // Set final points (0 for OTSE teams)
-        if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
+//        if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
+//            scoreCardModel.setPoints(totalPoints);
+//        } else {
+//            scoreCardModel.setPoints(0);
+//        }
+        if (scoreCardModel.getRank() != null) {
             scoreCardModel.setPoints(totalPoints);
+        } else if (!scoreCardModel.getTeamNumber().contains(collegeModel.getIcCode() + "_OTSE")) {
+            scoreCardModel.setPoints(2);
         } else {
             scoreCardModel.setPoints(0);
         }
