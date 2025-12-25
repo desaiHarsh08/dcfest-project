@@ -284,7 +284,7 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         RoundModel round = this.roundRepository.findById(roundId)
                 .orElseThrow(() -> new ResourceNotFoundException("Round not found for id: " + roundId));
 
-        List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByCollegeParticipationAndRound(
+        List<ScoreCardModel> scoreCardModels = this.scoreCardRepository.findByCollegeParticipationAndPromotedRound(
                 collegeParticipation, round);
         if (scoreCardModels.isEmpty()) {
             return new ArrayList<>();
