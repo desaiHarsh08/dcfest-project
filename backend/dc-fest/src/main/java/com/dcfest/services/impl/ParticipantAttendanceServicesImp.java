@@ -165,29 +165,55 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group))
                 .collect(Collectors.toList());
 
+        System.out.println("participantAttendanceModels: " + participantAttendanceModels);
+        System.out.println("participantAttendanceModels.size(): " + participantAttendanceModels.size());
+
         // Filter the participants by round
         List<ParticipantAttendanceModel> filteredParticipantAttendances = new ArrayList<>();
-        if (roundModels.size() > 1) {
-            if (roundModel.getRoundType().equals(RoundType.PRELIMINARY) || roundModel.getRoundType().equals(RoundType.SEMI_FINAL)) {
-                filteredParticipantAttendances = participantAttendanceModels;
-            } else {
-                // Get ParticipantDto
-                List<ParticipantDto> participantDto = participantModels.stream().map(this::participantModelToDto2).collect(Collectors.toList());
-                for (ParticipantDto p: participantDto) {
-                    // Find the promoted round
-                    boolean isPromoted = p.getPromotedRoundDtos().stream().filter(pr -> pr.getRoundId().equals(roundId)).findAny().isPresent();
-                    if (isPromoted) {
-                        ParticipantAttendanceModel tmp = participantAttendanceModels.stream().filter(pa -> pa.getParticipant().getId().equals(p.getId())).findFirst().orElse(null);
-                        if (tmp.isPresent()) {
-                            filteredParticipantAttendances.add(tmp);
-                        }
-                    }
+
+        boolean shouldFilter =
+                roundModels.size() > 1 &&
+                        roundModel.getRoundType() != RoundType.PRELIMINARY &&
+                        roundModel.getRoundType() != RoundType.SEMI_FINAL;
+
+
+
+        System.out.println(
+                "shouldFilter=" + shouldFilter +
+                        ", roundType=" + roundModel.getRoundType() +
+                        ", roundCount=" + roundModels.size()
+        );
+
+
+        if (!shouldFilter) {
+            System.out.println("No filtering: -");
+            // No filtering
+            filteredParticipantAttendances = participantAttendanceModels;
+        } else {
+            filteredParticipantAttendances = new ArrayList<>();
+
+            List<ParticipantDto> participantDto = participantModels
+                    .stream()
+                    .map(this::participantModelToDto2)
+                    .collect(Collectors.toList());
+
+            for (ParticipantDto p : participantDto) {
+                boolean isPromoted = p.getPromotedRoundDtos()
+                        .stream()
+                        .anyMatch(pr -> pr.getRoundId().equals(roundId));
+
+                if (isPromoted) {
+                    participantAttendanceModels.stream()
+                            .filter(pa -> pa.getParticipant().getId().equals(p.getId()))
+                            .findFirst()
+                            .ifPresent(filteredParticipantAttendances::add);
                 }
             }
         }
 
 
-        if (participantAttendanceModels.isEmpty()) {
+
+        if (filteredParticipantAttendances.isEmpty()) {
             return null;
         }
 
@@ -203,13 +229,19 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
 
         String teamNumber = participantModels.get(0).getTeamNumber();
         List<ParticipantModel> actualParticipants = new ArrayList<>();
-        for (ParticipantModel participantModel : participantModels) {
-            boolean isPresent = filteredParticipantAttendances.stream().filter(p -> p.getParticipant().getId().equals(participantModel.getId())).findFirst().isPresent();
-            if (isPresent) {
-                actualParticipants.add(participantModel);
+        if (shouldFilter) {
+            for (ParticipantModel participantModel : participantModels) {
+                boolean isPresent = filteredParticipantAttendances.stream().filter(p -> p.getParticipant().getId().equals(participantModel.getId())).findFirst().isPresent();
+                if (isPresent) {
+                    actualParticipants.add(participantModel);
+                }
+                // System.out.println(participantModel.getTeamNumber());
             }
-            // System.out.println(participantModel.getTeamNumber());
         }
+        else {
+            actualParticipants = participantModels;
+        }
+
 
         // Create the pop
         // Format the LocalDateTime to the required format without milliseconds
