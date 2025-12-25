@@ -6,16 +6,30 @@ import { Table, Container, Alert, Button, Modal, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import "../styles/EventParticipationPage.css"; // Import custom CSS
 import { fetchCategories } from "../services/categories-api";
-import { deleteParticipant, disableParticipation, fetchParticipantsByEventId, fetchParticipantsByEventIdAndCollegeId, updateParticipant } from "../services/participants-api";
+import {
+  deleteParticipant,
+  disableParticipation,
+  fetchParticipantsByEventId,
+  fetchParticipantsByEventIdAndCollegeId,
+  updateParticipant,
+} from "../services/participants-api";
 import { fetchEventByAvailableEventId } from "../services/event-apis";
 import ParticipantRow from "../components/event-participation/ParticipantRow";
-import { fetchColleges, fetchCollegesByAvailableEventIdAndRoundId, fetchCollegesByAvailableEventIdEnabledParticipants } from "../services/college-apis";
+import {
+  fetchColleges,
+  fetchCollegesByAvailableEventIdAndRoundId,
+  fetchCollegesByAvailableEventIdEnabledParticipants,
+} from "../services/college-apis";
 import * as XLSX from "xlsx";
 import { generateQrcode, getPop } from "../services/attendance-apis";
 import AddParticipantModal from "../components/event-participation/AddParticipantModal";
 import { useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaClock, FaDownload, FaPlus } from "react-icons/fa";
-import { closeAvailableEvent, toggleAvailableEventRegistration, updateAvailableEvent } from "../services/available-events-apis";
+import {
+  closeAvailableEvent,
+  toggleAvailableEventRegistration,
+  updateAvailableEvent,
+} from "../services/available-events-apis";
 
 import DisableTeamModal from "../components/event-participation/DisableTeamModal";
 import { AuthContext } from "../providers/AuthProvider";
@@ -54,7 +68,11 @@ const EventParticipationPage = () => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    if (user?.type == "ATTENDANCE_DESK" || user?.type == "SCORE_SHEET_DESK" || user?.type == "SCORE_ENTRY_DESK") {
+    if (
+      user?.type == "ATTENDANCE_DESK" ||
+      user?.type == "SCORE_SHEET_DESK" ||
+      user?.type == "SCORE_ENTRY_DESK"
+    ) {
       navigate(-1);
     }
   }, [user, navigate]);
@@ -62,15 +80,25 @@ const EventParticipationPage = () => {
   // Fetch participants when eventFilter or selectedCollege changes
   useEffect(() => {
     if (eventFilter && selectedCollege) {
-      console.log("Fetching participants for selectedCollege:", selectedCollege);
-      console.log("Event filter:", eventFilter, "College ID:", selectedCollege.id);
+      console.log(
+        "Fetching participants for selectedCollege:",
+        selectedCollege
+      );
+      console.log(
+        "Event filter:",
+        eventFilter,
+        "College ID:",
+        selectedCollege.id
+      );
       // Clear previous participants before fetching new ones to avoid stale data
       setParticipants([]);
       setFilteredParticipants([]);
       getParticipants();
     } else {
       // Clear participants if no event or college is selected
-      console.log("Clearing participants - eventFilter or selectedCollege missing");
+      console.log(
+        "Clearing participants - eventFilter or selectedCollege missing"
+      );
       setParticipants([]);
       setFilteredParticipants([]);
     }
@@ -94,7 +122,7 @@ const EventParticipationPage = () => {
     }
   }, []);
 
-  useEffect(() => {}, [pop]);
+  //   useEffect(() => {}, [pop]);
 
   useEffect(() => {
     if (filteredParticipants.length > 0) {
@@ -123,13 +151,13 @@ const EventParticipationPage = () => {
     if (participants.length > 0) {
       console.log(
         "All participant college IDs:",
-        participants.map((p) => ({ 
-          id: p.id, 
-          name: p.participantName || p.name, 
+        participants.map((p) => ({
+          id: p.id,
+          name: p.participantName || p.name,
           collegeId: p.collegeId,
           collegeIdType: typeof p.collegeId,
           entryType: p.entryType,
-          quotaType: p.quotaType
+          quotaType: p.quotaType,
         }))
       );
     } else {
@@ -140,9 +168,16 @@ const EventParticipationPage = () => {
     // We only need to filter by round, not by college
     if (selectedCollege && participants.length >= 0) {
       console.log("=== Starting filter process ===");
-      console.log("Selected college:", selectedCollege.name, "ID:", selectedCollege.id, "Type:", typeof selectedCollege.id);
+      console.log(
+        "Selected college:",
+        selectedCollege.name,
+        "ID:",
+        selectedCollege.id,
+        "Type:",
+        typeof selectedCollege.id
+      );
       console.log("Total participants before filter:", participants.length);
-      
+
       let roundIndex = 0;
       for (let i = 0; i < selectedAvailableEvent?.rounds.length; i++) {
         if (selectedAvailableEvent?.rounds[i].id == selectedRound?.id) {
@@ -156,8 +191,14 @@ const EventParticipationPage = () => {
       if (roundIndex == 0) {
         // For round 0, all participants from the college-specific endpoint should be shown
         // No need to filter by college since backend already did that
-        console.log("Round 0 - showing all participants (already filtered by college in backend)");
-        const waitingListInFiltered = participants.filter((p) => p.entryType === "WAITING_LIST" || p.quotaType === "WAITING_LIST_QUOTA");
+        console.log(
+          "Round 0 - showing all participants (already filtered by college in backend)"
+        );
+        const waitingListInFiltered = participants.filter(
+          (p) =>
+            p.entryType === "WAITING_LIST" ||
+            p.quotaType === "WAITING_LIST_QUOTA"
+        );
         console.log("Waiting list participants:", waitingListInFiltered.length);
         setFilteredParticipants(participants);
       } else {
@@ -168,12 +209,24 @@ const EventParticipationPage = () => {
             return false;
           }
           // Check if participant was promoted to this round
-          return p.promotedRoundDtos.some((ele) => ele.roundId == selectedRound.id);
+          return p.promotedRoundDtos.some(
+            (ele) => ele.roundId == selectedRound.id
+          );
         });
-        console.log("Filtered participants (round " + roundIndex + "):", filtered.length);
+        console.log(
+          "Filtered participants (round " + roundIndex + "):",
+          filtered.length
+        );
         // Log waiting list participants in filtered results
-        const waitingListInFiltered = filtered.filter((p) => p.entryType === "WAITING_LIST" || p.quotaType === "WAITING_LIST_QUOTA");
-        console.log("Waiting list participants in filtered (round " + roundIndex + "):", waitingListInFiltered.length);
+        const waitingListInFiltered = filtered.filter(
+          (p) =>
+            p.entryType === "WAITING_LIST" ||
+            p.quotaType === "WAITING_LIST_QUOTA"
+        );
+        console.log(
+          "Waiting list participants in filtered (round " + roundIndex + "):",
+          waitingListInFiltered.length
+        );
         setFilteredParticipants(filtered);
       }
       setRefetchPop((prev) => !prev); // Set refetchPop to true to refetch the POP
@@ -217,27 +270,41 @@ const EventParticipationPage = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedAvailableEvent && 
-        selectedAvailableEvent.rounds.length > 1 &&
-        selectedAvailableEvent.rounds.find(r => r.id == selectedRound.id)?.roundType !== "PRELIMINARY"
-         && selectedRound) {
-        fetchCollegesByAvailableEventIdAndRoundId(selectedAvailableEvent.id, selectedRound.id)
-            .then((data) => {
-                console.log("fetchCollegesByAvailableEventIdAndRoundId(), selectedAvailableEvent:", selectedAvailableEvent)
-                console.log("fetchCollegesByAvailableEventIdAndRoundId(), ", data, selectedAvailableEvent, selectedRound)
-                setColleges(data)
-                setSelectedCollege(data[0]);
-            })
+    if (
+      selectedAvailableEvent &&
+      selectedAvailableEvent.rounds.length > 1 &&
+      selectedAvailableEvent.rounds.find((r) => r.id == selectedRound.id)
+        ?.roundType !== "PRELIMINARY" &&
+      selectedRound
+    ) {
+      fetchCollegesByAvailableEventIdAndRoundId(
+        selectedAvailableEvent.id,
+        selectedRound.id
+      ).then((data) => {
+        console.log(
+          "fetchCollegesByAvailableEventIdAndRoundId(), selectedAvailableEvent:",
+          selectedAvailableEvent
+        );
+        console.log(
+          "fetchCollegesByAvailableEventIdAndRoundId(), ",
+          data,
+          selectedAvailableEvent,
+          selectedRound
+        );
+        setColleges(data);
+        setSelectedCollege(data[0]);
+      });
+    } else if (selectedAvailableEvent) {
+      fetchCollegesByAvailableEventIdEnabledParticipants(
+        selectedAvailableEvent.id
+      ).then((data) => {
+        setColleges(data);
+        setSelectedCollege(data[0] || null);
+      });
     }
-    else if (selectedAvailableEvent) {
-        fetchCollegesByAvailableEventIdEnabledParticipants(selectedAvailableEvent.id).then((data) => {
-          setColleges(data);
-          setSelectedCollege(data[0] || null);
-        });
-      }
   }, [selectedAvailableEvent, selectedRound]);
 
-//   useEffect(() => {})
+  //   useEffect(() => {})
 
   const getParticipants = async () => {
     console.log("=== getParticipants called ===");
@@ -260,9 +327,16 @@ const EventParticipationPage = () => {
       // Use college-specific endpoint when college is selected for more accurate results
       let response;
       if (selectedCollege && selectedCollege.id) {
-        console.log(`Fetching participants for event ${event.id} and college ${selectedCollege.id}`);
-        response = await fetchParticipantsByEventIdAndCollegeId(event.id, selectedCollege.id);
-        console.log(`Fetched ${response.length} participants for college ${selectedCollege.id}`);
+        console.log(
+          `Fetching participants for event ${event.id} and college ${selectedCollege.id}`
+        );
+        response = await fetchParticipantsByEventIdAndCollegeId(
+          event.id,
+          selectedCollege.id
+        );
+        console.log(
+          `Fetched ${response.length} participants for college ${selectedCollege.id}`
+        );
       } else {
         // Fallback to fetching all participants if no college is selected
         console.log(`Fetching all participants for event ${event.id}`);
@@ -282,16 +356,30 @@ const EventParticipationPage = () => {
         // Log entry types and quota types to debug waiting list participants
         console.log(
           "Participant entry types:",
-          response.map((p) => ({ id: p.id, name: p.participantName || p.name, entryType: p.entryType, quotaType: p.quotaType }))
+          response.map((p) => ({
+            id: p.id,
+            name: p.participantName || p.name,
+            entryType: p.entryType,
+            quotaType: p.quotaType,
+          }))
         );
         // Check for waiting list participants
-        const waitingListParticipants = response.filter((p) => p.entryType === "WAITING_LIST" || p.quotaType === "WAITING_LIST_QUOTA");
-        console.log("Waiting list participants found:", waitingListParticipants.length);
+        const waitingListParticipants = response.filter(
+          (p) =>
+            p.entryType === "WAITING_LIST" ||
+            p.quotaType === "WAITING_LIST_QUOTA"
+        );
+        console.log(
+          "Waiting list participants found:",
+          waitingListParticipants.length
+        );
         if (waitingListParticipants.length > 0) {
           console.log("Waiting list participants:", waitingListParticipants);
         }
       } else {
-        console.log("No participants found for this event and college combination");
+        console.log(
+          "No participants found for this event and college combination"
+        );
       }
 
       setParticipants(response);
@@ -312,18 +400,36 @@ const EventParticipationPage = () => {
   };
 
   const handleRemove = async (id) => {
-    const isConfirm = confirm("Are you sure you want to delete this participant.");
+    const isConfirm = confirm(
+      "Are you sure you want to delete this participant."
+    );
     if (!isConfirm) {
       return;
     }
 
-    const minParticipants = selectedAvailableEvent.eventRules.find((rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS").value;
+    const minParticipants = selectedAvailableEvent.eventRules.find(
+      (rule) => rule.eventRuleTemplate.name == "MIN_PARTICIPANTS"
+    ).value;
     const toDeleteParticipant = filteredParticipants.find((p) => p.id == id);
     console.log("deleteParticipant:", toDeleteParticipant);
     console.log("minParticipants:", minParticipants);
-    console.log("filteredParticipants:", filteredParticipants.filter((ele) => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group).length);
-    if (toDeleteParticipant.type == "PERFORMER" && filteredParticipants.filter((ele) => ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group).length <= minParticipants) {
-      alert("Minimum participants required for this event is " + minParticipants);
+    console.log(
+      "filteredParticipants:",
+      filteredParticipants.filter(
+        (ele) =>
+          ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group
+      ).length
+    );
+    if (
+      toDeleteParticipant.type == "PERFORMER" &&
+      filteredParticipants.filter(
+        (ele) =>
+          ele.type == "PERFORMER" && ele.group == toDeleteParticipant.group
+      ).length <= minParticipants
+    ) {
+      alert(
+        "Minimum participants required for this event is " + minParticipants
+      );
       return;
     }
 
@@ -335,7 +441,9 @@ const EventParticipationPage = () => {
       const newParticipants = participants.filter((p) => p.id != id);
       setParticipants(newParticipants);
 
-      const newFilteredParticipants = filteredParticipants.filter((p) => p.id != id);
+      const newFilteredParticipants = filteredParticipants.filter(
+        (p) => p.id != id
+      );
       setFilteredParticipants(newFilteredParticipants);
     } catch (error) {
       console.error("Something error", error);
@@ -351,9 +459,21 @@ const EventParticipationPage = () => {
     const updatedParticipant = selectedParticipant;
     try {
       const response = await updateParticipant(updatedParticipant);
-      setFilteredParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
+      setFilteredParticipants((prev) =>
+        prev.map((participant) =>
+          participant.id == updatedParticipant.id
+            ? updatedParticipant
+            : participant
+        )
+      );
 
-      setParticipants((prev) => prev.map((participant) => (participant.id == updatedParticipant.id ? updatedParticipant : participant)));
+      setParticipants((prev) =>
+        prev.map((participant) =>
+          participant.id == updatedParticipant.id
+            ? updatedParticipant
+            : participant
+        )
+      );
     } catch (error) {
       alert("Oops! Unable to save the participant.");
       return;
@@ -411,9 +531,15 @@ const EventParticipationPage = () => {
     const worksheet = XLSX.utils.json_to_sheet(formattedParticipants);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
 
-    saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `${selectedAvailableEvent?.slug}-participants.xlsx`);
+    saveAs(
+      new Blob([excelBuffer], { type: "application/octet-stream" }),
+      `${selectedAvailableEvent?.slug}-participants.xlsx`
+    );
   };
 
   const getTeams = () => {
@@ -458,13 +584,26 @@ const EventParticipationPage = () => {
     const updatedParticipant = { ...participant, present: e.target.checked };
     try {
       const response = await updateParticipant(updatedParticipant);
-      setFilteredParticipants((prev) => prev.map((p) => (p.id == updatedParticipant.id ? updatedParticipant : p)));
-      setParticipants((prev) => prev.map((p) => (p.id == updatedParticipant.id ? updatedParticipant : p)));
+      setFilteredParticipants((prev) =>
+        prev.map((p) =>
+          p.id == updatedParticipant.id ? updatedParticipant : p
+        )
+      );
+      setParticipants((prev) =>
+        prev.map((p) =>
+          p.id == updatedParticipant.id ? updatedParticipant : p
+        )
+      );
       setRefetchPop((prev) => !prev);
     } catch (error) {
       alert("Oops! Unable to save the participant.");
     }
   };
+
+  useEffect(() => {
+    setPop(null);
+    setRefetchPop((prev) => !prev);
+  }, [selectedCollege, selectedCategory, selectedAvailableEvent, selectedRound]);
 
   const handleNewParticipantChange = (e) => {
     const { name, value } = e.target;
@@ -480,19 +619,25 @@ const EventParticipationPage = () => {
   };
 
   const handleCloseRegistration = async (selectedAvailableEvent) => {
-    const newAvailableEvent = { ...selectedAvailableEvent, closeRegistration: !selectedAvailableEvent.closeRegistration };
-    
+    const newAvailableEvent = {
+      ...selectedAvailableEvent,
+      closeRegistration: !selectedAvailableEvent.closeRegistration,
+    };
+
     try {
-        // const eventResponse = await fetchEventByAvailableEventId(
-        //     selectedAvailableEvent.id
-        //   );
+      // const eventResponse = await fetchEventByAvailableEventId(
+      //     selectedAvailableEvent.id
+      //   );
 
-
-      const response = await toggleAvailableEventRegistration(selectedAvailableEvent.id);
+      const response = await toggleAvailableEventRegistration(
+        selectedAvailableEvent.id
+      );
       console.log("closed reg, response:", response);
       const categoriesData = await fetchCategories();
-        setCategories(categoriesData);
-        setSelectedCategory(categoriesData.find(c => c.id == selectedCategory.id));
+      setCategories(categoriesData);
+      setSelectedCategory(
+        categoriesData.find((c) => c.id == selectedCategory.id)
+      );
       setAvailableEvent(newAvailableEvent);
       alert("Registration closed successfully.");
     } catch (error) {
@@ -500,23 +645,27 @@ const EventParticipationPage = () => {
     }
   };
 
-  const handleDisableParticipation = async (collegeParticipationId, status, tmpParticipants) => {
+  const handleDisableParticipation = async (
+    collegeParticipationId,
+    status,
+    tmpParticipants
+  ) => {
     try {
       const eventResponse = await fetchEventByAvailableEventId(
         selectedAvailableEvent.id
       );
-  
+
       const response = await disableParticipation(
         collegeParticipationId,
         eventResponse?.id,
         status
       );
-  
+
       if (response) {
-        const participantIds = new Set(tmpParticipants.map(p => p.id));
-  
-        setFilteredParticipants(prev =>
-          prev.map(p =>
+        const participantIds = new Set(tmpParticipants.map((p) => p.id));
+
+        setFilteredParticipants((prev) =>
+          prev.map((p) =>
             participantIds.has(p.id)
               ? { ...p, disableParticipation: status }
               : p
@@ -527,11 +676,14 @@ const EventParticipationPage = () => {
       console.error("Disable participation failed:", error);
     }
   };
-  
 
   return (
     <Container fluid className="mt-4">
-      <button onClick={() => navigate(-1)} style={{ marginBottom: "1rem" }} className="btn btn-secondary">
+      <button
+        onClick={() => navigate(-1)}
+        style={{ marginBottom: "1rem" }}
+        className="btn btn-secondary"
+      >
         Go Back
       </button>
       <h1 className="text-center mb-4">Event Participation List</h1>
@@ -546,7 +698,9 @@ const EventParticipationPage = () => {
           className="category-dropdown"
           value={categoryFilter}
           onChange={(e) => {
-            const tmpSelectedCategory = categories.find((c) => c.id == e.target.value);
+            const tmpSelectedCategory = categories.find(
+              (c) => c.id == e.target.value
+            );
             setCategoryFilter(e.target.value);
             setSelectedCategory(tmpSelectedCategory);
             if (tmpSelectedCategory) {
@@ -574,7 +728,9 @@ const EventParticipationPage = () => {
           onChange={(e) => {
             setEventFilter(e.target.value);
 
-            const tmpAvailableEvent = selectedCategory?.availableEvents?.find((ele) => ele.id == e.target.value);
+            const tmpAvailableEvent = selectedCategory?.availableEvents?.find(
+              (ele) => ele.id == e.target.value
+            );
             setAvailableEvent(tmpAvailableEvent);
             // Keep the current selected college or use the first one
             if (!selectedCollege && colleges.length > 0) {
@@ -583,11 +739,16 @@ const EventParticipationPage = () => {
             setSelectedRound(tmpAvailableEvent.rounds[0]);
           }}
         >
-          {selectedCategory?.availableEvents?.map((availableEvent, availableEventIndex) => (
-            <option key={`availableEvent-${availableEventIndex}`} value={availableEvent.id}>
-              {availableEvent.title}
-            </option>
-          ))}
+          {selectedCategory?.availableEvents?.map(
+            (availableEvent, availableEventIndex) => (
+              <option
+                key={`availableEvent-${availableEventIndex}`}
+                value={availableEvent.id}
+              >
+                {availableEvent.title}
+              </option>
+            )
+          )}
         </Form.Select>
 
         {selectedAvailableEvent && selectedRound && (
@@ -595,7 +756,9 @@ const EventParticipationPage = () => {
             className="event-dropdown me-2"
             value={selectedRound?.id}
             onChange={(e) => {
-              const round = selectedAvailableEvent.rounds.find((r) => r.id == e.target.value);
+              const round = selectedAvailableEvent.rounds.find(
+                (r) => r.id == e.target.value
+              );
               console.log("round in change:", round);
               setSelectedRound(round);
             }}
@@ -615,17 +778,33 @@ const EventParticipationPage = () => {
             onChange={(e) => {
               // Handle both string and number IDs
               const selectedValue = e.target.value;
-              const tmpCollege = colleges.find((c) => String(c.id) === String(selectedValue) || Number(c.id) === Number(selectedValue));
-              console.log("College dropdown changed - selected value:", selectedValue, "found college:", tmpCollege);
+              const tmpCollege = colleges.find(
+                (c) =>
+                  String(c.id) === String(selectedValue) ||
+                  Number(c.id) === Number(selectedValue)
+              );
+              console.log(
+                "College dropdown changed - selected value:",
+                selectedValue,
+                "found college:",
+                tmpCollege
+              );
               if (tmpCollege) {
                 setSelectedCollege(tmpCollege);
               } else {
-                console.error("College not found for value:", selectedValue, "Available colleges:", colleges.map(c => ({ id: c.id, name: c.name })));
+                console.error(
+                  "College not found for value:",
+                  selectedValue,
+                  "Available colleges:",
+                  colleges.map((c) => ({ id: c.id, name: c.name }))
+                );
               }
             }}
           >
             {colleges?.map((college, collegeIndex) => {
-              const participantCount = participants.filter((p) => p.collegeId == college.id).length;
+              const participantCount = participants.filter(
+                (p) => p.collegeId == college.id
+              ).length;
               return (
                 <option key={`college-${collegeIndex}`} value={college.id}>
                   {college.icCode} - {college?.name}
@@ -637,40 +816,60 @@ const EventParticipationPage = () => {
       </div>
 
       {/* Show message when no participants exist */}
-      {!loading && participants.length === 0 && eventFilter && selectedCollege && (
-        <div className="alert alert-info mt-3">
-          <strong>No participants registered</strong> for this event yet. Use &quot;Add More Participants&quot; button to add participants.
-        </div>
-      )}
+      {!loading &&
+        participants.length === 0 &&
+        eventFilter &&
+        selectedCollege && (
+          <div className="alert alert-info mt-3">
+            <strong>No participants registered</strong> for this event yet. Use
+            &quot;Add More Participants&quot; button to add participants.
+          </div>
+        )}
 
       {/* Action buttons - show when event and college are selected */}
       {eventFilter && selectedCollege && selectedAvailableEvent && (
         <div className="d-flex justify-content-between mt-3 mb-3">
-          <Button variant="success" disabled={colleges.length == 0 || filteredParticipants.length == 0} onClick={handleDownload}>
+          <Button
+            variant="success"
+            disabled={colleges.length == 0 || filteredParticipants.length == 0}
+            onClick={handleDownload}
+          >
             <FaDownload /> Download
           </Button>
           <div>
             <Button
               variant="warning"
               onClick={() => {
-                console.log("pop:", pop)
-                if (pop) {
-                    
-                    setShowAddModal(true);
+                console.log("pop:", pop);
+                if (!pop) {
+                  setShowAddModal(true);
                 }
               }}
-              disabled={!!pop}
+              disabled={pop}
             >
               <FaPlus /> Add More Participants
             </Button>
             {filteredParticipants.length > 0 && (
               <>
-                <Button variant="info" onClick={() => setShowDisableTeamModal(true)} className="ms-2">
+                <Button
+                  variant="info"
+                  onClick={() => setShowDisableTeamModal(true)}
+                  className="ms-2"
+                >
                   Remove Team
                 </Button>
-                
-                <Button variant="secondary" onClick={() => handleCloseRegistration(selectedAvailableEvent)} disabled={selectedAvailableEvent?.closeRegistration} className="ms-2">
-                  {selectedAvailableEvent?.closeRegistration ? "Closed" : "Close Registration?"}
+
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    handleCloseRegistration(selectedAvailableEvent)
+                  }
+                  disabled={selectedAvailableEvent?.closeRegistration}
+                  className="ms-2"
+                >
+                  {selectedAvailableEvent?.closeRegistration
+                    ? "Closed"
+                    : "Close Registration?"}
                 </Button>
               </>
             )}
@@ -720,14 +919,19 @@ const EventParticipationPage = () => {
               {/* Alphabtical order of participant names */}
               {selectedRound &&
                 groups.map((grp) => {
-                  let tmpParticipants = filteredParticipants.filter((p) => p.group === grp).sort((a, b) => a.name.localeCompare(b.name)); // Sort by name in alphabetical order
+                  let tmpParticipants = filteredParticipants
+                    .filter((p) => p.group === grp)
+                    .sort((a, b) => a.name.localeCompare(b.name)); // Sort by name in alphabetical order
 
                   return tmpParticipants.map((participant, index) => (
                     <ParticipantRow
                       key={`${participant.id}`}
                       collegeParticipation={collegeParticipation}
                       selectedRound={selectedRound}
-                      category={categories.find((cat) => cat.id === selectedAvailableEvent?.eventCategoryId)}
+                      category={categories.find(
+                        (cat) =>
+                          cat.id === selectedAvailableEvent?.eventCategoryId
+                      )}
                       index={index}
                       availableEvent={selectedAvailableEvent}
                       participant={participant}
@@ -738,8 +942,8 @@ const EventParticipationPage = () => {
                       filteredParticipants={filteredParticipants}
                       refetchPop={refetchPop}
                       handleAttendance={handleAttendance}
-                      popP={pop}
-                      setPopP={setPop}
+                      pop={pop}
+                      setPop={setPop}
                       group={grp} // Changed to use `grp` instead of `group` to match the map variable
                     />
                   ));
@@ -759,19 +963,39 @@ const EventParticipationPage = () => {
             <div className="w-100">
               <Form.Group controlId="formName">
                 <Form.Label>Name</Form.Label>
-                <Form.Control type="text" name="name" value={selectedParticipant.name} onChange={handleInputChange} />
+                <Form.Control
+                  type="text"
+                  name="name"
+                  value={selectedParticipant.name}
+                  onChange={handleInputChange}
+                />
               </Form.Group>
               <Form.Group controlId="formCollege">
                 <Form.Label>ICCODE</Form.Label>
-                <Form.Control type="text" name="icCode" value={selectedCollege?.icCode || ""} style={{ backgroundColor: "aliceblue" }} />
+                <Form.Control
+                  type="text"
+                  name="icCode"
+                  value={selectedCollege?.icCode || ""}
+                  style={{ backgroundColor: "aliceblue" }}
+                />
               </Form.Group>
               <Form.Group controlId="formEmail">
                 <Form.Label>Email</Form.Label>
-                <Form.Control type="email" name="email" value={selectedParticipant.email} onChange={handleInputChange} />
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={selectedParticipant.email}
+                  onChange={handleInputChange}
+                />
               </Form.Group>
               <Form.Group controlId="formEvent">
                 <Form.Label>Whatsapp Number</Form.Label>
-                <Form.Control type="text" name="whatsappNumber" value={selectedParticipant.whatsappNumber || ""} onChange={handleInputChange} />
+                <Form.Control
+                  type="text"
+                  name="whatsappNumber"
+                  value={selectedParticipant.whatsappNumber || ""}
+                  onChange={handleInputChange}
+                />
               </Form.Group>
               <Form.Group controlId="formGender">
                 <Form.Label>Gender</Form.Label>
@@ -782,7 +1006,12 @@ const EventParticipationPage = () => {
                     name="gender"
                     value="male"
                     checked={selectedParticipant.male === true}
-                    onChange={() => setSelectedParticipant((prev) => ({ ...prev, male: true }))}
+                    onChange={() =>
+                      setSelectedParticipant((prev) => ({
+                        ...prev,
+                        male: true,
+                      }))
+                    }
                   />
                   <Form.Check
                     type="radio"
@@ -790,16 +1019,32 @@ const EventParticipationPage = () => {
                     name="gender"
                     value="female"
                     checked={selectedParticipant.male === false}
-                    onChange={() => setSelectedParticipant((prev) => ({ ...prev, male: false }))}
+                    onChange={() =>
+                      setSelectedParticipant((prev) => ({
+                        ...prev,
+                        male: false,
+                      }))
+                    }
                   />
                 </div>
               </Form.Group>
-              <Form.Group controlId="formEvent" className="d-flex align-items-center gap-2">
+              <Form.Group
+                controlId="formEvent"
+                className="d-flex align-items-center gap-2"
+              >
                 <Form.Label>Attendance</Form.Label>
                 <div className="d-flex align-items-center justify-content-center gap-2">
-                  <Form.Check type="checkbox" name="present" checked={selectedParticipant.present} onChange={handleInputChange} />
+                  <Form.Check
+                    type="checkbox"
+                    name="present"
+                    checked={selectedParticipant.present}
+                    onChange={handleInputChange}
+                  />
                   <p>{selectedParticipant.present ? "Present" : "Absent"}</p>
-                  {console.log("selectedParticipant.present:", selectedParticipant.present)}
+                  {console.log(
+                    "selectedParticipant.present:",
+                    selectedParticipant.present
+                  )}
                 </div>
               </Form.Group>
             </div>
@@ -814,25 +1059,28 @@ const EventParticipationPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {selectedCollege && selectedAvailableEvent && groups && filteredParticipants && (
-        <AddParticipantModal
-          availableEvent={selectedAvailableEvent}
-          handleInputChange={handleNewParticipantChange}
-          handleModalClose={() => setShowAddModal(false)}
-          getParticipants={getParticipants}
-          newParticipant={newParticipant}
-          setNewParticipant={setNewParticipant}
-          setParticipants={setParticipants}
-          filteredParticipants={filteredParticipants}
-          setFilteredParticipants={setFilteredParticipants}
-          participants={filteredParticipants.filter((p) => p.group == group)}
-          setGroup={setGroup}
-          group={group}
-          selectedCollege={selectedCollege}
-          show={showAddModal}
-          groups={groups}
-        />
-      )}
+      {selectedCollege &&
+        selectedAvailableEvent &&
+        groups &&
+        filteredParticipants && (
+          <AddParticipantModal
+            availableEvent={selectedAvailableEvent}
+            handleInputChange={handleNewParticipantChange}
+            handleModalClose={() => setShowAddModal(false)}
+            getParticipants={getParticipants}
+            newParticipant={newParticipant}
+            setNewParticipant={setNewParticipant}
+            setParticipants={setParticipants}
+            filteredParticipants={filteredParticipants}
+            setFilteredParticipants={setFilteredParticipants}
+            participants={filteredParticipants.filter((p) => p.group == group)}
+            setGroup={setGroup}
+            group={group}
+            selectedCollege={selectedCollege}
+            show={showAddModal}
+            groups={groups}
+          />
+        )}
 
       {selectedAvailableEvent && (
         <DisableTeamModal

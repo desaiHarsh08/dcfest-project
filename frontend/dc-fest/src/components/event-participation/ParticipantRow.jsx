@@ -5,17 +5,44 @@ import { Badge, Button } from "react-bootstrap";
 import { fetchCollegeById } from "../../services/college-apis";
 
 import { generateQrcode, getPop } from "../../services/attendance-apis";
-import { FaCheck, FaDownload, FaEdit, FaRemoveFormat, FaTrash } from "react-icons/fa";
+import {
+  FaCheck,
+  FaDownload,
+  FaEdit,
+  FaRemoveFormat,
+  FaTrash,
+} from "react-icons/fa";
 import { fetchParticipationByCollegeIdAndAvailableEventId } from "../../services/college-participation-apis";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ tmpParticipants, popP, setPopP, refetchPop, collegeParticipation, handleDisableParticipation, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
+const ParticipantRow = ({
+  tmpParticipants,
+  pop,
+  setPop,
+  refetchPop,
+  collegeParticipation,
+  handleDisableParticipation,
+  handleAttendance,
+  participant,
+  filteredParticipants,
+  index,
+  group,
+  category,
+  availableEvent,
+  selectedRound,
+  handleRemove,
+  handleEdit,
+}) => {
   const [college, setCollege] = useState();
-  const [pop, setPop] = useState();
+  //   const [pop, setPop] = useState();
 
   const [confirmParticipation, setConfirmParticipation] = useState(false);
 
   console.log("participant:", participant);
+
+  useEffect(() => {
+    setPop(null);
+  }, []);
 
   useEffect(() => {
     if (college && availableEvent && participant) {
@@ -39,7 +66,7 @@ const ParticipantRow = ({ tmpParticipants, popP, setPopP, refetchPop, collegePar
 
   useEffect(() => {
     if (college && participant && availableEvent) {
-      fetchPop();
+      fetchPop(college, availableEvent, participant.group);
     }
   }, [college, participant, refetchPop, selectedRound, availableEvent]);
 
@@ -47,14 +74,21 @@ const ParticipantRow = ({ tmpParticipants, popP, setPopP, refetchPop, collegePar
     if (!college || !availableEvent || !participant) {
       return;
     }
+    setPop(null);
+    // setPopP(null);
     try {
-      const response = await getPop(college.id, availableEvent.id, selectedRound?.id, group);
+      const response = await getPop(
+        college.id,
+        availableEvent.id,
+        selectedRound?.id,
+        group
+      );
       setPop(response);
-      setPopP(response);
+      //   setPopP(response);
     } catch (error) {
       console.log(error);
       setPop(null);
-      setPopP(null);
+      //   setPopP(null);
     }
   };
 
@@ -78,80 +112,125 @@ const ParticipantRow = ({ tmpParticipants, popP, setPopP, refetchPop, collegePar
     }
     try {
       setConfirmParticipation(true);
-      const response = await generateQrcode(college.id, availableEvent.id, selectedRound.id, group);
+      const response = await generateQrcode(
+        college.id,
+        availableEvent.id,
+        selectedRound.id,
+        group
+      );
       console.log(response);
       setPop(response);
+      //   setPopP(response);
     } catch (error) {
       console.log(error);
+      setPop(null);
+      //   setPopP(null);
     } finally {
       setConfirmParticipation(false);
     }
   };
 
   return (
-     (
-      <>
-        <tr key={participant?.id}>
-          <td>
-            <input type="checkbox" checked={participant.present} onChange={(e) => handleAttendance(e, participant)} />
-          </td>
-          <td>{index + 1}</td>
-          <td>{college?.icCode}</td>
-          <td>{category?.name}</td>
-          <td>{availableEvent?.title}</td>
-          <td>{participant?.group}</td>
-          <td>{participant?.name}</td>
-          <td>{participant?.email}</td>
-          <td>
-            <Badge variant={participant?.type == "PERFORMER" ? "primary" : "warning"}>{participant?.type}</Badge>
-          </td>
-          <td>
-            <Badge bg={participant.entryType == "NORMAL" ? "light text-dark border border-secondary" : "secondary"}>{participant?.entryType}</Badge>
-          </td>
-          <td>{participant?.handPreference}</td>
-          <td className="d-flex">
-            {participant?.id && (
-              <Button variant="danger" size="sm" onClick={() => handleRemove(participant.id)}>
-                <FaTrash /> Remove
-              </Button>
-            )}
-            <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(participant, college)}>
-              <FaEdit /> Edit
+    <>
+      <tr key={participant?.id}>
+        <td>
+          <input
+            type="checkbox"
+            checked={participant.present}
+            onChange={(e) => handleAttendance(e, participant)}
+          />
+        </td>
+        <td>{index + 1}</td>
+        <td>{college?.icCode}</td>
+        <td>{category?.name}</td>
+        <td>{availableEvent?.title}</td>
+        <td>{participant?.group}</td>
+        <td>{participant?.name}</td>
+        <td>{participant?.email}</td>
+        <td>
+          <Badge
+            variant={participant?.type == "PERFORMER" ? "primary" : "warning"}
+          >
+            {participant?.type}
+          </Badge>
+        </td>
+        <td>
+          <Badge
+            bg={
+              participant.entryType == "NORMAL"
+                ? "light text-dark border border-secondary"
+                : "secondary"
+            }
+          >
+            {participant?.entryType}
+          </Badge>
+        </td>
+        <td>{participant?.handPreference}</td>
+        <td className="d-flex">
+          {participant?.id && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => handleRemove(participant.id)}
+            >
+              <FaTrash /> Remove
             </Button>
-            {/* {JSON.stringify(participant)} */}
-            {index == 0 && (
-                <>
+          )}
+          <Button
+            variant="info"
+            size="sm"
+            className="me-2"
+            onClick={() => handleEdit(participant, college)}
+          >
+            <FaEdit /> Edit
+          </Button>
+          {/* {JSON.stringify(participant)} */}
+          {index == 0 && (
+            <>
               <Button
                 variant={pop ? "ghost border border-2" : "warning"}
                 onClick={() => {
+                  console.log(pop);
+                  //   console.log(popP);
                   if (pop) {
                     handlePdfOpen();
                   } else {
                     handleConfirmParticipants(participant?.group);
                   }
                 }}
-                disabled={confirmParticipation || !!participant?.disableParticipation}
+                // disabled={
+                //   confirmParticipation || !!participant?.disableParticipation
+                // }
               >
-                {pop ? <FaDownload /> : <FaCheck />} {pop ? "Download" : "Confirm"}
+                {pop ? <FaDownload /> : <FaCheck />}{" "}
+                {pop ? "Download" : "Confirm"}
               </Button>
               <Button
                 variant={"outline"}
                 className="border"
                 onClick={async () => {
-                    console.log("Sending disableParticipation status:", !!participant?.disableParticipation == false ? true : false, participant)
-                  await handleDisableParticipation(participant?.group, (!!participant?.disableParticipation == false ? true : false), tmpParticipants)
+                  console.log(
+                    "Sending disableParticipation status:",
+                    !!participant?.disableParticipation == false ? true : false,
+                    participant
+                  );
+                  await handleDisableParticipation(
+                    participant?.group,
+                    !!participant?.disableParticipation == false ? true : false,
+                    tmpParticipants
+                  );
                 }}
-                
               >
-                {(participant?.disableParticipation === false || participant?.disableParticipation === null)  ? "Active" : "Inactive"}
+                {participant?.disableParticipation === false ||
+                participant?.disableParticipation === null
+                  ? "Active"
+                  : "Inactive"}
               </Button>
-                
-                </>
-            )}
-          </td>
-        </tr>
-      </>
-    )
+            </>
+          )}
+        </td>
+      </tr>
+    </>
   );
 };
 
