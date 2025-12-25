@@ -9,7 +9,7 @@ import { FaCheck, FaDownload, FaEdit, FaRemoveFormat, FaTrash } from "react-icon
 import { fetchParticipationByCollegeIdAndAvailableEventId } from "../../services/college-participation-apis";
 
 // eslint-disable-next-line react/prop-types
-const ParticipantRow = ({ tmpParticipants, refetchPop, collegeParticipation, handleDisableParticipation, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
+const ParticipantRow = ({ tmpParticipants, popP, setPopP, refetchPop, collegeParticipation, handleDisableParticipation, handleAttendance, participant, filteredParticipants, index, group, category, availableEvent, selectedRound, handleRemove, handleEdit }) => {
   const [college, setCollege] = useState();
   const [pop, setPop] = useState();
 
@@ -50,9 +50,11 @@ const ParticipantRow = ({ tmpParticipants, refetchPop, collegeParticipation, han
     try {
       const response = await getPop(college.id, availableEvent.id, selectedRound?.id, group);
       setPop(response);
+      setPopP(response);
     } catch (error) {
       console.log(error);
       setPop(null);
+      setPopP(null);
     }
   };
 

@@ -45,6 +45,9 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
     private static final int RANDOM_PART_LENGTH = 16; // Length of the random alphanumeric part
 
     @Autowired
+    private  PromotedRoundRepository promotedRoundRepository;
+
+    @Autowired
     private WhatsAppService whatsAppService;
 
     @Value("${app.base.url:http://localhost:5003}")
@@ -162,6 +165,28 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         participantModels = participantModels.stream().filter(p -> p.getGroup().equals(group))
                 .collect(Collectors.toList());
 
+        // Filter the participants by round
+        List<ParticipantAttendanceModel> filteredParticipantAttendances = new ArrayList<>();
+        if (roundModels.size() > 1) {
+            if (roundModel.getRoundType().equals(RoundType.PRELIMINARY) || roundModel.getRoundType().equals(RoundType.SEMI_FINAL)) {
+                filteredParticipantAttendances = participantAttendanceModels;
+            } else {
+                // Get ParticipantDto
+                List<ParticipantDto> participantDto = participantModels.stream().map(this::participantModelToDto2).collect(Collectors.toList());
+                for (ParticipantDto p: participantDto) {
+                    // Find the promoted round
+                    boolean isPromoted = p.getPromotedRoundDtos().stream().filter(pr -> pr.getRoundId().equals(roundId)).findAny().isPresent();
+                    if (isPromoted) {
+                        ParticipantAttendanceModel tmp = participantAttendanceModels.stream().filter(pa -> pa.getParticipant().getId().equals(p.getId())).findFirst().orElse(null);
+                        if (tmp.isPresent()) {
+                            filteredParticipantAttendances.add(tmp);
+                        }
+                    }
+                }
+            }
+        }
+
+
         if (participantAttendanceModels.isEmpty()) {
             return null;
         }
@@ -179,7 +204,8 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         String teamNumber = participantModels.get(0).getTeamNumber();
         List<ParticipantModel> actualParticipants = new ArrayList<>();
         for (ParticipantModel participantModel : participantModels) {
-            if (participantModel.isPresent()) {
+            boolean isPresent = filteredParticipantAttendances.stream().filter(p -> p.getParticipant().getId().equals(participantModel.getId())).findFirst().isPresent();
+            if (isPresent) {
                 actualParticipants.add(participantModel);
             }
             // System.out.println(participantModel.getTeamNumber());
@@ -707,6 +733,35 @@ public class ParticipantAttendanceServicesImp implements ParticipantAttendanceSe
         // Convert the list of EventModel to a list of event IDs
         List<Long> eventIds = participantModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());
         participantDto.setEventIds(eventIds);
+
+        return participantDto;
+    }
+
+    private ParticipantDto participantModelToDto2(ParticipantModel participantModel) {
+        if (participantModel == null) {
+            return null;
+        }
+
+        ParticipantDto participantDto = this.modelMapper.map(participantModel, ParticipantDto.class);
+        participantDto.setCollegeId(participantModel.getCollege().getId());
+        participantDto.setQuotaCount(participantModel.getQuotaCount());
+        // participantDto.setEvents(new ArrayList<>());
+        participantDto.setEntryType(participantModel.getEntryType());
+        List<PromotedRoundModel> promotedRoundModels = this.promotedRoundRepository.findByParticipant(participantModel);
+        for (PromotedRoundModel promotedRoundModel : promotedRoundModels) {
+            PromotedRoundDto promotedRoundDto = new PromotedRoundDto();
+            promotedRoundDto.setId(promotedRoundDto.getId());
+            promotedRoundDto.setParticipantId(participantDto.getId());
+            promotedRoundDto.setRoundId(promotedRoundModel.getRound().getId());
+
+            participantDto.getPromotedRoundDtos().add(promotedRoundDto);
+        }
+
+        // Convert the list of EventModel to a list of event IDs
+        List<Long> eventIds = participantModel.getEvents().stream().map(EventModel::getId).collect(Collectors.toList());
+        participantDto.setEventIds(eventIds);
+
+        participantDto.setQuotaCount(participantModel.getQuotaCount());
 
         return participantDto;
     }

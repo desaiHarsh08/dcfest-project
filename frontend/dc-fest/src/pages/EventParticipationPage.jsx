@@ -94,6 +94,8 @@ const EventParticipationPage = () => {
     }
   }, []);
 
+  useEffect(() => {}, [pop]);
+
   useEffect(() => {
     if (filteredParticipants.length > 0) {
       getGroups(filteredParticipants);
@@ -651,8 +653,13 @@ const EventParticipationPage = () => {
             <Button
               variant="warning"
               onClick={() => {
-                setShowAddModal(true);
+                console.log("pop:", pop)
+                if (pop) {
+                    
+                    setShowAddModal(true);
+                }
               }}
+              disabled={!!pop}
             >
               <FaPlus /> Add More Participants
             </Button>
@@ -731,7 +738,8 @@ const EventParticipationPage = () => {
                       filteredParticipants={filteredParticipants}
                       refetchPop={refetchPop}
                       handleAttendance={handleAttendance}
-                      pop={pop}
+                      popP={pop}
+                      setPopP={setPop}
                       group={grp} // Changed to use `grp` instead of `group` to match the map variable
                     />
                   ));
