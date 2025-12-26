@@ -40,42 +40,90 @@ const ParticipantRow = ({
 
   console.log("participant:", participant);
 
-  useEffect(() => {
-    setPop(null);
-  }, []);
+  //   useEffect(() => {
+  //     setPop(null);
+  //   }, []);
 
-  useEffect(() => {
-    if (college && availableEvent && participant) {
-      fetchPop(college, availableEvent, participant.group);
-    }
-  }, [college, availableEvent, refetchPop, participant]);
+  //   useEffect(() => {
+  //     if (college && availableEvent && participant) {
+  //       fetchPop(college, availableEvent, participant.group);
+  //     }
+  //   }, [college, availableEvent, refetchPop, participant]);
 
-  useEffect(() => {
-    if (confirmParticipation) {
-      fetchPop(college, availableEvent, participant.group);
-    }
-  }, [confirmParticipation, filteredParticipants, refetchPop]);
+  //   useEffect(() => {
+  //     if (confirmParticipation) {
+  //       fetchPop(college, availableEvent, participant.group);
+  //     }
+  //   }, [confirmParticipation, filteredParticipants, refetchPop]);
 
-  useEffect(() => {
-    fetchCollegeById(participant?.collegeId)
-      .then((data) => {
-        setCollege(data);
-      })
-      .catch((err) => console.log(err));
-  }, [participant?.collegeId]);
+  //   useEffect(() => {
+  //     fetchCollegeById(participant?.collegeId)
+  //       .then((data) => {
+  //         setCollege(data);
+  //       })
+  //       .catch((err) => console.log(err));
+  //   }, [participant?.collegeId]);
 
-  useEffect(() => {
-    if (college && participant && availableEvent) {
-      fetchPop(college, availableEvent, participant.group);
-    }
-  }, [college, participant, refetchPop, selectedRound, availableEvent]);
+  //   useEffect(() => {
+  //     if (college && participant && availableEvent) {
+  //       fetchPop(college, availableEvent, participant.group);
+  //     }
+  //   }, [college, participant, refetchPop, selectedRound, availableEvent]);
 
+//   useEffect(() => {
+//     if (!college || !availableEvent || !participant || !selectedRound) return;
+
+//     fetchPop(college, availableEvent, participant.group);
+//   }, [
+//     college?.id,
+//     availableEvent?.id,
+//     participant?.group,
+//     selectedRound?.id,
+//     refetchPop,
+//   ]);
+
+// In ParticipantRow
+useEffect(() => {
+    if (!college || !availableEvent || !participant || !selectedRound || index !== 0) return; // Only first row fetches
+  
+    // Optional: Skip if already loaded
+    if (pop[participant.group]) return;
+  
+    fetchPop(college, availableEvent, participant.group);
+  }, [college?.id, availableEvent?.id, participant?.group, selectedRound?.id, refetchPop, index, pop]); // Add pop and index to deps
+
+  //   const fetchPop = async (college, availableEvent, group) => {
+  //     if (!college || !availableEvent || !participant) {
+  //       return;
+  //     }
+  //     setPop(null);
+  //     // setPopP(null);
+  //     try {
+  //       const response = await getPop(
+  //         college.id,
+  //         availableEvent.id,
+  //         selectedRound?.id,
+  //         group
+  //       );
+  //       setPop(response);
+  //       //   setPopP(response);
+  //       return response;
+  //     } catch (error) {
+  //       console.log(error);
+  //       setPop(null);
+  //       //   setPopP(null);
+  //       return null;
+  //     }
+  //   };
+
+  // In ParticipantRow
   const fetchPop = async (college, availableEvent, group) => {
     if (!college || !availableEvent || !participant) {
       return;
     }
-    setPop(null);
-    // setPopP(null);
+    // Only clear this group's entry, not all (or skip if you want to preserve)
+    setPop((prev) => ({ ...prev, [group]: null })); // Clear only this group
+
     try {
       const response = await getPop(
         college.id,
@@ -83,53 +131,90 @@ const ParticipantRow = ({
         selectedRound?.id,
         group
       );
-      setPop(response);
-      //   setPopP(response);
+      setPop((prev) => ({ ...prev, [group]: response })); // Merge: key by group
+      return response;
     } catch (error) {
       console.log(error);
-      setPop(null);
-      //   setPopP(null);
+      setPop((prev) => ({ ...prev, [group]: null })); // Clear on error
+      return null;
     }
   };
+//   const handlePdfOpen = () => {
+//     if (!pop) {
+//       return;
+//     }
+//     console.log(pop);
+//     // Assuming `response` is the byte array (PDF content)
+//     const pdfBlob = new Blob([pop], { type: "application/pdf" });
 
-  const handlePdfOpen = () => {
-    if (!pop) {
+//     // Create a URL for the Blob
+//     const pdfUrl = URL.createObjectURL(pdfBlob);
+//     // Open the PDF in a new tab
+//     window.open(pdfUrl, "_blank");
+//   };
+
+  //   const handleConfirmParticipants = async (group) => {
+  //     if (!college || !availableEvent) {
+  //       return;
+  //     }
+  //     try {
+  //       setConfirmParticipation(true);
+  //       const response = await generateQrcode(
+  //         college.id,
+  //         availableEvent.id,
+  //         selectedRound.id,
+  //         group
+  //       );
+  //       console.log(response);
+  //       setPop(response);
+  //       //   setPopP(response);
+  //     } catch (error) {
+  //       console.log(error);
+  //       setPop(null);
+  //       //   setPopP(null);
+  //     } finally {
+  //       setConfirmParticipation(false);
+  //     }
+  //   };
+
+  // In ParticipantRow
+  
+  
+  
+  // In ParticipantRow
+const handlePdfOpen = () => {
+    const groupPop = pop[participant.group]; // Group-specific
+    if (!groupPop) {
       return;
     }
-    console.log(pop);
-    // Assuming `response` is the byte array (PDF content)
-    const pdfBlob = new Blob([pop], { type: "application/pdf" });
-
-    // Create a URL for the Blob
+    console.log(groupPop);
+    const pdfBlob = new Blob([groupPop], { type: "application/pdf" });
     const pdfUrl = URL.createObjectURL(pdfBlob);
-    // Open the PDF in a new tab
     window.open(pdfUrl, "_blank");
   };
-
+  
   const handleConfirmParticipants = async (group) => {
-    if (!college || !availableEvent) {
+    if (!participant.collegeId || !availableEvent) {
+        console.log(college, availableEvent, participant);
       return;
     }
     try {
       setConfirmParticipation(true);
       const response = await generateQrcode(
-        college.id,
+        participant.collegeId,
         availableEvent.id,
         selectedRound.id,
         group
       );
       console.log(response);
-      setPop(response);
-      //   setPopP(response);
+      setPop((prev) => ({ ...prev, [group]: response })); // Key by group
     } catch (error) {
       console.log(error);
-      setPop(null);
-      //   setPopP(null);
+      setPop((prev) => ({ ...prev, [group]: null }));
     } finally {
       setConfirmParticipation(false);
     }
   };
-
   return (
     <>
       <tr key={participant?.id}>
@@ -187,7 +272,7 @@ const ParticipantRow = ({
           {/* {JSON.stringify(participant)} */}
           {index == 0 && (
             <>
-              <Button
+              {/* <Button
                 variant={pop ? "ghost border border-2" : "warning"}
                 onClick={() => {
                   console.log(pop);
@@ -198,12 +283,30 @@ const ParticipantRow = ({
                     handleConfirmParticipants(participant?.group);
                   }
                 }}
-                // disabled={
-                //   confirmParticipation || !!participant?.disableParticipation
-                // }
+                
               >
                 {pop ? <FaDownload /> : <FaCheck />}{" "}
-                {pop ? "Download" : "Confirm"}
+                {fetchPop(college, availableEvent, participant.group) ? "Download" : "Confirm"}
+              </Button>
+               */}
+
+              <Button
+                variant={
+                  pop[participant.group] ? "ghost border border-2" : "warning"
+                }
+                onClick={() => {
+                  console.log("pop[participant.group]:", pop[participant.group]); // Log group-specific
+                  console.log("participant.group:", participant.group); // Log group-specific
+                  if (pop[participant.group]) {
+                    handlePdfOpen(); // This needs group-specific too (see below)
+                  } else {
+                    handleConfirmParticipants(participant.group); // This fetches and sets
+                  }
+                }}
+                // disabled={confirmParticipation || !!participant?.disableParticipation}
+              >
+                {pop[participant.group] ? <FaDownload /> : <FaCheck />}{" "}
+                {pop[participant.group] ? "Download" : "Confirm"}
               </Button>
               <Button
                 variant={"outline"}

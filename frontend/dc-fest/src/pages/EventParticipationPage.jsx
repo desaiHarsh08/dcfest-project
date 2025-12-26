@@ -57,8 +57,9 @@ const EventParticipationPage = () => {
   const [showDisableTeamModal, setShowDisableTeamModal] = useState(false);
   const [eventFilter, setEventFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [pop, setPop] = useState();
-  const [categories, setCategories] = useState([]);
+//   const [pop, setPop] = useState();
+const [pop, setPop] = useState({}); // Changed: object keyed by group
+const [categories, setCategories] = useState([]);
   const [colleges, setColleges] = useState([]);
   const [group, setGroup] = useState("");
   const [groups, setGroups] = useState([]);
@@ -600,10 +601,40 @@ const EventParticipationPage = () => {
     }
   };
 
-  useEffect(() => {
-    setPop(null);
+//   useEffect(() => {
+//     setPop(null);
+//     setRefetchPop((prev) => !prev);
+//   }, [selectedCollege, selectedCategory, selectedAvailableEvent, selectedRound]);
+
+useEffect(() => {
+    setPop({}); // Clear all group PDFs
     setRefetchPop((prev) => !prev);
   }, [selectedCollege, selectedCategory, selectedAvailableEvent, selectedRound]);
+
+  // In EventParticipationPage (new useEffect)
+useEffect(() => {
+    if (!selectedCollege || !selectedAvailableEvent || !selectedRound || groups.length === 0) return;
+  
+    const fetchAllGroupPops = async () => {
+      for (const grp of groups) {
+        // Find a participant in this group to pass (any will do)
+        const sampleParticipant = filteredParticipants.find(p => p.group === grp);
+        if (!sampleParticipant?.collegeId) continue;
+  
+        // Reuse fetchPop logic (you could extract it to a util)
+        try {
+          const college = colleges.find(c => c.id === sampleParticipant.collegeId);
+          const response = await getPop(college.id, selectedAvailableEvent.id, selectedRound.id, grp);
+          setPop(prev => ({ ...prev, [grp]: response }));
+        } catch (error) {
+          console.log(`Failed to fetch POP for group ${grp}:`, error);
+          setPop(prev => ({ ...prev, [grp]: null }));
+        }
+      }
+    };
+  
+    fetchAllGroupPops();
+  }, [groups, selectedCollege, selectedAvailableEvent, selectedRound, refetchPop]); // Trigger on groups change
 
   const handleNewParticipantChange = (e) => {
     const { name, value } = e.target;
