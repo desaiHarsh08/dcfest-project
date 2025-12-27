@@ -954,7 +954,7 @@ useEffect(() => {
               })} */}
 
               {/* Alphabtical order of participant names */}
-              {selectedRound &&
+              {selectedRound && selectedCollege &&
                 groups.map((grp) => {
                   let tmpParticipants = filteredParticipants
                     .filter((p) => p.group === grp)
@@ -963,6 +963,7 @@ useEffect(() => {
                   return tmpParticipants.map((participant, index) => (
                     <ParticipantRow
                       key={`${participant.id}`}
+                      selectedCollege={selectedCollege}
                       collegeParticipation={collegeParticipation}
                       selectedRound={selectedRound}
                       category={categories.find(

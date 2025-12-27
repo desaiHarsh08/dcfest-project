@@ -26,14 +26,16 @@ const ParticipantRow = ({
   participant,
   filteredParticipants,
   index,
+
   group,
   category,
   availableEvent,
   selectedRound,
+  selectedCollege,
   handleRemove,
   handleEdit,
 }) => {
-  const [college, setCollege] = useState();
+  const [college, setCollege] = useState(selectedCollege);
   //   const [pop, setPop] = useState();
 
   const [confirmParticipation, setConfirmParticipation] = useState(false);
@@ -90,7 +92,7 @@ useEffect(() => {
     if (pop[participant.group]) return;
   
     fetchPop(college, availableEvent, participant.group);
-  }, [college?.id, availableEvent?.id, participant?.group, selectedRound?.id, refetchPop, index, pop]); // Add pop and index to deps
+  }, [college?.id, availableEvent?.id, participant?.group, selectedRound?.id, refetchPop, index, ]); // Add pop and index to deps
 
   //   const fetchPop = async (college, availableEvent, group) => {
   //     if (!college || !availableEvent || !participant) {
