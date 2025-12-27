@@ -1,5 +1,6 @@
 package com.dcfest.services.impl;
 
+import com.dcfest.dtos.CollegeRankingDto;
 import com.dcfest.dtos.ScoreCardDto;
 import com.dcfest.dtos.ScoreParameterDto;
 import com.dcfest.exceptions.ResourceNotFoundException;
@@ -7,6 +8,7 @@ import com.dcfest.models.*;
 import com.dcfest.repositories.*;
 
 import com.dcfest.services.ScoreCardServices;
+import com.dcfest.services.WebSocketService;
 import com.dcfest.utils.PdfGenerator;
 import com.dcfest.utils.PdfService;
 import com.dcfest.utils.ScoreCardTeamDto;
@@ -27,6 +29,10 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
 
     @Autowired
     private PdfService pdfService;
+
+    @Autowired
+    private WebSocketService webSocketService;
+
 
     @Autowired
     private ScoreCardRepository scoreCardRepository;
@@ -318,6 +324,9 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
             this.scoreParameterServices.updateScoreParameter(scoreParameterDto.getId(), scoreParameterDto);
         }
 
+        List<CollegeRankingDto> rankings = getCollegeRankings();
+        webSocketService.emitCollegeRankings(rankings);
+
         return mapToDto(scoreCard);
     }
 
@@ -347,6 +356,9 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
 
         // Delete the scorecard
         this.scoreCardRepository.deleteById(id);
+
+        List<CollegeRankingDto> rankings = getCollegeRankings();
+        webSocketService.emitCollegeRankings(rankings);
 
         return true;
     }
@@ -462,6 +474,9 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         this.scoreCardRepository.save(scoreCardModel);
 
         this.collegeRepository.save(collegeModel);
+
+        List<CollegeRankingDto> rankings = getCollegeRankings();
+        webSocketService.emitCollegeRankings(rankings);
 
         return this.mapToDto(scoreCardModel);
     }
@@ -591,6 +606,75 @@ public class ScoreCardServicesImpl implements ScoreCardServices {
         dto.setPoints(scoreCard.getPoints());
 
         return dto;
+    }
+
+    @Override
+    public List<CollegeRankingDto> getCollegeRankings() {
+
+        List<ScoreCardModel> scoreCards = scoreCardRepository.findAll();
+
+        if (scoreCards.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<CollegeModel, List<ScoreCardModel>> collegeScoreMap =
+                scoreCards.stream()
+                        .filter(sc -> sc.getPoints() != null)
+                        .collect(Collectors.groupingBy(
+                                sc -> sc.getCollegeParticipation().getCollege()
+                        ));
+
+        List<CollegeRankingDto> rankings = new ArrayList<>();
+
+        for (Map.Entry<CollegeModel, List<ScoreCardModel>> entry : collegeScoreMap.entrySet()) {
+
+            CollegeModel college = entry.getKey();
+            List<ScoreCardModel> collegeScores = entry.getValue();
+
+            long totalPoints = collegeScores.stream()
+                    .mapToLong(ScoreCardModel::getPoints)
+                    .sum();
+
+            long totalTeams = collegeScores.stream()
+                    .map(ScoreCardModel::getTeamNumber)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .count();
+
+            rankings.add(new CollegeRankingDto(
+                    college.getName(),
+                    college.getIcCode(),
+                    totalPoints,
+                    null,
+                    totalTeams
+            ));
+        }
+
+        // Sort by points DESC
+        rankings.sort(Comparator.comparingLong(CollegeRankingDto::getPoints).reversed());
+
+        // Assign competition ranks
+        long currentRank = 0;
+        long previousPoints = Long.MIN_VALUE;
+        int index = 0;
+
+        for (CollegeRankingDto dto : rankings) {
+            index++;
+            if (dto.getPoints() != previousPoints) {
+                currentRank = index;
+                previousPoints = dto.getPoints();
+            }
+            dto.setRanking(currentRank);
+        }
+
+        // ✅ WebSocket emit — SINGLE SOURCE OF TRUTH
+        try {
+            webSocketService.emitCollegeRankings(rankings);
+        } catch (Exception e) {
+            System.err.println("Error emitting college ranking update: " + e.getMessage());
+        }
+
+        return rankings;
     }
 
 }

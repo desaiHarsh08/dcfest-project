@@ -1,10 +1,12 @@
 package com.dcfest.services;
 
+import com.dcfest.dtos.CollegeRankingDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -79,5 +81,13 @@ public class WebSocketService {
         messagingTemplate.convertAndSend("/topic/registration-status", data);
         System.out.println("Emitted registration-status update: isRegistrationOpen=" + isRegistrationOpen + " via WebSocket");
     }
+
+    public void emitCollegeRankings(List<CollegeRankingDto> rankings) {
+        messagingTemplate.convertAndSend(
+                "/topic/college-rankings",
+                rankings
+        );
+    }
+
 }
 

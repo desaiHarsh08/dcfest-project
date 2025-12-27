@@ -8,6 +8,14 @@ export const fetchColleges = async () => {
     return response.data;
 };
 
+export const fetchCollegesRanking = async () => {
+    const response = await API.get('/api/colleges/rankings/emit', {
+        withCredentials: true
+    });
+    
+    return response.data;
+};
+
 export const fetchCollegesByAvailableEventIdAndRoundId = async (availableEventId, roundId) => {
     const response = await API.get(`/api/colleges/available-event-round?availableEventId=${availableEventId}&roundId=${roundId}`, {
         withCredentials: true

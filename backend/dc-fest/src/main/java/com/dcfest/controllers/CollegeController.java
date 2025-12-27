@@ -1,7 +1,10 @@
 package com.dcfest.controllers;
 
 import com.dcfest.dtos.CollegeDto;
+import com.dcfest.dtos.CollegeRankingDto;
 import com.dcfest.services.CollegeServices;
+import com.dcfest.services.ScoreCardServices;
+import com.dcfest.services.WebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +16,32 @@ import java.util.List;
 @RequestMapping("/api/colleges")
 public class CollegeController {
 
+
     @Autowired
     private CollegeServices collegeServices;
+
+    @Autowired
+    private WebSocketService webSocketService;
+
+    @Autowired
+    private ScoreCardServices scoreCardServices;
 
     @PostMapping
     public ResponseEntity<CollegeDto> createCollege(@RequestBody CollegeDto collegeDto) {
         System.out.println(collegeDto);
         CollegeDto createdCollege = collegeServices.createCollege(collegeDto);
         return new ResponseEntity<>(createdCollege, HttpStatus.CREATED);
+
+
+    }
+
+
+    @GetMapping("/rankings/emit")
+    public ResponseEntity<List<CollegeRankingDto>> emitRankings() {
+        List<CollegeRankingDto> rankings = scoreCardServices.getCollegeRankings();
+        System.out.println("Trigered");
+        webSocketService.emitCollegeRankings(rankings);
+        return new ResponseEntity<>(rankings, HttpStatus.CREATED);
     }
 
     @GetMapping

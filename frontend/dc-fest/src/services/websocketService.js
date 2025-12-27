@@ -49,7 +49,8 @@ const connectionCallbacks = [];
 /**
  * Initialize WebSocket connection using STOMP over SockJS
  */
-export const initWebSocket = () => {
+export const initWebSocket = (token, email) => {
+    console.log("in initWebSocket(), ", token, email)
     if (stompClient?.connected) {
         return stompClient;
     }
@@ -81,6 +82,10 @@ export const initWebSocket = () => {
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
+            connectHeaders: {
+                Authorization: `Bearer ${token}`,
+                email: email,
+              },
             onConnect: () => {
                 connectionEstablished = true;
                 console.log("✅ WebSocket connected via STOMP");
@@ -373,6 +378,55 @@ export const subscribeToRegistrationStatus = (callback) => {
     };
 };
 
+
+/**
+ * Subscribe to college ranking updates
+ */
+export const subscribeToCollegeRankings = (callback) => {
+    const client = getStompClient();
+    let subscription = null;
+
+    const doSubscribe = () => {
+        const currentClient = getStompClient();
+        if (currentClient && currentClient.connected) {
+            try {
+                subscription = currentClient.subscribe(
+                    "/topic/college-rankings",
+                    (message) => {
+                        try {
+                            const data = JSON.parse(message.body);
+                            console.log("📨 College rankings update received:", data);
+                            callback(data);
+                        } catch (error) {
+                            console.error("Error parsing college rankings message:", error);
+                        }
+                    }
+                );
+                console.log("✅ Subscribed to college rankings");
+            } catch (error) {
+                console.error("Error subscribing to college rankings:", error);
+            }
+        }
+    };
+
+    if (client && client.connected) {
+        doSubscribe();
+    } else {
+        connectionCallbacks.push(doSubscribe);
+        console.log("⏳ Queued college rankings subscription");
+    }
+
+    return {
+        unsubscribe: () => {
+            if (subscription) {
+                subscription.unsubscribe();
+                console.log("🔌 Unsubscribed from college rankings");
+            }
+        }
+    };
+};
+
+
 export default {
     initWebSocket,
     getStompClient,
@@ -380,6 +434,7 @@ export default {
     subscribeToQuotaUpdates,
     subscribeToParticipantAdded,
     subscribeToParticipantRemoved,
+    subscribeToCollegeRankings,
     subscribeToWaitingListPromotion,
 };
 

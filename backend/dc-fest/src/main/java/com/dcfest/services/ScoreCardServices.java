@@ -1,5 +1,6 @@
 package com.dcfest.services;
 
+import com.dcfest.dtos.CollegeRankingDto;
 import com.dcfest.dtos.ScoreCardDto;
 import org.springframework.core.io.InputStreamSource;
 
@@ -22,6 +23,8 @@ public interface ScoreCardServices {
     boolean deleteScoreCard(Long id);
 
     InputStreamSource getScoreCardSheet(Long availableEventId, Long roundId);
+
+    List<CollegeRankingDto> getCollegeRankings();
 
     List<ScoreCardDto> getScoresForCollegeParticipations(Long availableEventId, Long roundId);
 
