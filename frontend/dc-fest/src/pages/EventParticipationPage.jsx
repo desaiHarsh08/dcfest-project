@@ -708,6 +708,9 @@ useEffect(() => {
     }
   };
 
+  const isGroupConfirmed = !!pop[group];
+
+
   return (
     <Container fluid className="mt-4">
       <button
@@ -870,15 +873,18 @@ useEffect(() => {
           <div>
             <Button
               variant="warning"
-              onClick={() => {
-                console.log("pop:", pop);
-                if (!pop) {
-                  setShowAddModal(true);
-                }
-              }}
-              disabled={pop}
+            //   onClick={() => {
+            //     console.log("pop:", pop);
+            //     if (!pop) {
+            //       setShowAddModal(true);
+            //     }
+            //   }}
+            //   disabled={pop}
+            onClick={() => setShowAddModal(true)}
+  disabled={!groups.some(grp => pop[grp] == null)}
             >
-              <FaPlus /> Add More Participants
+              <FaPlus /> Add More Participants 
+              {/* pop_obj: {JSON.stringify(pop)} | groups: {JSON.stringify(groups)} */}
             </Button>
             {filteredParticipants.length > 0 && (
               <>
@@ -1092,9 +1098,10 @@ useEffect(() => {
       </Modal>
       {selectedCollege &&
         selectedAvailableEvent &&
-        groups &&
-        filteredParticipants && (
+        selectedRound && pop &&
+        filteredParticipants && groups.length > 0 && (
           <AddParticipantModal
+          key={`${groups}`}
             availableEvent={selectedAvailableEvent}
             handleInputChange={handleNewParticipantChange}
             handleModalClose={() => setShowAddModal(false)}
@@ -1106,10 +1113,11 @@ useEffect(() => {
             setFilteredParticipants={setFilteredParticipants}
             participants={filteredParticipants.filter((p) => p.group == group)}
             setGroup={setGroup}
-            group={group}
+            group={groups.find(grp => pop[grp] == null) ? group : groups[0]}
             selectedCollege={selectedCollege}
             show={showAddModal}
-            groups={groups}
+            groups={pop ? groups.filter(grp => pop[grp] == null) : groups}
+            pop={pop}
           />
         )}
 

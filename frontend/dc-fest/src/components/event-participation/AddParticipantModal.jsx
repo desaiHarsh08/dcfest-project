@@ -2,7 +2,12 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { addParticipant, createParticipants, fetchSlotsOccupiedForEvent, fetchParticipantsByEventIdAndCollegeId } from "../../services/participants-api";
+import {
+  addParticipant,
+  createParticipants,
+  fetchSlotsOccupiedForEvent,
+  fetchParticipantsByEventIdAndCollegeId,
+} from "../../services/participants-api";
 import { fetchEventByAvailableEventId } from "../../services/event-apis";
 import { fetchParticipationByCollegeIdAndAvailableEventId } from "../../services/college-participation-apis";
 
@@ -22,6 +27,7 @@ export default function AddParticipantModal({
   availableEvent,
   getParticipants,
   groups,
+  pop,
 }) {
   const [loadingSave, setLoadingSave] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,8 +36,24 @@ export default function AddParticipantModal({
   const [event, setEvent] = useState();
   const [collegeParticipation, setCollegeParticipation] = useState(null);
 
+  const getFirstFreeGroup = () =>
+    groups?.find(grp => pop?.[grp] == null) ?? null;
+
+  useEffect(() => {
+    if (!show) return;
+  
+    const freeGroup = getFirstFreeGroup();
+  
+    if (freeGroup && group !== freeGroup) {
+      setGroup(freeGroup);
+    }
+  }, [show, pop, groups, getFirstFreeGroup]);
+  
+  
+
   useEffect(() => {
     setNewParticipant((prev) => ({ ...prev, group }));
+    // console.log("in ue, of add-participant, line 41, pop:", pop, groups, groups.find(grp => pop[grp] == null));
   }, [group, setNewParticipant]);
 
   // Sync collegeId with selectedCollege whenever it changes
@@ -40,7 +62,12 @@ export default function AddParticipantModal({
       setNewParticipant((prev) => {
         // Only update if collegeId is different to avoid unnecessary re-renders
         if (prev?.collegeId !== selectedCollege.id) {
-          console.log("Syncing collegeId from", prev?.collegeId, "to selectedCollege.id:", selectedCollege.id);
+          console.log(
+            "Syncing collegeId from",
+            prev?.collegeId,
+            "to selectedCollege.id:",
+            selectedCollege.id
+          );
           return {
             ...prev,
             collegeId: selectedCollege.id, // Always sync with selectedCollege
@@ -49,11 +76,11 @@ export default function AddParticipantModal({
         return prev;
       });
     }
-  }, [selectedCollege?.id, setNewParticipant]);
+  }, [selectedCollege?.id]);
 
   useEffect(() => {
     console.log("in ue of a-p, availableEvent:", availableEvent);
-  }, [availableEvent]);
+  }, [availableEvent, ]);
 
   useEffect(() => {
     console.log(availableEvent, participants);
@@ -61,8 +88,15 @@ export default function AddParticipantModal({
     (async () => {
       if (!event) {
         try {
-          console.log("in add_part. modal, group:", group, "participants:", participants);
-          const response = await fetchEventByAvailableEventId(availableEvent.id);
+          console.log(
+            "in add_part. modal, group:",
+            group,
+            "participants:",
+            participants
+          );
+          const response = await fetchEventByAvailableEventId(
+            availableEvent.id
+          );
           setEvent(response);
 
           // Determine entryType: check if college is in waiting list or use existing participant's entryType
@@ -71,13 +105,22 @@ export default function AddParticipantModal({
           // If no existing participants, check college participation for waiting list status
           if (participants.length === 0 && selectedCollege && availableEvent) {
             try {
-              const collegeParticipationData = await fetchParticipationByCollegeIdAndAvailableEventId(selectedCollege.id, availableEvent.id);
+              const collegeParticipationData =
+                await fetchParticipationByCollegeIdAndAvailableEventId(
+                  selectedCollege.id,
+                  availableEvent.id
+                );
               setCollegeParticipation(collegeParticipationData);
 
               // If college has waiting list sequence, use WAITING_LIST entry type
-              if (collegeParticipationData?.waitingListSequence && collegeParticipationData.waitingListSequence.startsWith("WL_")) {
+              if (
+                collegeParticipationData?.waitingListSequence &&
+                collegeParticipationData.waitingListSequence.startsWith("WL_")
+              ) {
                 defaultEntryType = "WAITING_LIST";
-                console.log("College is in waiting list, setting entryType to WAITING_LIST");
+                console.log(
+                  "College is in waiting list, setting entryType to WAITING_LIST"
+                );
               }
             } catch (error) {
               console.log("Error fetching college participation:", error);
@@ -86,12 +129,18 @@ export default function AddParticipantModal({
           } else if (participants.length > 0) {
             // If there are existing participants, fetch college participation for reference
             try {
-              const collegeParticipationData = await fetchParticipationByCollegeIdAndAvailableEventId(selectedCollege.id, availableEvent.id);
+              const collegeParticipationData =
+                await fetchParticipationByCollegeIdAndAvailableEventId(
+                  selectedCollege.id,
+                  availableEvent.id
+                );
               setCollegeParticipation(collegeParticipationData);
             } catch (error) {
               console.log("Error fetching college participation:", error);
             }
           }
+
+          console.log("setting in ue (line 127) group: ", Object.keys(pop)[0])
 
           const tmpParticipant = {
             collegeId: selectedCollege?.id, // Ensure we use the current selectedCollege
@@ -100,14 +149,19 @@ export default function AddParticipantModal({
             whatsappNumber: "",
             handPreference: "RIGHT_HANDED",
             male: false,
-            group: group,
+            group,
             entryType: defaultEntryType,
             eventIds: [response.id],
             present: false,
             qrcode: participants[0]?.qrcode,
             teamNumber: participants[0]?.teamNumber,
           };
-          console.log("Initializing newParticipant with collegeId:", tmpParticipant.collegeId, "selectedCollege.id:", selectedCollege?.id);
+          console.log(
+            "Initializing newParticipant with collegeId:",
+            tmpParticipant.collegeId,
+            "selectedCollege.id:",
+            selectedCollege?.id
+          );
           console.log("tmpParticipant:", tmpParticipant);
           setNewParticipant((prev) => tmpParticipant);
         } catch (error) {
@@ -115,11 +169,19 @@ export default function AddParticipantModal({
         }
       }
     })();
-  }, [availableEvent, group, event, participants, selectedCollege, setNewParticipant]);
+  }, [
+    availableEvent,
+    group,
+    event,
+    participants,
+    selectedCollege,
+    setNewParticipant,
+    groups,
+  ]);
 
   useEffect(() => {
     console.log("in ue, newParticipant:", newParticipant);
-  }, [newParticipant]);
+  }, [newParticipant, ]);
 
   const getSlotsOccupied = async () => {
     try {
@@ -142,16 +204,25 @@ export default function AddParticipantModal({
     // If no existing participants and we're adding the first one, allow it
     if (participants.length == 0 && !deleteParticipantId) {
       // Basic validation for first participant
-      if (!newParticipant.name?.trim() || !newParticipant.email?.trim() || !newParticipant?.whatsappNumber?.trim()) {
+      if (
+        !newParticipant.name?.trim() ||
+        !newParticipant.email?.trim() ||
+        !newParticipant?.whatsappNumber?.trim()
+      ) {
         if (isSubmitting) {
           alert("Please fill in all required fields (Name, Email, Phone)!");
         }
         return false;
       }
       // Check phone number length
-      if (newParticipant?.whatsappNumber.length > 11 || newParticipant?.whatsappNumber.length < 10) {
+      if (
+        newParticipant?.whatsappNumber.length > 11 ||
+        newParticipant?.whatsappNumber.length < 10
+      ) {
         if (isSubmitting) {
-          alert(`Please provide a valid phone number (10-11 digits), currently ${newParticipant?.whatsappNumber.length}!`);
+          alert(
+            `Please provide a valid phone number (10-11 digits), currently ${newParticipant?.whatsappNumber.length}!`
+          );
         }
         return false;
       }
@@ -183,13 +254,22 @@ export default function AddParticipantModal({
       newParticipants = participants.filter((p) => p.id != deleteParticipantId);
     }
 
-    console.log("in handleRuleChecks(), after, newParticipants:", newParticipants);
+    console.log(
+      "in handleRuleChecks(), after, newParticipants:",
+      newParticipants
+    );
 
     // Check for whatsapp_no.
-    if (!deleteParticipantId && (newParticipant?.whatsappNumber.length > 11 || newParticipant?.whatsappNumber.length < 10)) {
+    if (
+      !deleteParticipantId &&
+      (newParticipant?.whatsappNumber.length > 11 ||
+        newParticipant?.whatsappNumber.length < 10)
+    ) {
       setIsValid(false);
       if (isSubmitting) {
-        alert(`Please provide a valid number, currently ${newParticipant?.whatsappNumber.length}!`);
+        alert(
+          `Please provide a valid number, currently ${newParticipant?.whatsappNumber.length}!`
+        );
       }
       return false;
     }
@@ -197,7 +277,11 @@ export default function AddParticipantModal({
     // Check for blank field
     if (!deleteParticipantId) {
       for (const participant of newParticipants) {
-        if (!participant.name.trim() || !participant.email.trim() || !participant?.whatsappNumber.trim()) {
+        if (
+          !participant.name.trim() ||
+          !participant.email.trim() ||
+          !participant?.whatsappNumber.trim()
+        ) {
           console.log("in loop, empty field");
           setIsValid(false);
           return false;
@@ -210,11 +294,21 @@ export default function AddParticipantModal({
       const ruleValue = Number(rule.value);
       switch (rule.eventRuleTemplate.name) {
         case "MIN_PARTICIPANTS":
-          console.log("in case, MIN_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:", newParticipants.filter((p) => p.type == "PERFORMER").length, "ruleValue:", ruleValue);
+          console.log(
+            "in case, MIN_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:",
+            newParticipants.filter((p) => p.type == "PERFORMER").length,
+            "ruleValue:",
+            ruleValue
+          );
           if (deleteParticipantId) {
-            if (newParticipants.filter((p) => p.type == "PERFORMER").length < ruleValue) {
+            if (
+              newParticipants.filter((p) => p.type == "PERFORMER").length <
+              ruleValue
+            ) {
               if (isSubmitting) {
-                alert(`Oops... There should be minimum ${ruleValue} participants!`);
+                alert(
+                  `Oops... There should be minimum ${ruleValue} participants!`
+                );
               }
               setIsValid(false);
               return false;
@@ -223,10 +317,20 @@ export default function AddParticipantModal({
           break;
 
         case "MAX_PARTICIPANTS":
-          console.log("in case, MAX_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:", newParticipants.filter((p) => p.type == "PERFORMER").length, "ruleValue:", ruleValue);
-          if (newParticipants.filter((p) => p.type == "PERFORMER").length > ruleValue) {
+          console.log(
+            "in case, MAX_PARTICIPANTS, newParticipants.filter((p) => p.type == 'PERFORMER').length:",
+            newParticipants.filter((p) => p.type == "PERFORMER").length,
+            "ruleValue:",
+            ruleValue
+          );
+          if (
+            newParticipants.filter((p) => p.type == "PERFORMER").length >
+            ruleValue
+          ) {
             if (isSubmitting) {
-              alert(`Oops... There should be maximum ${ruleValue} participants!`);
+              alert(
+                `Oops... There should be maximum ${ruleValue} participants!`
+              );
             }
             setIsValid(false);
             return false;
@@ -235,18 +339,30 @@ export default function AddParticipantModal({
 
         case "MALE_PARTICIPANTS": {
           console.log("in case: MALE_PARTICIPANTS: -", "ruleValue:", ruleValue);
-          const minParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value;
-          const maxParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+          const minParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS"
+          )?.value;
+          const maxParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS"
+          )?.value;
 
           // Include the new participant in the validation
-          const malePerformers = newParticipants.filter((p) => p.male && p.type == "PERFORMER").length;
-          const femalePerformers = newParticipants.filter((p) => !p.male && p.type == "PERFORMER").length;
-          console.log(`malePerformers: ${malePerformers}, femalePerformers: ${femalePerformers}`);
+          const malePerformers = newParticipants.filter(
+            (p) => p.male && p.type == "PERFORMER"
+          ).length;
+          const femalePerformers = newParticipants.filter(
+            (p) => !p.male && p.type == "PERFORMER"
+          ).length;
+          console.log(
+            `malePerformers: ${malePerformers}, femalePerformers: ${femalePerformers}`
+          );
 
           if (ruleValue == maxParticipants) {
             if (femalePerformers > 0) {
               if (isSubmitting) {
-                alert(`Oops... There should be only MALE participants, and a minimum of ${minParticipants} is required!`);
+                alert(
+                  `Oops... There should be only MALE participants, and a minimum of ${minParticipants} is required!`
+                );
               }
               setIsValid(false);
               return false;
@@ -261,7 +377,9 @@ export default function AddParticipantModal({
             // Validate exact male count when ruleValue is not maxParticipants
             if (malePerformers > ruleValue) {
               if (isSubmitting) {
-                alert(`Oops... There should be exactly ${ruleValue} MALE participants!`);
+                alert(
+                  `Oops... There should be exactly ${ruleValue} MALE participants!`
+                );
               }
               setIsValid(false);
               return false;
@@ -274,17 +392,27 @@ export default function AddParticipantModal({
         }
 
         case "FEMALE_PARTICIPANTS": {
-          const minParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS")?.value;
-          const maxParticipants = availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value;
+          const minParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MIN_PARTICIPANTS"
+          )?.value;
+          const maxParticipants = availableEvent.eventRules.find(
+            (r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS"
+          )?.value;
 
           // Include the new participant in the validation
-          const malePerformers = newParticipants.filter((p) => p.male && p.type == "PERFORMER").length;
-          const femalePerformers = newParticipants.filter((p) => !p.male && p.type == "PERFORMER").length;
+          const malePerformers = newParticipants.filter(
+            (p) => p.male && p.type == "PERFORMER"
+          ).length;
+          const femalePerformers = newParticipants.filter(
+            (p) => !p.male && p.type == "PERFORMER"
+          ).length;
 
           if (ruleValue == maxParticipants) {
             if (malePerformers > 0) {
               if (isSubmitting) {
-                alert(`Oops... There should be only FEMALE participants, and a minimum of ${minParticipants} is required!`);
+                alert(
+                  `Oops... There should be only FEMALE participants, and a minimum of ${minParticipants} is required!`
+                );
               }
               setIsValid(false);
               return false;
@@ -299,7 +427,9 @@ export default function AddParticipantModal({
             // Validate exact male count when ruleValue is not maxParticipants
             if (femalePerformers > ruleValue) {
               if (isSubmitting) {
-                alert(`Oops... There should be exactly ${ruleValue} FEMALE participants!`);
+                alert(
+                  `Oops... There should be exactly ${ruleValue} FEMALE participants!`
+                );
               }
               setIsValid(false);
               return false;
@@ -312,7 +442,10 @@ export default function AddParticipantModal({
         }
 
         case "COLLEGE_ACOMPANIST":
-          if (newParticipants.filter((p) => !p.type == "ACCOMPANIST").length !== ruleValue) {
+          if (
+            newParticipants.filter((p) => !p.type == "ACCOMPANIST").length !==
+            ruleValue
+          ) {
             if (isSubmitting) {
               alert(`Oops... There should be ${ruleValue} accompanist!`);
             }
@@ -334,13 +467,29 @@ export default function AddParticipantModal({
     e.preventDefault();
 
     if (!handleRuleChecks(true)) {
-      alert("Please provide the correct participant entries... check the rules");
+      alert(
+        "Please provide the correct participant entries... check the rules"
+      );
       return;
     }
 
-    const accompanist = Number(availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")?.value);
-    const maxParticipants = Number(availableEvent.eventRules.find((r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS")?.value);
-    if ((accompanist && [...participants, newParticipant].length > accompanist + maxParticipants) || [...participants, newParticipant].filter((p) => p.type == "PERFORMER").length > maxParticipants) {
+    const accompanist = Number(
+      availableEvent.eventRules.find(
+        (r) => r.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST"
+      )?.value
+    );
+    const maxParticipants = Number(
+      availableEvent.eventRules.find(
+        (r) => r.eventRuleTemplate.name == "MAX_PARTICIPANTS"
+      )?.value
+    );
+    if (
+      (accompanist &&
+        [...participants, newParticipant].length >
+          accompanist + maxParticipants) ||
+      [...participants, newParticipant].filter((p) => p.type == "PERFORMER")
+        .length > maxParticipants
+    ) {
       alert("You can't add the details now... please refresh the page!");
       return;
     }
@@ -349,20 +498,34 @@ export default function AddParticipantModal({
 
     // Use existing participant data for entryType, teamNumber, and eventIds if available
     // But ALWAYS use selectedCollege.id for collegeId to ensure it matches the current selection
-    const existingParticipant = filteredParticipants.length > 0 ? filteredParticipants[0] : participants.length > 0 ? participants[0] : null;
+    const existingParticipant =
+      filteredParticipants.length > 0
+        ? filteredParticipants[0]
+        : participants.length > 0
+        ? participants[0]
+        : null;
 
     const tmpParticipant = {
       ...newParticipant,
       // Always use selectedCollege.id as the source of truth for collegeId
       collegeId: selectedCollege?.id || newParticipant.collegeId,
-      entryType: existingParticipant?.entryType || newParticipant.entryType || "NORMAL",
+      entryType:
+        existingParticipant?.entryType || newParticipant.entryType || "NORMAL",
       teamNumber: existingParticipant?.teamNumber || newParticipant.teamNumber,
-      eventIds: existingParticipant?.eventIds || newParticipant.eventIds || (event?.id ? [event.id] : []),
-      type: newParticipant?.type
+      eventIds:
+        existingParticipant?.eventIds ||
+        newParticipant.eventIds ||
+        (event?.id ? [event.id] : []),
+      type: newParticipant?.type,
     };
 
     // Log for debugging
-    console.log("Creating participant with collegeId:", tmpParticipant.collegeId, "selectedCollege.id:", selectedCollege?.id);
+    console.log(
+      "Creating participant with collegeId:",
+      tmpParticipant.collegeId,
+      "selectedCollege.id:",
+      selectedCollege?.id
+    );
     if (tmpParticipant.type == null) {
       alert("Please provide the valid participant type!");
       return;
@@ -389,8 +552,8 @@ export default function AddParticipantModal({
       const response = await addParticipant(tmpParticipant);
       console.log(response);
 
-    //   setParticipants([...participants, response]);
-    await getParticipants();
+      //   setParticipants([...participants, response]);
+      await getParticipants();
       setFilteredParticipants([...filteredParticipants, response]);
     } catch (error) {
       console.log(error);
@@ -401,8 +564,34 @@ export default function AddParticipantModal({
     }
   };
 
-  console.log("newParticipant:", newParticipant);
-  console.log("event:", event);
+//   useEffect(() => {
+
+//     if (!newParticipant?.group) {
+//         console.log("in un ue, line 554")
+//       setNewParticipant((prev) => ({
+//         ...prev,
+//         group: groups[0]
+//       }));
+//     } else if (!groups.includes(newParticipant?.group)) {
+//         console.log("in un ue, line 560")
+//         setNewParticipant((prev) => ({
+//             ...prev,
+//             group: groups[0]
+//           }));
+//     }
+//   }, [newParticipant?.group, groups]);
+
+//   useEffect(() => {
+//     console.log("newParticipant:", newParticipant, pop);
+//   console.log("groups:", groups);
+//   console.log("event:", event);
+//   if (!groups.filter(grp => pop[grp] == null).includes(newParticipant?.group)) {
+//     console.log("setting newParticipant:", {...newParticipant, group: groups.find(grp => pop[grp] == null)})
+//     setNewParticipant(prev => ({...prev, group: groups.find(grp => pop[grp] == null)}));
+//   }
+    
+//   }, [groups, event, newParticipant, pop]);
+  
   return (
     newParticipant &&
     event && (
@@ -411,18 +600,38 @@ export default function AddParticipantModal({
           <Modal.Title className="text-light">Add Participants</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+
           <Form className="w-100">
             <Form.Group className="mb-3 d-flex align-items-center">
               <Form.Label style={{ width: "200px" }}>Name</Form.Label>
-              <Form.Control type="text" name="name" value={newParticipant?.name} onChange={handleInputChange} required className="w-100" />
+              <Form.Control
+                type="text"
+                name="name"
+                value={newParticipant?.name}
+                onChange={handleInputChange}
+                required
+                className="w-100"
+              />
             </Form.Group>
             <Form.Group className="mb-3 d-flex align-items-center">
               <Form.Label style={{ width: "200px" }}>Email</Form.Label>
-              <Form.Control type="email" name="email" value={newParticipant?.email} onChange={handleInputChange} required />
+              <Form.Control
+                type="email"
+                name="email"
+                value={newParticipant?.email}
+                onChange={handleInputChange}
+                required
+              />
             </Form.Group>
             <Form.Group className="mb-3 d-flex align-items-center">
               <Form.Label style={{ width: "200px" }}>Phone</Form.Label>
-              <Form.Control type="text" name="whatsappNumber" value={newParticipant?.whatsappNumber} onChange={handleInputChange} required />
+              <Form.Control
+                type="text"
+                name="whatsappNumber"
+                value={newParticipant?.whatsappNumber}
+                onChange={handleInputChange}
+                required
+              />
             </Form.Group>
             <Form.Group className="mb-3 d-flex gap-2 align-items-center">
               <Form.Label style={{ width: "200px" }}>Gender: </Form.Label>
@@ -472,7 +681,9 @@ export default function AddParticipantModal({
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3 d-flex align-items-center gap-2">
-              <Form.Label style={{ width: "200px" }}>Hand Preference</Form.Label>
+              <Form.Label style={{ width: "200px" }}>
+                Hand Preference
+              </Form.Label>
               <Form.Select
                 aria-label="Default select example"
                 name="handPreference"
@@ -489,19 +700,29 @@ export default function AddParticipantModal({
               <Form.Select
                 aria-label="Default select example"
                 name="group"
-                value={newParticipant?.group}
+                value={group}
                 onChange={(e) => {
+
                   setGroup(e.target.value);
-                  setNewParticipant((prev) => ({ ...prev, group: e.target.value, entryType: e.target.value.includes("OTSE") ? "OTSE" : "NORMAL" }));
+                  setNewParticipant((prev) => ({
+                    ...prev,
+                    group: e.target.value,
+                    entryType: e.target.value.includes("OTSE")
+                      ? "OTSE"
+                      : "NORMAL",
+                  }));
                   handleInputChange(e);
                 }}
                 //   disabled={!selectedAvailableEvent?.eventRules.find((rule) => rule.eventRuleTemplate.name == "COLLEGE_ACCOMPANIST")}
               >
-                {groups?.map((grp) => (
-                  <option key={grp} value={grp}>
-                    {grp}
-                  </option>
-                ))}
+                {groups?.map(
+                  (grp) =>
+                    pop[grp] == null && (
+                      <option key={grp} value={grp}>
+                        {grp} 
+                      </option>
+                    )
+                )}
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-5 d-flex align-items-center gap-2">
@@ -513,18 +734,27 @@ export default function AddParticipantModal({
                 onChange={(e) => {
                   handleInputChange(e);
                 }}
-                disabled={collegeParticipation?.waitingListSequence?.startsWith("WL_")}
+                disabled={collegeParticipation?.waitingListSequence?.startsWith(
+                  "WL_"
+                )}
               >
                 <option value="NORMAL">NORMAL</option>
                 <option value="OTSE">OTSE</option>
-                {collegeParticipation?.waitingListSequence?.startsWith("WL_") && <option value="WAITING_LIST">WAITING_LIST</option>}
+                {collegeParticipation?.waitingListSequence?.startsWith(
+                  "WL_"
+                ) && <option value="WAITING_LIST">WAITING_LIST</option>}
               </Form.Select>
               {/* {collegeParticipation?.waitingListSequence?.startsWith("WL_") && <Form.Text className="text-muted ms-2">College is in waiting list</Form.Text>} */}
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-end">
-          <Button variant="primary" className="round-0" disabled={loading} onClick={handleAdd}>
+          <Button
+            variant="primary"
+            className="round-0"
+            disabled={loading}
+            onClick={handleAdd}
+          >
             {loadingSave ? "Please Wait..." : "Add"}
           </Button>
         </Modal.Footer>
