@@ -217,10 +217,8 @@ const CollegeRankingPage = () => {
         <thead className="table-success">
           <tr>
             <th>Rankings</th>
-            <th>College</th>
             <th>IC CODE</th>
             <th>Points</th>
-            <th>Teams</th>
           </tr>
         </thead>
         <tbody>
@@ -235,10 +233,8 @@ const CollegeRankingPage = () => {
             return (
               <tr key={rnk.icCode} className={rowClass}>
                 <td>#{rnk.ranking}</td>
-                <td>{rnk.collegeName}</td>
                 <td>{rnk.icCode}</td>
                 <td>{rnk.points ?? "-"}</td>
-                <td>{rnk.teams ?? 0}</td>
               </tr>
             );
           })}

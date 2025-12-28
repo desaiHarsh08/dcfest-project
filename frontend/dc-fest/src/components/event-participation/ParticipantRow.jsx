@@ -224,6 +224,7 @@ const handlePdfOpen = () => {
           <input
             type="checkbox"
             checked={participant.present}
+            disabled={pop[participant.group] ? true : false}
             onChange={(e) => handleAttendance(e, participant)}
           />
         </td>
