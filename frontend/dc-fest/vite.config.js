@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
         define: {
             global: 'globalThis',
         },
+        env: {},
         resolve: {
             alias: {
                 '@': path.resolve(import.meta.dirname, './src'),

@@ -134,6 +134,29 @@ const HomeDesk = () => {
       <ParticipationStats />
       <Row className="d-flex justify-content-center align-items-stretch h-75">
         {cardsData.map((card, index) => {
+          // Certificate desk should only see the certificate card.
+          if (user?.type === "CERTIFICATE_DESK") {
+            if (card.title !== "Generate Certificates") {
+              return null;
+            }
+            return (
+              <Col key={index} xs={12} sm={6} md={4} lg={3} className="mt-4 pb-5">
+                <Link to={card.link} className="text-decoration-none h-100">
+                  <Card className="text-center h-100 shadow-lg border-0 custom-card" style={{ background: card.bgColor }}>
+                    <div className="card-overlay">
+                      <Card.Img variant="top" src={getImageSrc(card.imgSrc)} alt={card.title} className="card-image" />
+                    </div>
+                    <Card.Body className="p-4">
+                      <div className="icon-container mb-3">{card.icon}</div>
+                      <Card.Title className="card-title text-white fw-bold">{card.title}</Card.Title>
+                      <Card.Text className="card-text text-white fw-bold fs-5">{card.description}</Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Link>
+              </Col>
+            );
+          }
+
           if (
             user?.type != "ADMIN" &&
             (card.title == "Categories" || card.title == "College Rankings" || card.title == "Teams Ranking" || card.title == "Add Event" || card.title == "Upload College List")
